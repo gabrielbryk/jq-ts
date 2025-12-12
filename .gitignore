@@ -180,3 +180,6 @@ docs/
 
 # Temporary, non-tracked markdown docs (naming convention: tmp-*.md)
 tmp-*.md
+
+
+*.local.*

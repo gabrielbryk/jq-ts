@@ -1,2 +1,3 @@
 .gitignore
-tmp-*.md
+pnpm-lock.yaml
+dist/
