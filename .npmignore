@@ -1,0 +1,23 @@
+# Ignore everything by default
+*
+
+# Include only what's needed for the package
+!dist/**
+!README.md
+!package.json
+!LICENSE
+
+# Exclude source maps from published package
+dist/**/*.map
+
+# Exclude development files
+src/
+test/
+*.test.*
+*.spec.*
+.github/
+.husky/
+.changeset/
+.vscode/
+coverage/
+node_modules/

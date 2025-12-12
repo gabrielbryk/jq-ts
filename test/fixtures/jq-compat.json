@@ -1,0 +1,84 @@
+[
+  { "name": "identity null", "expr": ".", "input": null },
+  { "name": "identity object", "expr": ".", "input": { "a": 1, "b": [1, 2] } },
+  { "name": "field present", "expr": ".a", "input": { "a": 1 } },
+  { "name": "field missing null", "expr": ".missing", "input": { "a": 1 } },
+  { "name": "index array", "expr": ".[1]", "input": [10, 20, 30] },
+  { "name": "index array negative", "expr": ".[-1]", "input": [10, 20, 30] },
+  { "name": "index object string", "expr": ".[\"k\"]", "input": { "k": 5 } },
+  { "name": "comma fanout", "expr": ".a, .b", "input": { "a": 1, "b": 2 } },
+  { "name": "pipe arithmetic", "expr": ".a | . + 2", "input": { "a": 3 } },
+  { "name": "boolean and or", "expr": "(.x and .y) or false", "input": { "x": true, "y": false } },
+  { "name": "alt fallback", "expr": ".missing // \"ok\"", "input": { "a": null } },
+  { "name": "comparisons", "expr": "[.a == 2, .a < 2, .a >= 2]", "input": { "a": 2 } },
+  { "name": "arrays build", "expr": "[.a, .b + 1]", "input": { "a": 1, "b": 2 } },
+  { "name": "objects build", "expr": "{x: .a, y: .b}", "input": { "a": 1, "b": 2 } },
+  {
+    "name": "if branches",
+    "expr": "if .a > 1 then \"big\" elif .a == 1 then \"mid\" else \"small\" end",
+    "input": { "a": 1 }
+  },
+  { "name": "variables reuse", "expr": ". as $x | [$x, $x]", "input": [1, 2, 3] },
+  {
+    "name": "variables nested pipe",
+    "expr": ".a as $x | .b | . + $x",
+    "input": { "a": 2, "b": 3 }
+  },
+  { "name": "multiple outputs pipe", "expr": "(.a, .b) | . + 1", "input": { "a": 1, "b": 2 } },
+  { "name": "nested structures traversal", "expr": ".a[0].b", "input": { "a": [{ "b": 5 }] } },
+  { "name": "string escapes", "expr": "\"a\\nb\"", "input": null },
+  { "name": "type builtin", "expr": "type", "input": 3.14 },
+  { "name": "tostring number", "expr": "tostring", "input": 42 },
+  { "name": "tonumber string", "expr": "tonumber", "input": "1.5" },
+  { "name": "length string", "expr": "length", "input": "hello" },
+  { "name": "length array", "expr": "length", "input": [1, 2, 3] },
+  { "name": "keys array", "expr": "keys", "input": ["a", "b"] },
+  { "name": "has array index", "expr": "has(1)", "input": [10, 20, 30] },
+  { "name": "has object key", "expr": "has(\"k\")", "input": { "k": 1, "x": 2 } },
+  { "name": "sort simple", "expr": "sort", "input": [3, 1, 2] },
+  {
+    "name": "sort_by object field",
+    "expr": "sort_by(.x)",
+    "input": [{ "x": 2 }, { "x": 1 }, { "x": 2, "y": 0 }]
+  },
+  { "name": "unique numbers", "expr": "unique", "input": [1, 2, 1, 3, 2] },
+  {
+    "name": "unique_by field",
+    "expr": "unique_by(.k)",
+    "input": [
+      { "k": 1, "v": "a" },
+      { "k": 2, "v": "b" },
+      { "k": 1, "v": "c" }
+    ]
+  },
+  { "name": "map increment", "expr": "map(. + 1)", "input": [1, 2, 3] },
+  { "name": "select greater than", "expr": "map(select(. > 1))", "input": [0, 2, 3] },
+  {
+    "name": "to_entries/from_entries roundtrip",
+    "expr": "to_entries | from_entries",
+    "input": { "a": 1, "b": 2 }
+  },
+  {
+    "name": "with_entries transform",
+    "expr": "with_entries({key: .key, value: (.value + 1)})",
+    "input": { "a": 1, "b": 2 }
+  },
+  { "name": "split comma", "expr": "split(\",\")", "input": "a,b,c" },
+  { "name": "join dash", "expr": "join(\"-\")", "input": ["a", "b", "c"] },
+  { "name": "startswith", "expr": "startswith(\"ab\")", "input": "abc" },
+  { "name": "endswith", "expr": "endswith(\"bc\")", "input": "abc" },
+  { "name": "contains string", "expr": "contains(\"b\")", "input": "abc" },
+  { "name": "contains array element", "expr": "contains([2])", "input": [1, 2, 3] },
+  { "name": "contains object key", "expr": "contains({\"a\":1})", "input": { "a": 1, "b": 2 } },
+  { "name": "map on non-array error", "expr": "map(.+1)", "input": 1, "expectError": true },
+  { "name": "sort_by on non-array error", "expr": "sort_by(.x)", "input": 1, "expectError": true },
+  { "name": "has on number error", "expr": "has(0)", "input": 1, "expectError": true },
+  {
+    "name": "split non-string separator error",
+    "expr": "split(1)",
+    "input": "a",
+    "expectError": true
+  },
+  { "name": "join non-array error", "expr": "join(\",\")", "input": "x", "expectError": true },
+  { "name": "tonumber object error", "expr": "tonumber", "input": { "a": 1 }, "expectError": true }
+]
