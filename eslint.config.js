@@ -17,6 +17,16 @@ export default tseslint.config(
     rules: { 'no-console': 'warn' },
   },
   {
-    ignores: ['dist/**', 'node_modules/**', 'coverage/**', 'docs/**', '*.config.ts', '*.config.js'],
+    ignores: [
+      'dist/**',
+      'node_modules/**',
+      'coverage/**',
+      'docs/**',
+      '*.config.ts',
+      '*.config.js',
+      '*.json',
+      '*.lock',
+      '*.md',
+    ],
   }
 )

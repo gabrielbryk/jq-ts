@@ -1,6 +1,6 @@
-# Contributing to npm-starter
+# Contributing to jq-ts
 
-Thank you for your interest in contributing to npm-starter! 🎉
+Thank you for your interest in contributing to jq-ts! 🎉
 
 We welcome contributions from everyone. By participating in this project, you agree to abide by our [Code of Conduct](CODE_OF_CONDUCT.md).
 
@@ -11,8 +11,8 @@ We welcome contributions from everyone. By participating in this project, you ag
 1. **Fork and Clone**
 
    ```bash
-   git clone https://github.com/your-username/npm-starter.git
-   cd npm-starter
+   git clone https://github.com/your-username/jq-ts.git
+   cd jq-ts
    ```
 
 2. **Install Dependencies**
@@ -50,10 +50,10 @@ We welcome contributions from everyone. By participating in this project, you ag
 ### Project Structure
 
 ```
-src/          # Source code
-test/         # Test files
-dist/         # Build output (generated)
-examples/     # Usage examples
+src/              # Library source
+test/             # Tests (unit + jq integration fixtures)
+dist/             # Build output (generated)
+planning-docs/    # Design/roadmap docs
 ```
 
 ### Adding New Features
@@ -174,7 +174,7 @@ git commit -m "docs: update README with new examples"
 
 ## Reporting Bugs
 
-Found a bug? Please [create an issue](https://github.com/yeasin2002/npm-starter/issues/new?template=bug_report.yml) with:
+Found a bug? Please [create an issue](https://github.com/gabrielbryk/jq-ts/issues/new?template=bug_report.yml) with:
 
 - Clear bug description
 - Steps to reproduce
@@ -183,7 +183,7 @@ Found a bug? Please [create an issue](https://github.com/yeasin2002/npm-starter/
 
 ## Suggesting Features
 
-Have an idea? Please [create a feature request](https://github.com/yeasin2002/npm-starter/issues/new?template=feature_request.yml) with:
+Have an idea? Please [create a feature request](https://github.com/gabrielbryk/jq-ts/issues/new?template=feature_request.yml) with:
 
 - Problem you're trying to solve
 - Proposed solution
@@ -191,8 +191,7 @@ Have an idea? Please [create a feature request](https://github.com/yeasin2002/np
 
 ## Questions?
 
-- Open an [issue](https://github.com/yeasin2002/npm-starter/issues)
-- Reach out to [@yeasin2002](https://github.com/yeasin2002)
+- Open an [issue](https://github.com/gabrielbryk/jq-ts/issues)
 
 ## License
 

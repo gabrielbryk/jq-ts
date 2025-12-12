@@ -177,3 +177,6 @@ yarn.lock/*
 
 # TypeDoc generated documentation
 docs/
+
+# Temporary, non-tracked markdown docs (naming convention: tmp-*.md)
+tmp-*.md
