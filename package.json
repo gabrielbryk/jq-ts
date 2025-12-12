@@ -91,6 +91,11 @@
       }
     }
   },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "esbuild"
+    ]
+  },
   "peerDependencies": {
     "typescript": "^5.0.0"
   }
