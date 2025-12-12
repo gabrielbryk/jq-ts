@@ -1,0 +1,85 @@
+{
+  "name": "npm-starter",
+  "version": "1.0.1",
+  "description": "Starter Template for creating NPM Packages",
+  "main": "dist/index.cjs",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "license": "MIT",
+  "scripts": {
+    "dev": "vitest",
+    "build": "tsdown",
+    "clean": "rimraf dist coverage docs .turbo node_modules/.cache",
+    "typecheck": "tsc --noEmit",
+    "typecheck:watch": "tsc --noEmit --watch",
+    "format:write": "prettier --write .",
+    "format:check": "prettier --check .",
+    "check-exports": "attw --pack . --ignore-rules=cjs-resolves-to-esm",
+    "lint": "eslint ./src",
+    "lint:fix": "eslint . --fix",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "test:watch": "vitest",
+    "audit": "pnpm audit --audit-level=moderate",
+    "size": "size-limit",
+    "size:why": "size-limit --why",
+    "docs": "typedoc",
+    "docs:watch": "typedoc --watch",
+    "local-release": "changeset version && changeset publish",
+    "release": "changeset publish",
+    "prepublishOnly": "pnpm run ci",
+    "ci": "pnpm run build && pnpm run format:check && pnpm run check-exports && pnpm run lint && pnpm run test",
+    "prepare": "husky",
+    "lint-staged": "lint-staged"
+  },
+  "keywords": [
+    "demo",
+    "typescript"
+  ],
+  "homepage": "https://github.com/yeasin2002/npm-starter",
+  "bugs": {
+    "url": "https://github.com/yeasin2002/npm-starter/issues"
+  },
+  "author": "Md Kawsar Islam Yeasin <mdkawsarislam2002@gmail.com> (https://yeasin2002.vercel.app/)",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yeasin2002/npm-starter.git"
+  },
+  "files": [
+    "dist"
+  ],
+  "type": "module",
+  "devDependencies": {
+    "@arethetypeswrong/cli": "^0.18.2",
+    "@changesets/cli": "^2.29.8",
+    "@commitlint/cli": "^20.2.0",
+    "@commitlint/config-conventional": "^20.2.0",
+    "@eslint/js": "^9.39.1",
+    "@size-limit/preset-small-lib": "^11.2.0",
+    "@types/bun": "latest",
+    "@types/node": "^24.10.1",
+    "@vitest/coverage-v8": "^4.0.15",
+    "eslint": "^9.0.0",
+    "husky": "^9.1.7",
+    "knip": "^5.72.0",
+    "lint-staged": "^16.2.7",
+    "prettier": "^3.7.4",
+    "rimraf": "^6.1.2",
+    "size-limit": "^11.2.0",
+    "tsdown": "^0.17.1",
+    "typedoc": "^0.28.15",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.48.1",
+    "vitest": "^4.0.15"
+  },
+  "exports": {
+    "./package.json": "./package.json",
+    ".": {
+      "import": "./dist/index.js",
+      "default": "./dist/index.cjs"
+    }
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  }
+}
