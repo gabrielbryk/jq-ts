@@ -7,16 +7,16 @@
   "excludeProtected": false,
   "excludeInternal": true,
   "readme": "README.md",
-  "name": "npm-starter",
+  "name": "jq-ts",
   "includeVersion": true,
   "sort": ["source-order"],
   "kindSortOrder": ["Function", "Class", "Interface", "TypeAlias", "Variable", "Enum"],
   "categorizeByGroup": true,
   "navigationLinks": {
-    "GitHub": "https://github.com/yeasin2002/npm-starter"
+    "GitHub": "https://github.com/gabrielbryk/jq-ts"
   },
   "sidebarLinks": {
-    "Documentation": "https://github.com/yeasin2002/npm-starter#readme"
+    "Documentation": "https://github.com/gabrielbryk/jq-ts#readme"
   },
   "validation": {
     "notExported": true,

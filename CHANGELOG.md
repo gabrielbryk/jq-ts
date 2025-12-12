@@ -1,4 +1,4 @@
-# npm-starter
+# jq-ts
 
 ## 1.0.1
 
