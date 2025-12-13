@@ -51,9 +51,11 @@ describeIfJq('jq compatibility (integration)', () => {
       })()
 
       if (shouldError) {
+        // Assert error
         expect(jqResult.ok).toBe(false)
         expect(ourResult.ok).toBe(false)
       } else {
+        // Assert success
         expect(jqResult.ok).toBe(true)
         expect(ourResult.ok).toBe(true)
         if (jqResult.ok && ourResult.ok) {

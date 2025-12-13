@@ -3,6 +3,14 @@ import type { Span } from './span'
 import type { Token, TokenKind } from './tokens'
 import { keywordKinds } from './tokens'
 
+/**
+ * Tokenizes the input jq string into a list of AST tokens.
+ * Handles string interpolation, comments, and operator grouping.
+ *
+ * @param text - The source code to tokenize.
+ * @returns An array of {@link Token}, including an EOF token at the end.
+ * @throws {@link LexError} if an invalid character or sequence is encountered.
+ */
 export const lex = (text: string): Token[] => {
   const tokens: Token[] = []
   const length = text.length
@@ -22,8 +30,14 @@ export const lex = (text: string): Token[] => {
     !!ch && ((ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z') || ch === '_')
   const isIdentifierPart = (ch: string | undefined) => isIdentifierStart(ch) || isDigit(ch)
 
+  // Modes: 0=Normal, 1=Interpolation
+  const modeStack: number[] = [0]
+
   while (pos < length) {
+    // Check for interpolation end ')' if in String mode (actually it's handled by ) case)
     const ch = peek()
+
+    // ... whitespace, comments ...
     if (isWhitespace(ch)) {
       advance()
       continue
@@ -32,14 +46,45 @@ export const lex = (text: string): Token[] => {
       while (pos < length && peek() !== '\n') advance()
       continue
     }
+
     const start = pos
-    switch (ch) {
-      case '"': {
-        const endPos = readString(start)
-        const value = readStringValue(start, start + 1, endPos - 1)
-        pushToken('String', start, endPos, value)
+
+    if (ch === ')') {
+      // Check if we are ending an interpolation
+      if (modeStack.length > 1) {
+        advance() // consume ')'
+        // Resume string
+        const endPos = readString(start, false) // false = not initial quote
+        const value = readStringValue(start, start + 1, endPos - (peek(-1) === '"' ? 1 : 2))
+        // Check how readString ended
+        if (text[endPos - 1] === '"') {
+          // Ended with quote
+          modeStack.pop()
+          pushToken('StringEnd', start, endPos, value)
+        } else {
+          // Ended with \(
+          pushToken('StringMiddle', start, endPos, value)
+        }
         continue
       }
+      // Else normal RParen
+    }
+
+    switch (ch) {
+      case '"': {
+        const endPos = readString(start, true)
+        const isInterp = text.substring(endPos - 2, endPos) === '\\('
+        const value = readStringValue(start, start + 1, endPos - (isInterp ? 2 : 1))
+
+        if (isInterp) {
+          modeStack.push(1)
+          pushToken('StringStart', start, endPos, value)
+        } else {
+          pushToken('String', start, endPos, value)
+        }
+        continue
+      }
+      // ... same cases ...
       case '.': {
         advance()
         if (peek() === '.') {
@@ -60,16 +105,34 @@ export const lex = (text: string): Token[] => {
         pushToken('Comma', start, pos)
         continue
       }
+      case '?': {
+        advance()
+        pushToken('Question', start, pos)
+        continue
+      }
       case '|': {
         advance()
-        pushToken('Pipe', start, pos)
+        if (peek() === '=') {
+          advance()
+          pushToken('BarEq', start, pos)
+        } else {
+          pushToken('Pipe', start, pos)
+        }
         continue
       }
       case '/': {
         advance()
         if (peek() === '/') {
           advance()
-          pushToken('Alt', start, pos)
+          if (peek() === '=') {
+            advance()
+            pushToken('AltEq', start, pos)
+          } else {
+            pushToken('Alt', start, pos)
+          }
+        } else if (peek() === '=') {
+          advance()
+          pushToken('SlashEq', start, pos)
         } else {
           pushToken('Slash', start, pos)
         }
@@ -112,22 +175,42 @@ export const lex = (text: string): Token[] => {
       }
       case '+': {
         advance()
-        pushToken('Plus', start, pos)
+        if (peek() === '=') {
+          advance()
+          pushToken('PlusEq', start, pos)
+        } else {
+          pushToken('Plus', start, pos)
+        }
         continue
       }
       case '-': {
         advance()
-        pushToken('Minus', start, pos)
+        if (peek() === '=') {
+          advance()
+          pushToken('MinusEq', start, pos)
+        } else {
+          pushToken('Minus', start, pos)
+        }
         continue
       }
       case '*': {
         advance()
-        pushToken('Star', start, pos)
+        if (peek() === '=') {
+          advance()
+          pushToken('StarEq', start, pos)
+        } else {
+          pushToken('Star', start, pos)
+        }
         continue
       }
       case '%': {
         advance()
-        pushToken('Percent', start, pos)
+        if (peek() === '=') {
+          advance()
+          pushToken('PercentEq', start, pos)
+        } else {
+          pushToken('Percent', start, pos)
+        }
         continue
       }
       case '=': {
@@ -136,7 +219,7 @@ export const lex = (text: string): Token[] => {
           advance()
           pushToken('EqualEqual', start, pos)
         } else {
-          throw new LexError('Unexpected "=" (only "==" supported)', makeSpan(start, pos))
+          pushToken('Eq', start, pos)
         }
         continue
       }
@@ -199,6 +282,7 @@ export const lex = (text: string): Token[] => {
       while (isIdentifierPart(peek())) advance()
       const raw = text.slice(start, pos)
       const keyword = keywordKinds[raw]
+      // ...
       if (keyword === 'Null' || keyword === 'True' || keyword === 'False') {
         pushToken(keyword, start, pos)
       } else if (keyword) {
@@ -232,30 +316,29 @@ export const lex = (text: string): Token[] => {
     return pos
   }
 
-  function readString(tokenStart: number): number {
-    advance() // consume opening "
+  function readString(tokenStart: number, openQuote: boolean): number {
+    if (openQuote) advance() // consume opening "
+
     while (pos < length) {
       const current = advance()
       if (current === '"') {
         return pos
       }
       if (current === '\\') {
+        if (peek() === '(') {
+          advance() // consum (
+          return pos
+        }
+        // Escape handling
         const esc = advance()
-        if (!esc) {
-          break
-        }
-        if ('"\\/bfnrt'.includes(esc)) {
-          continue
-        }
+        if (!esc) break
+        // ... (standard escapes)
+        if ('"\\/bfnrt'.includes(esc)) continue
         if (esc === 'u') {
-          for (let i = 0; i < 4; i += 1) {
-            const hex = advance()
-            if (!hex || !isHexDigit(hex)) {
-              throw new LexError(
-                'Invalid Unicode escape in string literal',
-                makeSpan(tokenStart, pos)
-              )
-            }
+          for (let i = 0; i < 4; i++) {
+            const h = advance()
+            if (!h || !isHexDigit(h))
+              throw new LexError('Invalid Unicode escape', makeSpan(tokenStart, pos))
           }
           continue
         }
@@ -272,45 +355,45 @@ export const lex = (text: string): Token[] => {
       const ch = text[i]
       if (ch === '\\') {
         const next = text[i + 1]
-        switch (next) {
-          case '"':
-          case '\\':
-          case '/':
-            result += next
-            i += 2
-            break
-          case 'b':
-            result += '\b'
-            i += 2
-            break
-          case 'f':
-            result += '\f'
-            i += 2
-            break
-          case 'n':
-            result += '\n'
-            i += 2
-            break
-          case 'r':
-            result += '\r'
-            i += 2
-            break
-          case 't':
-            result += '\t'
-            i += 2
-            break
-          case 'u': {
-            const hex = text.slice(i + 2, i + 6)
-            result += String.fromCharCode(Number.parseInt(hex, 16))
-            i += 6
-            break
+        if (!next) throw new LexError('Unexpected end of input', makeSpan(tokenStart, pos))
+
+        if ('"\\/bfnrt'.includes(next)) {
+          switch (next) {
+            case '"':
+              result += '"'
+              break
+            case '\\':
+              result += '\\'
+              break
+            case '/':
+              result += '/'
+              break
+            case 'b':
+              result += '\b'
+              break
+            case 'f':
+              result += '\f'
+              break
+            case 'n':
+              result += '\n'
+              break
+            case 'r':
+              result += '\r'
+              break
+            case 't':
+              result += '\t'
+              break
           }
-          default:
-            throw new LexError(
-              `Invalid escape sequence "\\${next}"`,
-              makeSpan(tokenStart, tokenStart + (i - innerStart) + 2)
-            )
+          i += 2
+          continue
         }
+        if (next === 'u') {
+          const hex = text.slice(i + 2, i + 6)
+          result += String.fromCharCode(parseInt(hex, 16))
+          i += 6
+          continue
+        }
+        throw new LexError(`Invalid escape sequence "\\${next}"`, makeSpan(tokenStart, pos))
       } else {
         result += ch
         i += 1

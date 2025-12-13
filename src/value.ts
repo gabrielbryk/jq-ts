@@ -139,6 +139,14 @@ export const isPlainObject = (value: Value): value is ValueObject =>
   typeof value === 'object' && value !== null && !Array.isArray(value)
 
 /**
+ * Checks if a value is a JSON array.
+ *
+ * @param value - The value to check.
+ * @returns `true` if `value` is an array.
+ */
+export const isValueArray = (value: Value): value is ValueArray => Array.isArray(value)
+
+/**
  * Returns the type name of a value as a string (e.g., "null", "boolean", "number", "string", "array", "object").
  * This corresponds to the output of the `type` builtin.
  *
