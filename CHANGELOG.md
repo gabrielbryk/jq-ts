@@ -1,5 +1,11 @@
 # jq-ts
 
+## 1.2.0
+
+### Minor Changes
+
+- 87c3e3d: Refactor evaluation logic, add comprehensive TSDocs, and fix complex jq features (slice, try-catch).
+
 ## 1.1.0
 
 ### Minor Changes
