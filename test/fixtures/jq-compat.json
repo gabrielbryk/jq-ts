@@ -2,17 +2,38 @@
   { "name": "identity null", "expr": ".", "input": null },
   { "name": "identity object", "expr": ".", "input": { "a": 1, "b": [1, 2] } },
   { "name": "field present", "expr": ".a", "input": { "a": 1 } },
+  { "name": "field nested", "expr": ".a.b", "input": { "a": { "b": 2 } } },
   { "name": "field missing null", "expr": ".missing", "input": { "a": 1 } },
+  { "name": "field missing optional", "expr": ".missing?", "input": { "a": 1 } },
   { "name": "index array", "expr": ".[1]", "input": [10, 20, 30] },
   { "name": "index array negative", "expr": ".[-1]", "input": [10, 20, 30] },
+  { "name": "index array out of bounds", "expr": ".[99]", "input": [1] },
   { "name": "index object string", "expr": ".[\"k\"]", "input": { "k": 5 } },
+  { "name": "index object variable", "expr": "\"k\" as $k | .[$k]", "input": { "k": 5 } },
   { "name": "comma fanout", "expr": ".a, .b", "input": { "a": 1, "b": 2 } },
+  { "name": "comma fanout array", "expr": "[.a, .b]", "input": { "a": 1, "b": 2 } },
   { "name": "pipe arithmetic", "expr": ".a | . + 2", "input": { "a": 3 } },
-  { "name": "boolean and or", "expr": "(.x and .y) or false", "input": { "x": true, "y": false } },
+  {
+    "name": "boolean and or",
+    "expr": "(.x and .y) or false",
+    "input": { "x": true, "y": false }
+  },
   { "name": "alt fallback", "expr": ".missing // \"ok\"", "input": { "a": null } },
+  { "name": "alt fallback chain", "expr": "null // false // 0 // .a", "input": { "a": 1 } },
   { "name": "comparisons", "expr": "[.a == 2, .a < 2, .a >= 2]", "input": { "a": 2 } },
+  { "name": "deep comparisons", "expr": ".a == .b", "input": { "a": { "x": 1 }, "b": { "x": 1 } } },
   { "name": "arrays build", "expr": "[.a, .b + 1]", "input": { "a": 1, "b": 2 } },
   { "name": "objects build", "expr": "{x: .a, y: .b}", "input": { "a": 1, "b": 2 } },
+  {
+    "name": "objects build dynamic key",
+    "expr": "{ (.k): .v }",
+    "input": { "k": "foo", "v": 123 }
+  },
+  {
+    "name": "objects build parenthesized value",
+    "expr": "{ x: (1, 2) }",
+    "input": null
+  },
   {
     "name": "if branches",
     "expr": "if .a > 1 then \"big\" elif .a == 1 then \"mid\" else \"small\" end",
@@ -27,6 +48,53 @@
   { "name": "multiple outputs pipe", "expr": "(.a, .b) | . + 1", "input": { "a": 1, "b": 2 } },
   { "name": "nested structures traversal", "expr": ".a[0].b", "input": { "a": [{ "b": 5 }] } },
   { "name": "string escapes", "expr": "\"a\\nb\"", "input": null },
+  { "name": "string interpolation", "expr": "\"Val: \\(.a)\"", "input": { "a": 42 } },
+  { "name": "error builtin", "expr": "try error(\"oops\") catch .", "input": null },
+  {
+    "name": "complex: quicksort",
+    "expr": "def quicksort: if length < 2 then . else (.[0]) as $pivot | (.[1:] | map(select(. < $pivot)) | quicksort) + [$pivot] + (.[1:] | map(select(. >= $pivot)) | quicksort) end; quicksort",
+    "input": [4, 2, 9, 3, 1, 5]
+  },
+  {
+    "name": "complex: fibonacci",
+    "expr": "def fib: [0, 1] | recurse([.[1], .[0] + .[1]]) | .[0]; [limit(10; fib)]",
+    "input": null
+  },
+  {
+    "name": "complex: flatten deep",
+    "expr": "def flat: if type == \"array\" then .[] | flat else . end; [flat]",
+    "input": [1, [2, [3, 4], 5], 6]
+  },
+  {
+    "name": "complex: matrix multiplication",
+    "expr": "def dot_product(a; b): (a) as $A | (b) as $B | reduce range($A|length) as $i (0; . + ($A[$i] * $B[$i])); def transpose: [range(.[0]|length) as $j | [range(length) as $i | .[$i][$j]]]; def matmul(a; b): (b | transpose) as $bt | a | map(. as $row | $bt | map(dot_product($row; .))); matmul([[1, 2], [3, 4]]; [[5, 6], [7, 8]])",
+    "input": null
+  },
+  {
+    "name": "complex: hamming distance",
+    "expr": "def hamming(a; b): if (a|length) != (b|length) then error(\"length mismatch\") else reduce range(a|length) as $i (0; if a[$i:$i+1] != b[$i:$i+1] then . + 1 else . end) end; hamming(\"karolin\"; \"kathrin\")",
+    "input": null
+  },
+  {
+    "name": "complex: pascals triangle",
+    "expr": "def next_row: [0] + . + [0] | [range(length-1) as $i | .[$i] + .[$i+1]]; [limit(5; [1] | recurse(next_row))]",
+    "input": null
+  },
+  {
+    "name": "complex: path update select",
+    "expr": "(.users[] | select(.score < 50) | .active) |= false",
+    "input": {
+      "users": [
+        { "score": 60, "active": true },
+        { "score": 40, "active": true }
+      ]
+    }
+  },
+  {
+    "name": "try catch nested",
+    "expr": "try (1, error(\"fail\")) catch \"caught\"",
+    "input": null
+  },
   { "name": "type builtin", "expr": "type", "input": 3.14 },
   { "name": "tostring number", "expr": "tostring", "input": 42 },
   { "name": "tonumber string", "expr": "tonumber", "input": "1.5" },
@@ -69,9 +137,72 @@
   { "name": "endswith", "expr": "endswith(\"bc\")", "input": "abc" },
   { "name": "contains string", "expr": "contains(\"b\")", "input": "abc" },
   { "name": "contains array element", "expr": "contains([2])", "input": [1, 2, 3] },
-  { "name": "contains object key", "expr": "contains({\"a\":1})", "input": { "a": 1, "b": 2 } },
-  { "name": "map on non-array error", "expr": "map(.+1)", "input": 1, "expectError": true },
-  { "name": "sort_by on non-array error", "expr": "sort_by(.x)", "input": 1, "expectError": true },
+  {
+    "name": "contains object key",
+    "expr": "contains({\"a\":1})",
+    "input": { "a": 1, "b": 2 }
+  },
+  { "name": "range end", "expr": "range(3)", "input": null },
+  { "name": "range start end", "expr": "range(1; 4)", "input": null },
+  { "name": "range start end step", "expr": "range(0; 6; 2)", "input": null },
+  { "name": "limit iterator", "expr": "limit(2; range(5))", "input": null },
+  { "name": "first iterator", "expr": "first(range(5))", "input": null },
+  { "name": "last iterator", "expr": "last(range(5))", "input": null },
+  { "name": "nth iterator", "expr": "nth(2; range(5))", "input": null },
+  { "name": "isempty basic", "expr": "isempty(empty)", "input": null },
+  { "name": "all aggregator", "expr": "all([true, true][])", "input": [] },
+  { "name": "math sqrt", "expr": "sqrt", "input": 9 },
+  { "name": "math floor", "expr": "floor", "input": 3.9 },
+  { "name": "min array", "expr": "min", "input": [3, 1, 2] },
+  { "name": "max array", "expr": "max", "input": [3, 1, 2] },
+  { "name": "path builtin", "expr": "path(.a.b)", "input": { "a": { "b": 1 } } },
+  { "name": "assignment simple", "expr": ".a = 1", "input": { "a": 0 } },
+  { "name": "assignment update", "expr": ".a |= . + 1", "input": { "a": 1 } },
+  { "name": "assignment add", "expr": ".a += 2", "input": { "a": 1 } },
+  { "name": "assignment sub", "expr": ".a -= 1", "input": { "a": 2 } },
+  { "name": "assignment mul", "expr": ".a *= 2", "input": { "a": 3 } },
+  { "name": "assignment div", "expr": ".a /= 2", "input": { "a": 4 } },
+  { "name": "assignment mod", "expr": ".a %= 3", "input": { "a": 5 } },
+  {
+    "name": "assignment path complex",
+    "expr": "(.a, .b) = 10",
+    "input": { "a": 1, "b": 2 }
+  },
+  { "name": "reduce simple", "expr": "reduce .[] as $x (0; . + $x)", "input": [1, 2, 3] },
+  { "name": "foreach simple", "expr": "foreach .[] as $x (0; . + $x; .)", "input": [1, 2, 3] },
+  { "name": "label break basic", "expr": "label $out | 1, 2, (break $out), 3", "input": null },
+  {
+    "name": "label break nested",
+    "expr": "label $out | range(3) | if . == 1 then break $out else . end",
+    "input": null
+  },
+  {
+    "name": "def simple",
+    "expr": "def inc: . + 1; map(inc)",
+    "input": [1, 2]
+  },
+  {
+    "name": "def arguments",
+    "expr": "def add(x): . + x; map(add(10))",
+    "input": [1, 2]
+  },
+  {
+    "name": "def recursion",
+    "expr": "def fact: if . == 0 then 1 else . * (. - 1 | fact) end; 5 | fact",
+    "input": null
+  },
+  {
+    "name": "map on non-array error",
+    "expr": "map(.+1)",
+    "input": 1,
+    "expectError": true
+  },
+  {
+    "name": "sort_by on non-array error",
+    "expr": "sort_by(.x)",
+    "input": 1,
+    "expectError": true
+  },
   { "name": "has on number error", "expr": "has(0)", "input": 1, "expectError": true },
   {
     "name": "split non-string separator error",
@@ -79,6 +210,17 @@
     "input": "a",
     "expectError": true
   },
-  { "name": "join non-array error", "expr": "join(\",\")", "input": "x", "expectError": true },
-  { "name": "tonumber object error", "expr": "tonumber", "input": { "a": 1 }, "expectError": true }
+  {
+    "name": "join non-array error",
+    "expr": "join(\",\")",
+    "input": "x",
+    "expectError": true
+  },
+  {
+    "name": "tonumber object error",
+    "expr": "tonumber",
+    "input": { "a": 1 },
+    "expectError": true
+  },
+  { "name": "error builtin", "expr": "error(\"fail\")", "input": null, "expectError": true }
 ]

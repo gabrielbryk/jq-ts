@@ -6,6 +6,9 @@ export type TokenKind =
   | 'False'
   | 'Number'
   | 'String'
+  | 'StringStart'
+  | 'StringMiddle'
+  | 'StringEnd'
   | 'Identifier'
   | 'Variable'
   | 'Dot'
@@ -45,6 +48,18 @@ export type TokenKind =
   | 'Catch'
   | 'DotDot'
   | 'Semicolon'
+  | 'Eq'
+  | 'BarEq'
+  | 'PlusEq'
+  | 'MinusEq'
+  | 'StarEq'
+  | 'SlashEq'
+  | 'PercentEq'
+  | 'AltEq'
+  | 'Def'
+  | 'Label'
+  | 'Break'
+  | 'Question'
   | 'EOF'
 
 export interface Token {
@@ -70,4 +85,7 @@ export const keywordKinds: Record<string, TokenKind | undefined> = {
   foreach: 'Foreach',
   try: 'Try',
   catch: 'Catch',
+  def: 'Def',
+  label: 'Label',
+  break: 'Break',
 }

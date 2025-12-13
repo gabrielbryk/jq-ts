@@ -146,4 +146,22 @@ describe('eval builtins', () => {
       expect(evalExpr('contains({a:[3]})', { a: [1, 2] })).toEqual([false])
     })
   })
+
+  describe('Strict Compatibility - New Features', () => {
+    it('path/1 builtin', () => {
+      expect(evalExpr('path(.a)', { a: 1 })).toEqual([['a']])
+      expect(evalExpr('path(.a.b)', { a: { b: 1 } })).toEqual([['a', 'b']])
+      expect(evalExpr('path(.[0])', [10])).toEqual([[0]])
+    })
+
+    it('label and break', () => {
+      expect(evalExpr('label $x | break $x', null)).toEqual([])
+      expect(evalExpr('label $x | (1, break $x)', null)).toEqual([1])
+      expect(evalExpr('label $out | label $in | break $in', null)).toEqual([])
+      expect(evalExpr('label $out | label $in | break $out', null)).toEqual([])
+      expect(
+        evalExpr('label $out | range(5) | if . == 3 then break $out else . end', null)
+      ).toEqual([0, 1, 2])
+    })
+  })
 })

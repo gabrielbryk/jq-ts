@@ -13,6 +13,7 @@ import type {
   TryNode,
   ReduceNode,
   ForeachNode,
+  AssignmentNode,
 } from './ast'
 
 /**
@@ -34,17 +35,71 @@ class Parser {
   constructor(private readonly tokens: Token[]) {}
 
   parseFilter(): FilterNode {
-    const expr = this.parseBinding()
+    const expr = this.parseDef()
     this.consume('EOF', 'Expected end of expression')
     return expr
   }
 
-  private parseBinding(): FilterNode {
-    let expr = this.parseComma()
+  private parseDef(allowComma = true): FilterNode {
+    if (this.match('Def')) {
+      const startSpan = this.previous().span
+      const nameToken = this.consume('Identifier', 'Expected function name')
+      const name = String(nameToken.value)
+
+      const args: string[] = []
+      if (this.match('LParen')) {
+        if (!this.check('RParen')) {
+          do {
+            const argToken = this.consume('Identifier', 'Expected argument name')
+            args.push(String(argToken.value))
+          } while (this.match('Semicolon'))
+        }
+        this.consume('RParen', 'Expected ")" after arguments')
+      }
+
+      this.consume('Colon', 'Expected ":" after function signature')
+      // Function body always supports comma
+      const body = this.parseDef(true)
+
+      this.consume('Semicolon', 'Expected ";" after function body')
+      // Next expression inherits restriction?
+      // Def block ends with ; so it is safe. Next expression logic:
+      // def a: 1; b, c
+      // If we are in allowComma=false context (e.g. object), b, c is invalid.
+      // So next expression MUST respect allowComma.
+      const next = this.parseDef(allowComma)
+
+      return {
+        kind: 'Def',
+        name,
+        args,
+        body,
+        next,
+        span: spanBetween(startSpan, next.span),
+      }
+    }
+    return this.parseBinding(allowComma)
+  }
+
+  private parseBinding(allowComma = true): FilterNode {
+    if (this.match('Label')) {
+      const start = this.previous()
+      const varToken = this.consume('Variable', 'Expected variable name after "label"')
+      this.consume('Pipe', 'Expected "|" after label')
+      const body = this.parseBinding(allowComma)
+      return {
+        kind: 'Label',
+        label: String(varToken.value),
+        body,
+        span: spanBetween(start.span, body.span),
+      }
+    }
+
+    let expr = allowComma ? this.parseComma() : this.parseAssignment()
     while (this.match('As')) {
       const varToken = this.consume('Variable', 'Expected variable name after "as"')
       this.consume('Pipe', 'Expected "|" after variable binding')
-      const body = this.parseBinding()
+      const body = this.parseBinding(allowComma)
       expr = {
         kind: 'As',
         bind: expr,
@@ -57,11 +112,65 @@ class Parser {
   }
 
   private parseComma(): FilterNode {
-    let expr = this.parsePipe()
+    let expr = this.parseAssignment()
     while (this.match('Comma')) {
-      const right = this.parsePipe()
+      const right = this.parseAssignment()
       expr = {
         kind: 'Comma',
+        left: expr,
+        right,
+        span: spanBetween(expr.span, right.span),
+      }
+    }
+    return expr
+  }
+
+  private parseAssignment(): FilterNode {
+    const expr = this.parsePipe()
+    if (
+      this.match('Eq') ||
+      this.match('BarEq') ||
+      this.match('PlusEq') ||
+      this.match('MinusEq') ||
+      this.match('StarEq') ||
+      this.match('SlashEq') ||
+      this.match('PercentEq') ||
+      this.match('AltEq')
+    ) {
+      const opToken = this.previous()
+      const right = this.parseAssignment() // Right-associative
+      let op: AssignmentNode['op']
+      switch (opToken.kind) {
+        case 'Eq':
+          op = '='
+          break
+        case 'BarEq':
+          op = '|='
+          break
+        case 'PlusEq':
+          op = '+='
+          break
+        case 'MinusEq':
+          op = '-='
+          break
+        case 'StarEq':
+          op = '*='
+          break
+        case 'SlashEq':
+          op = '/='
+          break
+        case 'PercentEq':
+          op = '%='
+          break
+        case 'AltEq':
+          op = '//='
+          break
+        default:
+          throw new Error(`Unknown assignment op: ${opToken.kind}`)
+      }
+      return {
+        kind: 'Assignment',
+        op,
         left: expr,
         right,
         span: spanBetween(expr.span, right.span),
@@ -227,6 +336,23 @@ class Parser {
         continue
       }
       if (this.match('LBracket')) {
+        // Check for [:end]
+        if (this.match('Colon')) {
+          let end: FilterNode | null = null
+          if (!this.check('RBracket')) {
+            end = this.parsePipe()
+          }
+          const close = this.consume('RBracket', 'Expected "]" after slice')
+          expr = {
+            kind: 'Slice',
+            target: expr,
+            start: null,
+            end,
+            span: spanBetween(expr.span, close.span),
+          }
+          continue
+        }
+
         if (this.match('RBracket')) {
           const close = this.previous()
           expr = {
@@ -236,13 +362,41 @@ class Parser {
           }
           continue
         }
+
         const index = this.parsePipe()
+
+        if (this.match('Colon')) {
+          let end: FilterNode | null = null
+          if (!this.check('RBracket')) {
+            end = this.parsePipe()
+          }
+          const close = this.consume('RBracket', 'Expected "]" after slice')
+          expr = {
+            kind: 'Slice',
+            target: expr,
+            start: index,
+            end,
+            span: spanBetween(expr.span, close.span),
+          }
+          continue
+        }
+
         const closing = this.consume('RBracket', 'Expected "]" after index expression')
         expr = {
           kind: 'IndexAccess',
           target: expr,
           index,
           span: spanBetween(expr.span, closing.span),
+        }
+        continue
+      }
+      if (this.match('Question')) {
+        const op = this.previous()
+        expr = {
+          kind: 'Try',
+          body: expr,
+          handler: { kind: 'Identity', span: op.span } as FilterNode,
+          span: spanBetween(expr.span, op.span),
         }
         continue
       }
@@ -264,6 +418,9 @@ class Parser {
     if (this.match('String')) {
       return this.literalNode(String(this.previous().value), this.previous().span)
     }
+    if (this.match('StringStart')) {
+      return this.parseStringInterpolation(this.previous())
+    }
     if (this.match('Variable')) {
       const token = this.previous()
       return {
@@ -280,7 +437,7 @@ class Parser {
     }
     if (this.match('LParen')) {
       const start = this.previous()
-      const expr = this.parseComma()
+      const expr = this.parseDef()
       const close = this.consume('RParen', 'Expected ")" after expression')
       expr.span = spanBetween(start.span, close.span)
       return expr
@@ -295,7 +452,20 @@ class Parser {
     if (this.match('Foreach')) return this.parseForeach(this.previous())
     if (this.match('Try')) return this.parseTry(this.previous())
     if (this.match('DotDot')) return { kind: 'Recurse', span: this.previous().span }
+    if (this.match('DotDot')) return { kind: 'Recurse', span: this.previous().span }
+    if (this.match('Break')) return this.parseBreak(this.previous())
     throw this.error(this.peek(), 'Unexpected token')
+  }
+
+  // Moved ParseLabel to ParseBinding level
+
+  private parseBreak(start: Token): FilterNode {
+    const varToken = this.consume('Variable', 'Expected variable after "break"')
+    return {
+      kind: 'Break',
+      label: String(varToken.value),
+      span: spanBetween(start.span, varToken.span),
+    }
   }
 
   private parseReduce(start: Token): ReduceNode {
@@ -342,11 +512,11 @@ class Parser {
   }
 
   private parseTry(start: Token): TryNode {
-    const body = this.parseComma()
+    const body = this.parseDef(true)
     let handler: FilterNode | undefined
     let endSpan = body.span
     if (this.match('Catch')) {
-      handler = this.parseComma()
+      handler = this.parseDef(true)
       endSpan = handler.span
     }
     return {
@@ -359,20 +529,20 @@ class Parser {
 
   private parseIf(start: Token): FilterNode {
     const branches: { cond: FilterNode; then: FilterNode }[] = []
-    const firstCond = this.parsePipe()
+    const firstCond = this.parseDef(true)
     this.consume('Then', 'Expected "then" after condition')
-    const firstThen = this.parsePipe()
+    const firstThen = this.parseDef(true)
     branches.push({ cond: firstCond, then: firstThen })
 
     while (this.match('Elif')) {
-      const cond = this.parsePipe()
+      const cond = this.parseDef(true)
       this.consume('Then', 'Expected "then" after elif condition')
-      const thenBranch = this.parsePipe()
+      const thenBranch = this.parseDef(true)
       branches.push({ cond, then: thenBranch })
     }
 
     this.consume('Else', 'Expected "else" in if expression')
-    const elseBranch = this.parsePipe()
+    const elseBranch = this.parseDef(true)
     const endToken = this.consume('End', 'Expected "end" to close if expression')
     return {
       kind: 'If',
@@ -384,38 +554,41 @@ class Parser {
 
   private parseArray(start: Token): ArrayNode {
     const items: FilterNode[] = []
-    if (!this.check('RBracket')) {
+    if (!this.match('RBracket')) {
       do {
-        items.push(this.parsePipe())
+        items.push(this.parseDef(false))
       } while (this.match('Comma'))
+      this.consume('RBracket', 'Expected "]" after array elements')
     }
-    const end = this.consume('RBracket', 'Expected "]" after array literal')
     return {
       kind: 'Array',
       items,
-      span: spanBetween(start.span, end.span),
+      span: spanBetween(start.span, this.previous().span),
     }
   }
 
   private parseObject(start: Token): ObjectNode {
     const entries: ObjectEntry[] = []
-    if (!this.check('RBrace')) {
+    if (!this.match('RBrace')) {
       do {
-        entries.push(this.parseObjectEntry())
+        const key = this.parseObjectKey()
+        this.consume('Colon', 'Expected ":" after object key')
+        const value = this.parseDef(false)
+        entries.push({ key, value })
       } while (this.match('Comma'))
+      this.consume('RBrace', 'Expected "}" after object entries')
     }
-    const end = this.consume('RBrace', 'Expected "}" after object literal')
     return {
       kind: 'Object',
       entries,
-      span: spanBetween(start.span, end.span),
+      span: spanBetween(start.span, this.previous().span),
     }
   }
 
   private parseObjectEntry(): ObjectEntry {
     const key = this.parseObjectKey()
     this.consume('Colon', 'Expected ":" after object key')
-    const value = this.parsePipe()
+    const value = this.parseDef(false)
     return { key, value }
   }
 
@@ -479,6 +652,23 @@ class Parser {
         continue
       }
       if (this.match('LBracket')) {
+        // Check for [:end]
+        if (this.match('Colon')) {
+          let end: FilterNode | null = null
+          if (!this.check('RBracket')) {
+            end = this.parsePipe()
+          }
+          const close = this.consume('RBracket', 'Expected "]" after slice')
+          expr = {
+            kind: 'Slice',
+            target: expr,
+            start: null,
+            end,
+            span: spanBetween(expr.span, close.span),
+          }
+          continue
+        }
+
         if (this.match('RBracket')) {
           const close = this.previous()
           expr = {
@@ -488,13 +678,41 @@ class Parser {
           }
           continue
         }
+
         const index = this.parsePipe()
+
+        if (this.match('Colon')) {
+          let end: FilterNode | null = null
+          if (!this.check('RBracket')) {
+            end = this.parsePipe()
+          }
+          const close = this.consume('RBracket', 'Expected "]" after slice')
+          expr = {
+            kind: 'Slice',
+            target: expr,
+            start: index,
+            end,
+            span: spanBetween(expr.span, close.span),
+          }
+          continue
+        }
+
         const closing = this.consume('RBracket', 'Expected "]" after index expression')
         expr = {
           kind: 'IndexAccess',
           target: expr,
           index,
           span: spanBetween(expr.span, closing.span),
+        }
+        continue
+      }
+      if (this.match('Question')) {
+        const op = this.previous()
+        expr = {
+          kind: 'Try',
+          body: expr,
+          handler: { kind: 'Identity', span: op.span } as FilterNode,
+          span: spanBetween(expr.span, op.span),
         }
         continue
       }
@@ -528,7 +746,7 @@ class Parser {
       return args
     }
     do {
-      args.push(this.parsePipe())
+      args.push(this.parseDef(true))
     } while (this.match('Semicolon'))
     return args
   }
@@ -545,6 +763,46 @@ class Parser {
       right,
       span: spanBetween(left.span, right.span),
     }
+  }
+
+  private parseStringInterpolation(start: Token): FilterNode {
+    const parts: FilterNode[] = [{ kind: 'Literal', value: String(start.value), span: start.span }]
+
+    while (true) {
+      // Parse expression
+      const expr = this.parseDef()
+      parts.push({
+        kind: 'Pipe',
+        left: expr,
+        right: {
+          kind: 'Call',
+          name: 'tostring',
+          args: [],
+          span: expr.span,
+        },
+        span: expr.span,
+      })
+
+      if (this.match('StringMiddle')) {
+        const token = this.previous()
+        parts.push({ kind: 'Literal', value: String(token.value), span: token.span })
+        continue
+      }
+      if (this.match('StringEnd')) {
+        const token = this.previous()
+        parts.push({ kind: 'Literal', value: String(token.value), span: token.span })
+        break
+      }
+      throw this.error(this.peek(), 'Expected closing paren of interpolation or continuation')
+    }
+
+    return parts.reduce((acc, curr) => ({
+      kind: 'Binary',
+      op: '+', // Use + operator which handles concatenation
+      left: acc,
+      right: curr,
+      span: spanBetween(acc.span, curr.span),
+    }))
   }
 
   private match(kind: TokenKind): boolean {
