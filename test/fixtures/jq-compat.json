@@ -222,5 +222,109 @@
     "input": { "a": 1 },
     "expectError": true
   },
-  { "name": "error builtin", "expr": "error(\"fail\")", "input": null, "expectError": true }
+  { "name": "error builtin", "expr": "error(\"fail\")", "input": null, "expectError": true },
+
+  { "name": "add array numbers", "expr": "add", "input": [1, 2, 3] },
+  { "name": "add array strings", "expr": "add", "input": ["a", "b"] },
+  { "name": "add array arrays", "expr": "add", "input": [[1], [2]] },
+  { "name": "add array objects", "expr": "add", "input": [{ "a": 1 }, { "b": 2 }] },
+  { "name": "add empty", "expr": "add", "input": [] },
+  { "name": "add error type", "expr": "add", "input": 1, "expectError": true },
+  { "name": "add error mixed", "expr": "add", "input": [1, "a"], "expectError": true },
+
+  {
+    "name": "group_by simple",
+    "expr": "group_by(.a)",
+    "input": [{ "a": 1 }, { "a": 2 }, { "a": 1 }]
+  },
+  {
+    "name": "group_by missing key",
+    "expr": "group_by(.a)",
+    "input": [{ "b": 1 }],
+    "expectError": false
+  },
+  { "name": "group_by error not array", "expr": "group_by(.a)", "input": {}, "expectError": true },
+
+  { "name": "reverse array", "expr": "reverse", "input": [1, 2, 3] },
+  { "name": "reverse string", "expr": "reverse", "input": "abc", "expectError": true },
+  { "name": "reverse error", "expr": "reverse", "input": 1, "expectError": true },
+
+  { "name": "flatten simple", "expr": "flatten", "input": [[1], [2, [3]]] },
+  { "name": "flatten empty", "expr": "flatten", "input": [] },
+  { "name": "flatten depth", "expr": "flatten(1)", "input": [[1], [2, [3]]] },
+  { "name": "flatten error", "expr": "flatten", "input": 1, "expectError": true },
+
+  {
+    "name": "transpose matrix",
+    "expr": "transpose",
+    "input": [
+      [1, 2],
+      [3, 4]
+    ]
+  },
+  {
+    "name": "transpose jagged",
+    "expr": "transpose",
+    "input": [
+      [1, 2, 3],
+      [4, 5]
+    ]
+  },
+  { "name": "transpose empty outer", "expr": "transpose", "input": [] },
+  { "name": "transpose empty inner", "expr": "transpose", "input": [[], []] },
+  { "name": "transpose error type", "expr": "transpose", "input": [1], "expectError": true },
+
+  { "name": "bsearch found", "expr": "bsearch(2)", "input": [1, 2, 3] },
+  { "name": "bsearch not found", "expr": "bsearch(0)", "input": [1, 2, 3] },
+  { "name": "bsearch error not array", "expr": "bsearch(0)", "input": 1, "expectError": true },
+
+  { "name": "keys_unsorted array", "expr": "keys_unsorted", "input": [10, 20] },
+  { "name": "keys_unsorted object", "expr": "keys_unsorted", "input": { "b": 1, "a": 2 } },
+  { "name": "keys_unsorted error", "expr": "keys_unsorted", "input": 1, "expectError": true },
+
+  { "name": "combinations simple", "expr": "combinations", "input": [[1, 2], [3]] },
+  { "name": "combinations n", "expr": "combinations(2)", "input": [0, 1] },
+  { "name": "combinations empty", "expr": "combinations", "input": [] },
+  { "name": "combinations inner empty", "expr": "combinations", "input": [[], [1]] },
+
+  { "name": "ltrimstr match", "expr": "ltrimstr(\"foo\")", "input": "foobar" },
+  { "name": "ltrimstr no match", "expr": "ltrimstr(\"bar\")", "input": "foobar" },
+  { "name": "rtrimstr match", "expr": "rtrimstr(\"bar\")", "input": "foobar" },
+  { "name": "rtrimstr no match", "expr": "rtrimstr(\"foo\")", "input": "foobar" },
+
+  { "name": "ascii_downcase", "expr": "ascii_downcase", "input": "FooBar" },
+  { "name": "ascii_upcase", "expr": "ascii_upcase", "input": "FooBar" },
+
+  { "name": "inside string", "expr": "inside(\"foobar\")", "input": "bar" },
+  { "name": "inside array", "expr": "inside([1,2,3])", "input": [1, 2] },
+  { "name": "inside object", "expr": "inside({a:1, b:2})", "input": { "a": 1 } },
+  { "name": "inside fail", "expr": "inside([1,2])", "input": [3] },
+
+  { "name": "while loop", "expr": "while(. < 5; . + 1)", "input": 1 },
+  { "name": "until loop", "expr": "until(. >= 5; . + 1)", "input": 1 },
+  { "name": "repeat with limit", "expr": "limit(3; repeat(1))", "input": null },
+
+  {
+    "name": "walk recursive",
+    "expr": "walk(if type==\"number\" then .+1 else . end)",
+    "input": [[1], { "a": 2 }]
+  },
+
+  { "name": "assign simple", "expr": ".a = 1", "input": { "a": 0 } },
+  { "name": "assign nested", "expr": ".a.b = 2", "input": { "a": { "b": 1 } } },
+  { "name": "assign array index", "expr": ".[1] = 3", "input": [1, 2] },
+  { "name": "assign multiple paths", "expr": "(.a, .b) = 1", "input": { "a": 0, "b": 0 } },
+  { "name": "assign update", "expr": ".a |= . + 1", "input": { "a": 1 } },
+  { "name": "assign arithmetic plus", "expr": ".a += 1", "input": { "a": 1 } },
+  { "name": "assign arithmetic minus", "expr": ".a -= 1", "input": { "a": 1 } },
+  { "name": "assign arithmetic mult", "expr": ".a *= 2", "input": { "a": 2 } },
+  { "name": "assign arithmetic div", "expr": ".a /= 2", "input": { "a": 4 } },
+  { "name": "assign arithmetic mod", "expr": ".a %= 2", "input": { "a": 5 } },
+  { "name": "assign alternative", "expr": ".a //= 2", "input": { "a": null } },
+  { "name": "assign delete", "expr": ".a |= empty", "input": { "a": 1, "b": 2 } },
+  { "name": "assign delete array", "expr": ".[1] |= empty", "input": [1, 2, 3] },
+  { "name": "assign scope check", "expr": ".a += .b", "input": { "a": 1, "b": 2 } },
+  { "name": "assign select", "expr": "(.[] | select(. > 1)) = 0", "input": [1, 2, 3] },
+  { "name": "assign deep object creation", "expr": ".a.b.c = 1", "input": null },
+  { "name": "assign array index creation", "expr": ".[2] = 1", "input": [] }
 ]

@@ -92,6 +92,24 @@ describe('eval builtins', () => {
         ],
       ])
     })
+
+    it('group_by', () => {
+      const input = [{ a: 1 }, { a: 2 }, { a: 1 }]
+      // Sorted by key (.a): {a:1}, {a:1}, {a:2}
+      expect(evalExpr('group_by(.a)', input)).toEqual([[[{ a: 1 }, { a: 1 }], [{ a: 2 }]]])
+    })
+
+    it('reverse', () => {
+      expect(evalExpr('reverse', [1, 2, 3])).toEqual([[3, 2, 1]])
+      expect(() => evalExpr('reverse', 'abc')).toThrow()
+      expect(() => evalExpr('reverse', 1)).toThrow()
+    })
+
+    it('flatten', () => {
+      expect(evalExpr('flatten', [[1], [2, [3]]])).toEqual([[1, 2, 3]])
+      expect(evalExpr('flatten', [])).toEqual([[]])
+      expect(evalExpr('flatten(1)', [[1], [2, [3]]])).toEqual([[1, 2, [3]]])
+    })
   })
 
   describe('object/entry builtins', () => {
@@ -162,6 +180,104 @@ describe('eval builtins', () => {
       expect(
         evalExpr('label $out | range(5) | if . == 3 then break $out else . end', null)
       ).toEqual([0, 1, 2])
+    })
+  })
+
+  describe('Additional Builtins', () => {
+    // Collections
+    it('keys_unsorted', () => {
+      expect(evalExpr('{b:1, a:2} | keys_unsorted')).toEqual([expect.arrayContaining(['a', 'b'])])
+      expect(evalExpr('[1,2] | keys_unsorted')).toEqual([[0, 1]])
+    })
+
+    it('transpose', () => {
+      expect(evalExpr('[[1,2],[3,4]] | transpose')).toEqual([
+        [
+          [1, 3],
+          [2, 4],
+        ],
+      ])
+      expect(evalExpr('[[1,2],[3]] | transpose')).toEqual([
+        [
+          [1, 3],
+          [2, null],
+        ],
+      ])
+      expect(evalExpr('[] | transpose')).toEqual([[]])
+      expect(() => evalExpr('[1] | transpose')).toThrow()
+    })
+
+    it('bsearch', () => {
+      expect(evalExpr('[1,3,5] | bsearch(3)')).toEqual([1])
+      expect(evalExpr('[1,3,5] | bsearch(2)')).toEqual([-2])
+      expect(evalExpr('[1,3,5] | bsearch(0)')).toEqual([-1])
+      expect(evalExpr('[1,3,5] | bsearch(6)')).toEqual([-4])
+    })
+
+    it('combinations', () => {
+      expect(evalExpr('[[1,2], [3]] | combinations')).toEqual([
+        [1, 3],
+        [2, 3],
+      ])
+      expect(evalExpr('[] | combinations')).toEqual([[]])
+      expect(evalExpr('[[1], []] | combinations')).toEqual([])
+      expect(evalExpr('[0,1] | combinations(2)')).toEqual([
+        [0, 0],
+        [0, 1],
+        [1, 0],
+        [1, 1],
+      ])
+    })
+
+    it('inside', () => {
+      expect(evalExpr('"bar" | inside("foobar")')).toEqual([true])
+      expect(evalExpr('"baz" | inside("foobar")')).toEqual([false])
+    })
+
+    // Strings
+    it('ltrimstr/rtrimstr', () => {
+      expect(evalExpr('"foobar" | ltrimstr("foo")')).toEqual(['bar'])
+      expect(evalExpr('"foobar" | ltrimstr("baz")')).toEqual(['foobar'])
+      expect(evalExpr('"foobar" | rtrimstr("bar")')).toEqual(['foo'])
+      expect(evalExpr('"foobar" | rtrimstr("baz")')).toEqual(['foobar'])
+    })
+
+    it('ascii_case', () => {
+      expect(evalExpr('"Foo" | ascii_downcase')).toEqual(['foo'])
+      expect(evalExpr('"Foo" | ascii_upcase')).toEqual(['FOO'])
+    })
+
+    // Iterators
+    it('while', () => {
+      expect(evalExpr('1 | while(. < 4; . + 1)')).toEqual([1, 2, 3])
+    })
+
+    it('until', () => {
+      expect(evalExpr('1 | until(. >= 4; . + 1)')).toEqual([4])
+    })
+
+    it('repeat', () => {
+      expect(evalExpr('limit(3; repeat(1))')).toEqual([1, 1, 1])
+    })
+
+    // Std
+    it('toboolean', () => {
+      expect(evalExpr('true | toboolean')).toEqual([true])
+      expect(evalExpr('false | toboolean')).toEqual([false])
+      expect(evalExpr('null | toboolean')).toEqual([false])
+      expect(evalExpr('1 | toboolean')).toEqual([true])
+    })
+
+    it('walk', () => {
+      // Array walk
+      expect(evalExpr('[[1], 2] | walk(if type == "number" then . + 1 else . end)')).toEqual([
+        [[2], 3],
+      ])
+
+      // Object walk
+      expect(
+        evalExpr('{a: {b: 1}, c: 2} | walk(if type == "number" then . * 2 else . end)')
+      ).toEqual([{ a: { b: 2 }, c: 4 }])
     })
   })
 })

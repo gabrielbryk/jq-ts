@@ -59,4 +59,11 @@ describe('math', () => {
       expect(evalExpr('max_by(.a)', data)).toEqual([{ a: 3 }])
     })
   })
+  it('add', () => {
+    expect(evalExpr('[1, 2, 3] | add')).toEqual([6])
+    expect(evalExpr('["a", "b"] | add')).toEqual(['ab'])
+    expect(evalExpr('[[1], [2]] | add')).toEqual([[1, 2]])
+    expect(evalExpr('[] | add')).toEqual([null])
+    expect(() => evalExpr('[1, "a"] | add')).toThrow()
+  })
 })

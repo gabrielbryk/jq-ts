@@ -1,8 +1,8 @@
 import type { FilterNode } from '../ast'
 import { RuntimeError } from '../errors'
 import type { LimitTracker } from '../limits'
-import type { Value } from '../value'
-import { getPath, updatePath } from '../builtins/paths'
+import { type Value, compareValues } from '../value'
+import { getPath, updatePath, deletePaths } from '../builtins/paths'
 import { applyBinaryOp } from './ops'
 import type { Evaluator } from '../builtins/types'
 import { emit } from './common'
@@ -30,6 +30,9 @@ export const evalAssignment = function* (
   evaluate: Evaluator
 ): Generator<Value> {
   const paths = Array.from(evaluatePath(node.left, input, env, tracker, evaluate))
+  // Sort paths descending to handle array deletion correctly (higher indices first)
+  paths.sort((a, b) => compareValues(a, b) * -1)
+
   if (paths.length === 0) {
     yield emit(input, node.span, tracker)
     return
@@ -100,6 +103,7 @@ function* applyUpdates(
           res = applyBinaryOp('%', oldValue, rhs, rhsNode.span)
           break
         case '//=':
+          // false is falsey in jq, so //= should replace if left is false or null.
           res = oldValue !== null && oldValue !== false ? oldValue : rhs
           break
         default:
@@ -109,7 +113,24 @@ function* applyUpdates(
     }
   }
 
-  if (newValues.length === 0) return
+  if (newValues.length === 0) {
+    // If the RHS outputs no values, the path is deleted.
+    // deletePaths expects an array of paths. Here we delete just one path 'path'.
+    const nextObject = deletePaths(current, [path], rhsNode.span)
+    // Recurse for the next path in 'paths'
+    yield* applyUpdates(
+      nextObject,
+      paths,
+      index + 1,
+      op,
+      rhsNode,
+      contextInput,
+      env,
+      tracker,
+      evaluate
+    )
+    return
+  }
 
   for (const val of newValues) {
     const nextObject = updatePath(current, path, () => val, rhsNode.span) ?? current

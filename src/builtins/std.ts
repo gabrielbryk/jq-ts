@@ -1,5 +1,5 @@
 import { RuntimeError } from '../errors'
-import { describeType } from '../value'
+import { describeType, isPlainObject, isTruthy, type Value, type ValueObject } from '../value'
 import type { BuiltinSpec } from './types'
 import { emit, stableStringify } from './utils'
 
@@ -59,6 +59,60 @@ export const stdBuiltins: BuiltinSpec[] = [
     arity: 0,
     apply: function* () {
       // Do nothing, yield nothing
+    },
+  },
+  {
+    name: 'toboolean',
+    arity: 0,
+    apply: function* (input, _args, _env, tracker, _eval, span) {
+      yield emit(isTruthy(input), span, tracker)
+    },
+  },
+  {
+    name: 'walk',
+    arity: 1,
+    apply: function* (input, args, env, tracker, evaluate, span) {
+      const f = args[0]!
+      const walkRec = function* (curr: Value): Generator<Value> {
+        tracker.step(span)
+        let newStruct: Value = curr
+
+        if (Array.isArray(curr)) {
+          const newArr: Value[] = []
+          for (const item of curr) {
+            for (const walkedItem of walkRec(item)) {
+              newArr.push(walkedItem)
+            }
+          }
+          newStruct = newArr
+        } else if (isPlainObject(curr)) {
+          const newObj: ValueObject = {}
+          const keys = Object.keys(curr).sort()
+          let objValid = true
+          for (const key of keys) {
+            // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
+            const val = (curr as ValueObject)[key]!
+            let lastVal: Value | undefined
+            let found = false
+            for (const walkedVal of walkRec(val)) {
+              lastVal = walkedVal
+              found = true
+            }
+            if (found) {
+              newObj[key] = lastVal!
+            } else {
+              // If any value is empty, the reduce (and thus the object) becomes empty
+              objValid = false
+              break
+            }
+          }
+          if (!objValid) return // Yield nothing
+          newStruct = newObj
+        }
+
+        yield* evaluate(f, newStruct, env, tracker)
+      }
+      yield* walkRec(input)
     },
   },
 ]
