@@ -1,5 +1,11 @@
 # jq-ts
 
+## 1.3.0
+
+### Minor Changes
+
+- 9a66b17: feat: Implement assignment operators (=, |=, +=, etc) and extensive builtins (collections, strings, iterators). Added comprehensive compatibility tests.
+
 ## 1.2.0
 
 ### Minor Changes
