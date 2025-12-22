@@ -3,7 +3,7 @@ import { describeType, isPlainObject, valueEquals, type Value } from '../value'
 import type { BuiltinSpec } from './types'
 import { emit } from './utils'
 
-const checkContains = (a: Value, b: Value): boolean => {
+export const checkContains = (a: Value, b: Value): boolean => {
   if (a === b) return true
   if (typeof a !== typeof b) return false
   if (typeof a === 'string' && typeof b === 'string') {
@@ -228,6 +228,56 @@ export const stringBuiltins: BuiltinSpec[] = [
         chars.push(String.fromCodePoint(item))
       }
       yield emit(chars.join(''), span, tracker)
+    },
+  },
+  {
+    name: 'ltrimstr',
+    arity: 1,
+    apply: function* (input, args, env, tracker, evaluate, span) {
+      if (typeof input !== 'string') throw new RuntimeError('ltrimstr expects string', span)
+      const prefixGen = evaluate(args[0]!, input, env, tracker)
+      for (const prefix of prefixGen) {
+        if (typeof prefix !== 'string')
+          throw new RuntimeError('ltrimstr prefix must be a string', span)
+        if (input.startsWith(prefix)) {
+          yield emit(input.slice(prefix.length), span, tracker)
+        } else {
+          yield emit(input, span, tracker)
+        }
+      }
+    },
+  },
+  {
+    name: 'rtrimstr',
+    arity: 1,
+    apply: function* (input, args, env, tracker, evaluate, span) {
+      if (typeof input !== 'string') throw new RuntimeError('rtrimstr expects string', span)
+      const suffixGen = evaluate(args[0]!, input, env, tracker)
+      for (const suffix of suffixGen) {
+        if (typeof suffix !== 'string')
+          throw new RuntimeError('rtrimstr suffix must be a string', span)
+        if (input.endsWith(suffix)) {
+          yield emit(input.slice(0, input.length - suffix.length), span, tracker)
+        } else {
+          yield emit(input, span, tracker)
+        }
+      }
+    },
+  },
+  {
+    name: 'ascii_downcase',
+    arity: 0,
+    apply: function* (input, _args, _env, tracker, _eval, span) {
+      if (typeof input !== 'string') throw new RuntimeError('ascii_downcase expects string', span)
+      yield emit(input.toLowerCase(), span, tracker)
+    },
+  },
+  {
+    name: 'ascii_upcase',
+    arity: 0,
+    apply: function* (input, _args, _env, tracker, _eval, span) {
+      if (typeof input !== 'string') throw new RuntimeError('ascii_upcase expects string', span)
+      yield emit(input.toUpperCase(), span, tracker)
     },
   },
 ]

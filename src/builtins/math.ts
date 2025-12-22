@@ -2,6 +2,7 @@ import { RuntimeError } from '../errors'
 import { compareValues, type Value } from '../value'
 import type { BuiltinSpec } from './types'
 import { emit } from './utils'
+import { add } from '../eval/ops'
 
 export const mathBuiltins: BuiltinSpec[] = [
   // --- Basic Math ---
@@ -213,6 +214,25 @@ export const mathBuiltins: BuiltinSpec[] = [
         }
       }
       yield emit(maxItem, span, tracker)
+    },
+  },
+  {
+    name: 'add',
+    arity: 0,
+    apply: function* (input, _args, _env, tracker, _eval, span) {
+      if (!Array.isArray(input)) {
+        throw new RuntimeError('add expects an array', span)
+      }
+      if (input.length === 0) {
+        yield emit(null, span, tracker)
+        return
+      }
+      let acc: Value = input[0]!
+      for (let i = 1; i < input.length; i++) {
+        tracker.step(span)
+        acc = add(acc, input[i]!, span)
+      }
+      yield emit(acc, span, tracker)
     },
   },
 ]

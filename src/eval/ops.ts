@@ -125,7 +125,7 @@ function compare(a: Value, b: Value): number {
   return 0
 }
 
-function add(left: Value, right: Value, span: Span): Value {
+export function add(left: Value, right: Value, span: Span): Value {
   if (left === null && right === null) return null
   if (left === null && typeof right === 'number') return right
   if (typeof left === 'number' && right === null) return left
