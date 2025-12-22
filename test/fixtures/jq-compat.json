@@ -308,5 +308,23 @@
     "name": "walk recursive",
     "expr": "walk(if type==\"number\" then .+1 else . end)",
     "input": [[1], { "a": 2 }]
-  }
+  },
+
+  { "name": "assign simple", "expr": ".a = 1", "input": { "a": 0 } },
+  { "name": "assign nested", "expr": ".a.b = 2", "input": { "a": { "b": 1 } } },
+  { "name": "assign array index", "expr": ".[1] = 3", "input": [1, 2] },
+  { "name": "assign multiple paths", "expr": "(.a, .b) = 1", "input": { "a": 0, "b": 0 } },
+  { "name": "assign update", "expr": ".a |= . + 1", "input": { "a": 1 } },
+  { "name": "assign arithmetic plus", "expr": ".a += 1", "input": { "a": 1 } },
+  { "name": "assign arithmetic minus", "expr": ".a -= 1", "input": { "a": 1 } },
+  { "name": "assign arithmetic mult", "expr": ".a *= 2", "input": { "a": 2 } },
+  { "name": "assign arithmetic div", "expr": ".a /= 2", "input": { "a": 4 } },
+  { "name": "assign arithmetic mod", "expr": ".a %= 2", "input": { "a": 5 } },
+  { "name": "assign alternative", "expr": ".a //= 2", "input": { "a": null } },
+  { "name": "assign delete", "expr": ".a |= empty", "input": { "a": 1, "b": 2 } },
+  { "name": "assign delete array", "expr": ".[1] |= empty", "input": [1, 2, 3] },
+  { "name": "assign scope check", "expr": ".a += .b", "input": { "a": 1, "b": 2 } },
+  { "name": "assign select", "expr": "(.[] | select(. > 1)) = 0", "input": [1, 2, 3] },
+  { "name": "assign deep object creation", "expr": ".a.b.c = 1", "input": null },
+  { "name": "assign array index creation", "expr": ".[2] = 1", "input": [] }
 ]

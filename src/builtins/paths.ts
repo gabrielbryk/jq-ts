@@ -136,7 +136,7 @@ export const updatePath = (
   throw new RuntimeError(`Path segment must be string or integer`, span)
 }
 
-const deletePaths = (root: Value, paths: (string | number)[][], span: Span): Value => {
+export const deletePaths = (root: Value, paths: (string | number)[][], span: Span): Value => {
   if (paths.some((p) => p.length === 0)) return null
 
   if (isPlainObject(root)) {
