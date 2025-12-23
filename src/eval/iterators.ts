@@ -4,8 +4,7 @@ import type { LimitTracker } from '../limits'
 import { isValueArray, isPlainObject, describeType, type Value } from '../value'
 import type { Evaluator } from '../builtins/types'
 import { emit } from './common'
-import { pushBinding, popBinding } from './env'
-import type { EnvStack } from './types'
+import type { EnvStack, EnvFrame } from './types'
 
 /**
  * Iterates over the values of an array or object (`.[]`).
@@ -70,16 +69,15 @@ export const evalReduce = function* (
 
   for (const item of evaluate(node.source, input, env, tracker)) {
     tracker.step(node.span)
-    pushBinding(env, node.var, item)
-    try {
-      const updates = Array.from(evaluate(node.update, acc, env, tracker))
-      if (updates.length !== 1) {
-        throw new RuntimeError('Reduce update must produce single value', node.update.span)
-      }
-      acc = updates[0]!
-    } finally {
-      popBinding(env, node.var)
+    // Use a new frame for the binding to ensure correct scoping and avoid mutation issues
+    const newFrame: EnvFrame = { vars: new Map([[node.var, item]]), funcs: new Map() }
+    const newEnv = [...env, newFrame]
+
+    const updates = Array.from(evaluate(node.update, acc, newEnv, tracker))
+    if (updates.length !== 1) {
+      throw new RuntimeError('Reduce update must produce single value', node.update.span)
     }
+    acc = updates[0]!
   }
   yield emit(acc, node.span, tracker)
 }
@@ -110,23 +108,22 @@ export const evalForeach = function* (
 
   for (const item of evaluate(node.source, input, env, tracker)) {
     tracker.step(node.span)
-    pushBinding(env, node.var, item)
-    try {
-      const updates = Array.from(evaluate(node.update, acc, env, tracker))
-      if (updates.length !== 1) {
-        throw new RuntimeError('Foreach update must produce single value', node.update.span)
-      }
-      acc = updates[0]!
+    // Use a new frame for the binding to ensure correct scoping and avoid mutation issues
+    const newFrame: EnvFrame = { vars: new Map([[node.var, item]]), funcs: new Map() }
+    const newEnv = [...env, newFrame]
 
-      if (node.extract) {
-        for (const extracted of evaluate(node.extract, acc, env, tracker)) {
-          yield emit(extracted, node.span, tracker)
-        }
-      } else {
-        yield emit(acc, node.span, tracker)
+    const updates = Array.from(evaluate(node.update, acc, newEnv, tracker))
+    if (updates.length !== 1) {
+      throw new RuntimeError('Foreach update must produce single value', node.update.span)
+    }
+    acc = updates[0]!
+
+    if (node.extract) {
+      for (const extracted of evaluate(node.extract, acc, newEnv, tracker)) {
+        yield emit(extracted, node.span, tracker)
       }
-    } finally {
-      popBinding(env, node.var)
+    } else {
+      yield emit(acc, node.span, tracker)
     }
   }
 }

@@ -25,6 +25,11 @@ export interface EvalOptions {
    * Limit configuration to prevent infinite loops or excessive resource usage.
    */
   limits?: LimitsConfig
+  /**
+   * Predefined variables to seed the global environment.
+   * Keys are variable names without the '$' prefix.
+   */
+  vars?: Record<string, Value>
 }
 
 /**
@@ -37,7 +42,8 @@ export interface EvalOptions {
  */
 export const runAst = (ast: FilterNode, input: Value, options: EvalOptions = {}): Value[] => {
   const tracker = new LimitTracker(resolveLimits(options.limits))
-  const env: EnvStack = [{ vars: new Map(), funcs: new Map() }]
+  const globalVars = new Map<string, Value>(Object.entries(options.vars ?? {}))
+  const env: EnvStack = [{ vars: globalVars, funcs: new Map() }]
   return Array.from<Value>(evaluate(ast, input, env, tracker))
 }
 

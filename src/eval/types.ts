@@ -35,4 +35,9 @@ export type EnvStack = EnvFrame[]
  */
 export interface EvalOptions {
   limits?: LimitsConfig
+  /**
+   * Predefined variables to seed the global environment.
+   * Keys are variable names without the '$' prefix.
+   */
+  vars?: Record<string, Value>
 }
