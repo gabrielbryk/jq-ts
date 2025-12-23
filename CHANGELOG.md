@@ -1,5 +1,11 @@
 # jq-ts
 
+## 1.3.4
+
+### Patch Changes
+
+- f641384: Fix string interpolation to not JSON-quote strings that are already strings, matching standard jq behavior.
+
 ## 1.3.3
 
 ### Patch Changes

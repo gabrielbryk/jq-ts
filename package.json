@@ -1,6 +1,6 @@
 {
   "name": "@gabrielbryk/jq-ts",
-  "version": "1.3.3",
+  "version": "1.3.4",
   "description": "Deterministic TypeScript implementation of a jq subset for workflow isolates",
   "main": "dist/index.cjs",
   "module": "dist/index.mjs",
