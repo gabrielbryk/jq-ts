@@ -24,6 +24,7 @@ describe('eval operators', () => {
 
   it('supports arithmetic rules', () => {
     expect(evalExpr('1 + null')).toEqual([1])
+    expect(evalExpr('null + 7.99')).toEqual([7.99])
     expect(evalExpr('null + 1')).toEqual([1])
     expect(evalExpr('null + [1,2]')).toEqual([[1, 2]])
     expect(evalExpr('[1,2] + null')).toEqual([[1, 2]])
