@@ -3,6 +3,11 @@ import { describeType, isPlainObject, isTruthy, type Value, type ValueObject } f
 import type { BuiltinSpec } from './types'
 import { emit, stableStringify } from './utils'
 
+const toJqString = (value: Value): string => {
+  if (typeof value === 'string') return value
+  return stableStringify(value)
+}
+
 export const stdBuiltins: BuiltinSpec[] = [
   {
     name: 'type',
@@ -15,7 +20,7 @@ export const stdBuiltins: BuiltinSpec[] = [
     name: 'tostring',
     arity: 0,
     apply: function* (input, _args, _env, tracker, _eval, span) {
-      yield emit(stableStringify(input), span, tracker)
+      yield emit(toJqString(input), span, tracker)
     },
   },
   {

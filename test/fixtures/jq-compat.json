@@ -346,5 +346,15 @@
   { "name": "string + null identity", "expr": "\"abc\" + null", "input": null },
   { "name": "null + boolean identity", "expr": "null + true", "input": null },
   { "name": "boolean + null identity", "expr": "false + null", "input": null },
-  { "name": "null + null identity", "expr": "null + null", "input": null }
+  { "name": "null + null identity", "expr": "null + null", "input": null },
+  {
+    "name": "string interpolation strings (compat)",
+    "expr": "\"Hello \\(.first) \\(.last)!\"",
+    "input": { "first": "John", "last": "Doe" }
+  },
+  {
+    "name": "string interpolation mixed (compat)",
+    "expr": "\"Value: \\(.val)\"",
+    "input": { "val": { "a": 1 } }
+  }
 ]

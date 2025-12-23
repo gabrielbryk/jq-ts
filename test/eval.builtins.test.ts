@@ -22,6 +22,7 @@ describe('eval builtins', () => {
     })
 
     it('tostring', () => {
+      expect(evalExpr('tostring', 'hello')).toEqual(['hello'])
       expect(evalExpr('tostring', 123)).toEqual(['123'])
       expect(evalExpr('tostring', [1, 2])).toEqual(['[1,2]'])
       expect(evalExpr('tostring', { b: 2, a: 1 })).toEqual(['{"a":1,"b":2}']) // Stable
