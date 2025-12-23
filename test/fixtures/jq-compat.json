@@ -337,5 +337,14 @@
     "name": "object shorthand mixed",
     "expr": "{a, \"b\", c: .c}",
     "input": { "a": 1, "b": 2, "c": 3 }
-  }
+  },
+  { "name": "null + array identity", "expr": "null + [1, 2]", "input": null },
+  { "name": "array + null identity", "expr": "[1, 2] + null", "input": null },
+  { "name": "null + object identity", "expr": "null + {a: 1}", "input": null },
+  { "name": "object + null identity", "expr": "{a: 1} + null", "input": null },
+  { "name": "null + string identity", "expr": "null + \"abc\"", "input": null },
+  { "name": "string + null identity", "expr": "\"abc\" + null", "input": null },
+  { "name": "null + boolean identity", "expr": "null + true", "input": null },
+  { "name": "boolean + null identity", "expr": "false + null", "input": null },
+  { "name": "null + null identity", "expr": "null + null", "input": null }
 ]

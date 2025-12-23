@@ -24,6 +24,16 @@ describe('eval operators', () => {
 
   it('supports arithmetic rules', () => {
     expect(evalExpr('1 + null')).toEqual([1])
+    expect(evalExpr('null + 1')).toEqual([1])
+    expect(evalExpr('null + [1,2]')).toEqual([[1, 2]])
+    expect(evalExpr('[1,2] + null')).toEqual([[1, 2]])
+    expect(evalExpr('null + {a:1}')).toEqual([{ a: 1 }])
+    expect(evalExpr('{a:1} + null')).toEqual([{ a: 1 }])
+    expect(evalExpr('null + "abc"')).toEqual(['abc'])
+    expect(evalExpr('"abc" + null')).toEqual(['abc'])
+    expect(evalExpr('null + true')).toEqual([true])
+    expect(evalExpr('false + null')).toEqual([false])
+    expect(evalExpr('null + null')).toEqual([null])
     expect(evalExpr('"a" * 3')).toEqual(['aaa'])
     expect(evalExpr('[1,2,2,3] - [2]')).toEqual([[1, 3]])
     expect(evalExpr('{a:{x:1}} * {a:{y:2}, b:3}')).toEqual([{ a: { x: 1, y: 2 }, b: 3 }])
