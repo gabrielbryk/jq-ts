@@ -572,8 +572,29 @@ class Parser {
     if (!this.match('RBrace')) {
       do {
         const key = this.parseObjectKey()
-        this.consume('Colon', 'Expected ":" after object key')
-        const value = this.parseDef(false)
+        let value: FilterNode
+        if (this.match('Colon')) {
+          value = this.parseDef(false)
+        } else {
+          // Shorthand syntax: { id } -> { id: .id }
+          if (key.kind === 'KeyIdentifier') {
+            value = {
+              kind: 'FieldAccess',
+              target: { kind: 'Identity', span: key.span },
+              field: key.name,
+              span: key.span,
+            }
+          } else if (key.kind === 'KeyString') {
+            value = {
+              kind: 'FieldAccess',
+              target: { kind: 'Identity', span: key.span },
+              field: key.value,
+              span: key.span,
+            }
+          } else {
+            throw this.error(this.peek(), 'Expected ":" after object key')
+          }
+        }
         entries.push({ key, value })
       } while (this.match('Comma'))
       this.consume('RBrace', 'Expected "}" after object entries')
