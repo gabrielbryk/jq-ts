@@ -1,5 +1,11 @@
 # jq-ts
 
+## 1.3.3
+
+### Patch Changes
+
+- d6545b0: fix: treat null as additive identity for all types
+
 ## 1.3.2
 
 ### Patch Changes
