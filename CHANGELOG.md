@@ -1,5 +1,11 @@
 # jq-ts
 
+## 1.3.1
+
+### Patch Changes
+
+- 77b185a: feat(parser): add support for object shorthand syntax {id, name}
+
 ## 1.3.0
 
 ### Minor Changes
