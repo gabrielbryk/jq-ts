@@ -326,5 +326,16 @@
   { "name": "assign scope check", "expr": ".a += .b", "input": { "a": 1, "b": 2 } },
   { "name": "assign select", "expr": "(.[] | select(. > 1)) = 0", "input": [1, 2, 3] },
   { "name": "assign deep object creation", "expr": ".a.b.c = 1", "input": null },
-  { "name": "assign array index creation", "expr": ".[2] = 1", "input": [] }
+  { "name": "assign array index creation", "expr": ".[2] = 1", "input": [] },
+  { "name": "object shorthand simple", "expr": "{a, b}", "input": { "a": 1, "b": 2, "c": 3 } },
+  {
+    "name": "object shorthand string",
+    "expr": "{\"a\", \"b\"}",
+    "input": { "a": 1, "b": 2, "c": 3 }
+  },
+  {
+    "name": "object shorthand mixed",
+    "expr": "{a, \"b\", c: .c}",
+    "input": { "a": 1, "b": 2, "c": 3 }
+  }
 ]
