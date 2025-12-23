@@ -126,9 +126,8 @@ function compare(a: Value, b: Value): number {
 }
 
 export function add(left: Value, right: Value, span: Span): Value {
-  if (left === null && right === null) return null
-  if (left === null && typeof right === 'number') return right
-  if (typeof left === 'number' && right === null) return left
+  if (left === null) return right
+  if (right === null) return left
   if (typeof left === 'number' && typeof right === 'number') return left + right
   if (typeof left === 'string' && typeof right === 'string') return left + right
   if (Array.isArray(left) && Array.isArray(right)) return [...left, ...right]
