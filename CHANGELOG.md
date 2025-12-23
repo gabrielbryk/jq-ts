@@ -1,5 +1,11 @@
 # jq-ts
 
+## 1.3.2
+
+### Patch Changes
+
+- d703c4a: Implement predefined variables support and fix iterator scoping for correct variable shadowing.
+
 ## 1.3.1
 
 ### Patch Changes
