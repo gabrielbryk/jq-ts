@@ -1,5 +1,11 @@
 # jq-ts
 
+## 1.3.5
+
+### Patch Changes
+
+- 39ee325: Support piped assignments and missing path nodes (Var, Slice, Try) in assignments.
+
 ## 1.3.4
 
 ### Patch Changes
