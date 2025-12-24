@@ -14,6 +14,35 @@ describe('Assignment', () => {
     expect(evalExpr('. = 1', null)).toEqual([1])
   })
 
+  it('nested assignment', () => {
+    expect(evalExpr('.a.b = 1', { a: { b: 0 } })).toEqual([{ a: { b: 1 } }])
+    expect(evalExpr('.settings.theme = "light"', { settings: { theme: 'dark' } })).toEqual([
+      { settings: { theme: 'light' } },
+    ])
+  })
+
+  it('piped assignment', () => {
+    // $user | .settings.theme = "light"
+    // parses as $user | (.settings.theme = "light")
+    // or ($user | .settings.theme) = "light" depending on resolution
+    const data = { settings: { theme: 'dark' } }
+    expect(runAst(parse('. | .settings.theme = "light"'), data)).toEqual([
+      { settings: { theme: 'light' } },
+    ])
+  })
+
+  it('slice assignment', () => {
+    expect(evalExpr('.[0:2] = [4, 5]', [1, 2, 3])).toEqual([[4, 5, 3]])
+    expect(evalExpr('.[0:0] = [0]', [1, 2, 3])).toEqual([[0, 1, 2, 3]])
+    expect(evalExpr('.[1:1] = [0]', [1, 2, 3])).toEqual([[1, 0, 2, 3]])
+    expect(evalExpr('.[3:3] = [4]', [1, 2, 3])).toEqual([[1, 2, 3, 4]])
+  })
+
+  it('optional path assignment', () => {
+    expect(evalExpr('.a? = 1', { a: 0 })).toEqual([{ a: 1 }])
+    expect(evalExpr('.b? = 1', { a: 0 })).toEqual([{ a: 0, b: 1 }])
+  })
+
   it('multiple path assignment', () => {
     // .a and .b to 1
     expect(evalExpr('.a, .b = 1', { a: 0, b: 0 })).toEqual([0, { a: 0, b: 1 }])

@@ -6,6 +6,8 @@ import type { BuiltinSpec } from './types'
 import { evaluatePath } from '../eval/path_eval'
 import { emit } from './utils'
 
+export type PathSegment = string | number | { start: number | null; end: number | null }
+
 // --- Internal Path Logic ---
 
 function* traversePaths(
@@ -39,17 +41,22 @@ function* traversePaths(
   }
 }
 
-const isPath = (val: Value): val is (string | number)[] => {
+const isPath = (val: Value): val is PathSegment[] => {
   if (!Array.isArray(val)) return false
-  return val.every((p) => typeof p === 'string' || (typeof p === 'number' && Number.isInteger(p)))
+  return val.every(
+    (p) =>
+      typeof p === 'string' ||
+      (typeof p === 'number' && Number.isInteger(p)) ||
+      (isPlainObject(p) && ('start' in p || 'end' in p))
+  )
 }
 
-export const ensurePath = (val: Value, span: Span): (string | number)[] => {
+export const ensurePath = (val: Value, span: Span): PathSegment[] => {
   if (isPath(val)) return val
-  throw new RuntimeError('Path must be an array of strings or integers', span)
+  throw new RuntimeError('Path must be an array of strings, integers, or slice objects', span)
 }
 
-export const getPath = (root: Value, path: (string | number)[]): Value | undefined => {
+export const getPath = (root: Value, path: PathSegment[]): Value | undefined => {
   let curr = root
   for (const part of path) {
     if (curr === null) return undefined
@@ -69,7 +76,7 @@ export const getPath = (root: Value, path: (string | number)[]): Value | undefin
 
 export const updatePath = (
   root: Value,
-  path: (string | number)[],
+  path: PathSegment[],
   updateFn: (val: Value | undefined) => Value | undefined,
   span: Span,
   depth = 0
@@ -133,17 +140,35 @@ export const updatePath = (
     return arr
   }
 
-  throw new RuntimeError(`Path segment must be string or integer`, span)
+  if (typeof head === 'object' && head !== null) {
+    // Slice assignment: { start: number | null, end: number | null }
+    if (!Array.isArray(root)) {
+      throw new RuntimeError(`Cannot slice ${describeType(root)}`, span)
+    }
+    const arr = [...root]
+    const start = head.start ?? 0
+    const end = head.end ?? arr.length
+    // In jq, slice assignment replaces the range with the RHS elements
+    const oldSlice = arr.slice(start, end)
+    const newSliceVal = updateFn(oldSlice)
+    if (!Array.isArray(newSliceVal)) {
+      throw new RuntimeError('Assignment to a slice must be an array', span)
+    }
+    arr.splice(start, end - start, ...newSliceVal)
+    return arr
+  }
+
+  throw new RuntimeError(`Path segment must be string, integer, or slice object`, span)
 }
 
-export const deletePaths = (root: Value, paths: (string | number)[][], span: Span): Value => {
+export const deletePaths = (root: Value, paths: PathSegment[][], span: Span): Value => {
   if (paths.some((p) => p.length === 0)) return null
 
   if (isPlainObject(root)) {
     const result: ValueObject = { ...root }
     const relevantPaths = paths.filter((p) => p.length > 0 && typeof p[0] === 'string')
 
-    const byKey: Record<string, (string | number)[][]> = {}
+    const byKey: Record<string, PathSegment[][]> = {}
     for (const p of relevantPaths) {
       const key = p[0] as string
       if (!byKey[key]) byKey[key] = []
@@ -165,7 +190,7 @@ export const deletePaths = (root: Value, paths: (string | number)[][], span: Spa
   if (Array.isArray(root)) {
     const relevantPaths = paths.filter((p) => p.length > 0 && typeof p[0] === 'number')
 
-    const actions: Record<number, (string | number)[][]> = {}
+    const actions: Record<number, PathSegment[][]> = {}
     for (const p of relevantPaths) {
       let idx = p[0] as number
       if (idx < 0) idx = root.length + idx

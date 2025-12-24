@@ -356,5 +356,20 @@
     "name": "string interpolation mixed (compat)",
     "expr": "\"Value: \\(.val)\"",
     "input": { "val": { "a": 1 } }
+  },
+  {
+    "name": "piped assignment (from bug report)",
+    "expr": ". | .user.settings.theme = \"light\"",
+    "input": { "user": { "settings": { "theme": "dark" } } }
+  },
+  {
+    "name": "slice assignment",
+    "expr": ".[0:2] = [4, 5]",
+    "input": [1, 2, 3]
+  },
+  {
+    "name": "optional path assignment",
+    "expr": ".a? = 1",
+    "input": { "b": 2 }
   }
 ]
