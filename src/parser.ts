@@ -95,7 +95,7 @@ class Parser {
       }
     }
 
-    let expr = allowComma ? this.parseComma() : this.parseAssignment()
+    let expr = this.parsePipe(allowComma)
     while (this.match('As')) {
       const varToken = this.consume('Variable', 'Expected variable name after "as"')
       this.consume('Pipe', 'Expected "|" after variable binding')
@@ -111,8 +111,23 @@ class Parser {
     return expr
   }
 
-  private parseComma(): FilterNode {
+  private parsePipe(allowComma = true): FilterNode {
+    let expr = this.parseComma(allowComma)
+    while (this.match('Pipe')) {
+      const right = this.parseComma(allowComma)
+      expr = {
+        kind: 'Pipe',
+        left: expr,
+        right,
+        span: spanBetween(expr.span, right.span),
+      }
+    }
+    return expr
+  }
+
+  private parseComma(allowComma = true): FilterNode {
     let expr = this.parseAssignment()
+    if (!allowComma) return expr
     while (this.match('Comma')) {
       const right = this.parseAssignment()
       expr = {
@@ -126,7 +141,7 @@ class Parser {
   }
 
   private parseAssignment(): FilterNode {
-    const expr = this.parsePipe()
+    const expr = this.parseAlt()
     if (
       this.match('Eq') ||
       this.match('BarEq') ||
@@ -171,20 +186,6 @@ class Parser {
       return {
         kind: 'Assignment',
         op,
-        left: expr,
-        right,
-        span: spanBetween(expr.span, right.span),
-      }
-    }
-    return expr
-  }
-
-  private parsePipe(): FilterNode {
-    let expr = this.parsePipeOperand()
-    while (this.match('Pipe')) {
-      const right = this.parsePipeOperand()
-      expr = {
-        kind: 'Pipe',
         left: expr,
         right,
         span: spanBetween(expr.span, right.span),

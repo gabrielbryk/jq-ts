@@ -18,10 +18,9 @@ describe('parser assignments', () => {
   })
 
   it('handles precedence correctly (lower than pipe)', () => {
-    // .a | .b = 1  -> (.a | .b) = 1
-    const ast = parse('.a | .b = 1') as AssignmentNode
-    expect(ast.kind).toBe('Assignment')
-    expect(ast.left.kind).toBe('Pipe')
+    // .a | .b = 1  -> .a | (.b = 1)
+    const ast = parse('.a | .b = 1')
+    expect(ast.kind).toBe('Pipe')
   })
 
   it('handles precedence correctly (higher than comma)', () => {

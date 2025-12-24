@@ -2,7 +2,7 @@ import type { FilterNode } from '../ast'
 import { RuntimeError } from '../errors'
 import type { LimitTracker } from '../limits'
 import type { Value } from '../value'
-import { getPath } from '../builtins/paths'
+import { getPath, type PathSegment } from '../builtins/paths'
 import type { Evaluator } from '../builtins/types'
 import type { EnvStack } from './types'
 
@@ -22,7 +22,7 @@ export const evaluatePath = function* (
   env: EnvStack,
   tracker: LimitTracker,
   evaluate: Evaluator
-): Generator<(string | number)[]> {
+): Generator<PathSegment[]> {
   switch (node.kind) {
     case 'Identity':
       yield []
@@ -101,6 +101,37 @@ export const evaluatePath = function* (
         return
       }
       throw new RuntimeError(`Function ${node.name} not supported in path expression`, node.span)
+    case 'Slice': {
+      const parentPaths = Array.from(evaluatePath(node.target, input, env, tracker, evaluate))
+      const startRes = node.start ? Array.from(evaluate(node.start, input, env, tracker)) : [null]
+      const endRes = node.end ? Array.from(evaluate(node.end, input, env, tracker)) : [null]
+
+      for (const startVal of startRes) {
+        for (const endVal of endRes) {
+          const sliceSpec: PathSegment = {
+            start: typeof startVal === 'number' ? startVal : null,
+            end: typeof endVal === 'number' ? endVal : null,
+          }
+          for (const p of parentPaths) {
+            yield [...p, sliceSpec]
+          }
+        }
+      }
+      return
+    }
+    case 'Try':
+      try {
+        yield* evaluatePath(node.body, input, env, tracker, evaluate)
+      } catch (e) {
+        if (!(e instanceof RuntimeError)) throw e
+      }
+      return
+    case 'Var':
+      // Rooting a path in a variable is valid if the path is evaluated against the variable's value.
+      // In assignment, ($x | .a) = 1 means update $x at .a.
+      // So yielding [] (identity) for Var is correct when it's the target of a pipe or similar.
+      yield []
+      return
     default:
       throw new RuntimeError('Invalid path expression', node.span)
   }
