@@ -2,7 +2,7 @@ import type { FilterNode } from '../ast'
 import { RuntimeError } from '../errors'
 import type { LimitTracker } from '../limits'
 import { type Value, compareValues } from '../value'
-import { getPath, updatePath, deletePaths } from '../builtins/paths'
+import { getPath, updatePath, deletePaths, type PathSegment } from '../builtins/paths'
 import { applyBinaryOp } from './ops'
 import type { Evaluator } from '../builtins/types'
 import { emit } from './common'
@@ -59,7 +59,7 @@ export const evalAssignment = function* (
 
 function* applyUpdates(
   current: Value,
-  paths: (string | number)[][],
+  paths: PathSegment[][],
   index: number,
   op: string,
   rhsNode: FilterNode,
