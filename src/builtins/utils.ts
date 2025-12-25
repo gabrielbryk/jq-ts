@@ -8,7 +8,10 @@ export const emit = (value: Value, span: Span, tracker: LimitTracker): Value => 
 }
 
 export const ensureIndex = (val: Value): number | undefined => {
-  if (typeof val === 'number' && Number.isInteger(val)) return val
+  if (typeof val === 'number') {
+    if (!Number.isFinite(val)) return undefined
+    return Math.trunc(val)
+  }
   if (typeof val === 'string' && /^-?\d+$/.test(val)) return parseInt(val, 10)
   return undefined
 }

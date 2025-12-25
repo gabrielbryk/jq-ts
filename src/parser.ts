@@ -306,16 +306,6 @@ class Parser {
   }
 
   private parseUnary(): FilterNode {
-    if (this.match('Not')) {
-      const op = this.previous()
-      const expr = this.parseUnary()
-      return {
-        kind: 'Unary',
-        op: 'Not',
-        expr,
-        span: spanBetween(op.span, expr.span),
-      }
-    }
     if (this.match('Minus')) {
       const op = this.previous()
       const expr = this.parseUnary()
@@ -453,8 +443,8 @@ class Parser {
     if (this.match('Foreach')) return this.parseForeach(this.previous())
     if (this.match('Try')) return this.parseTry(this.previous())
     if (this.match('DotDot')) return { kind: 'Recurse', span: this.previous().span }
-    if (this.match('DotDot')) return { kind: 'Recurse', span: this.previous().span }
     if (this.match('Break')) return this.parseBreak(this.previous())
+    if (this.match('Not')) return this.finishIdentifier(this.previous())
     throw this.error(this.peek(), 'Unexpected token')
   }
 

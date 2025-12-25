@@ -269,6 +269,13 @@ describe('eval builtins', () => {
       expect(evalExpr('1 | toboolean')).toEqual([true])
     })
 
+    it('not', () => {
+      expect(evalExpr('true | not')).toEqual([false])
+      expect(evalExpr('false | not')).toEqual([true])
+      expect(evalExpr('null | not')).toEqual([true])
+      expect(evalExpr('1 | not')).toEqual([false])
+    })
+
     it('walk', () => {
       // Array walk
       expect(evalExpr('[[1], 2] | walk(if type == "number" then . + 1 else . end)')).toEqual([
