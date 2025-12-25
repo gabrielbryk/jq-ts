@@ -1,5 +1,13 @@
 # jq-ts
 
+## 1.3.6
+
+### Patch Changes
+
+- 3a34917: fix: address gaps in `not` builtin and robust array indexing.
+  - Implemented `not` as a builtin and updated parser to allow it in filter positions.
+  - Improved array indexing to support float truncation and better parity with standard `jq`.
+
 ## 1.3.5
 
 ### Patch Changes
