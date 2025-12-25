@@ -74,6 +74,13 @@ export const stdBuiltins: BuiltinSpec[] = [
     },
   },
   {
+    name: 'not',
+    arity: 0,
+    apply: function* (input, _args, _env, tracker, _eval, span) {
+      yield emit(!isTruthy(input), span, tracker)
+    },
+  },
+  {
     name: 'walk',
     arity: 1,
     apply: function* (input, args, env, tracker, evaluate, span) {

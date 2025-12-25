@@ -79,4 +79,13 @@ describe('parser', () => {
       else: { kind: 'Literal', value: 4 },
     })
   })
+
+  it('parses not as a call after pipe', () => {
+    const ast = parse('. | not')
+    expect(ast).toMatchObject({
+      kind: 'Pipe',
+      left: { kind: 'Identity' },
+      right: { kind: 'Call', name: 'not', args: [] },
+    })
+  })
 })

@@ -3,7 +3,7 @@ import { RuntimeError } from '../errors'
 import type { LimitTracker } from '../limits'
 import { isValueArray, isPlainObject, describeType, type Value } from '../value'
 import type { Evaluator } from '../builtins/types'
-import { emit, ensureInteger } from './common'
+import { emit, toIndex } from './common'
 import type { EnvStack } from './types'
 
 /**
@@ -64,7 +64,11 @@ export const evalIndex = function* (
     }
     if (isValueArray(container)) {
       for (const idxValue of indexValues) {
-        const index = ensureInteger(idxValue, node.span)
+        const index = toIndex(idxValue, node.span)
+        if (index === null) {
+          yield emit(null, node.span, tracker)
+          continue
+        }
         const resolved = index < 0 ? container.length + index : index
         if (resolved < 0 || resolved >= container.length) {
           yield emit(null, node.span, tracker)

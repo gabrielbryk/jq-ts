@@ -286,7 +286,7 @@ export const lex = (text: string): Token[] => {
       if (keyword === 'Null' || keyword === 'True' || keyword === 'False') {
         pushToken(keyword, start, pos)
       } else if (keyword) {
-        pushToken(keyword, start, pos)
+        pushToken(keyword, start, pos, raw)
       } else {
         pushToken('Identifier', start, pos, raw)
       }

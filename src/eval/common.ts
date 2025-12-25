@@ -17,15 +17,19 @@ export const emit = (value: Value, span: Span, tracker: LimitTracker): Value => 
 }
 
 /**
- * Ensures a value is an integer. Throws a RuntimeError otherwise.
+ * Converts a value to an array index.
+ * Truncates floats to integers. Returns null if input is null.
+ * Throws a RuntimeError for non-numeric types.
  *
- * @param value - The value to check.
+ * @param value - The value to convert.
  * @param span - To report error.
- * @returns The integer value.
+ * @returns The integer index or null.
  */
-export const ensureInteger = (value: Value, span: Span): number => {
-  if (typeof value === 'number' && Number.isInteger(value)) {
-    return value
+export const toIndex = (value: Value, span: Span): number | null => {
+  if (value === null) return null
+  if (typeof value === 'number') {
+    if (!Number.isFinite(value)) return null
+    return Math.trunc(value)
   }
-  throw new RuntimeError('Expected integer', span)
+  throw new RuntimeError('Expected numeric index', span)
 }
