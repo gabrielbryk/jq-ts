@@ -73,7 +73,7 @@
     "prettier": "^3.7.4",
     "rimraf": "^6.1.2",
     "size-limit": "^11.2.0",
-    "tsdown": "^0.17.3",
+    "tsdown": "^0.18.4",
     "typedoc": "^0.28.15",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.49.0",
