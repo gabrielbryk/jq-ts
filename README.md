@@ -31,6 +31,7 @@ const [result] = run('.foo // "fallback"', { foo: null })
 ## Docs
 
 - `planning-docs/requirements.md` — determinism and compatibility constraints
+- `planning-docs/compatibility.md` — jq 1.8 compatibility matrix and helper API notes
 - `planning-docs/workflow-dsl.md` — how jq maps to your Workflow DSL `${...}` expressions
 - `planning-docs/subset.md` — supported syntax/builtins by milestone
 - `planning-docs/design.md` — interpreter/VM design and safety limits

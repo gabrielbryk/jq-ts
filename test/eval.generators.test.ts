@@ -76,13 +76,13 @@ describe('iterators', () => {
 
 describe('aggregators', () => {
   it('all', () => {
-    expect(evalExpr('all((true, true))')).toEqual([true])
-    expect(evalExpr('all((true, false))')).toEqual([false])
-    expect(evalExpr('all(empty)')).toEqual([true])
+    expect(evalExpr('all', [true, true])).toEqual([true])
+    expect(evalExpr('all', [true, false])).toEqual([false])
+    expect(evalExpr('all(. > 0)', [1, 2])).toEqual([true])
   })
   it('any', () => {
-    expect(evalExpr('any((false, false))')).toEqual([false])
-    expect(evalExpr('any((false, true))')).toEqual([true])
-    expect(evalExpr('any(empty)')).toEqual([false])
+    expect(evalExpr('any', [false, false])).toEqual([false])
+    expect(evalExpr('any', [false, true])).toEqual([true])
+    expect(evalExpr('any(. == 1)', [0, 1])).toEqual([true])
   })
 })

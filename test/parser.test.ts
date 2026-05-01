@@ -59,9 +59,35 @@ describe('parser', () => {
     const ast = parse('(1,2) as $x | $x')
     expect(ast).toMatchObject({
       kind: 'As',
-      name: 'x',
+      pattern: { kind: 'VariablePattern', name: 'x' },
       bind: { kind: 'Comma' },
       body: { kind: 'Var', name: 'x' },
+    })
+  })
+
+  it('parses destructuring as bindings', () => {
+    const ast = parse('. as [$a, {b: $b, $c}] | [$a, $b, $c]')
+    expect(ast).toMatchObject({
+      kind: 'As',
+      pattern: {
+        kind: 'ArrayPattern',
+        items: [
+          { kind: 'VariablePattern', name: 'a' },
+          {
+            kind: 'ObjectPattern',
+            entries: [
+              {
+                key: 'b',
+                pattern: { kind: 'VariablePattern', name: 'b' },
+              },
+              {
+                key: 'c',
+                pattern: { kind: 'VariablePattern', name: 'c' },
+              },
+            ],
+          },
+        ],
+      },
     })
   })
 

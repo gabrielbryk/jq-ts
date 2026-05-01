@@ -39,7 +39,7 @@ describe('eval builtins', () => {
       expect(evalExpr('length', 'abc')).toEqual([3])
       expect(evalExpr('length', [1, 2, 3])).toEqual([3])
       expect(evalExpr('length', { a: 1, b: 2 })).toEqual([2])
-      expect(() => evalExpr('length', 123)).toThrow()
+      expect(evalExpr('length', -123)).toEqual([123])
     })
 
     it('keys', () => {
@@ -147,7 +147,7 @@ describe('eval builtins', () => {
 
     it('join', () => {
       expect(evalExpr('join("-")', ['a', 'b'])).toEqual(['a-b'])
-      expect(() => evalExpr('join("-")', [1, 2])).toThrow('join expects strings')
+      expect(evalExpr('join("-")', [1, 2, null, false])).toEqual(['1-2--false'])
     })
 
     it('startswith/endswith', () => {

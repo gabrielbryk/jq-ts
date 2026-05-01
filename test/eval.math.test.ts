@@ -37,7 +37,8 @@ describe('math', () => {
   it('isnan/infinite', () => {
     expect(evalExpr('isnan', NaN)).toEqual([true])
     expect(evalExpr('isnan', 1)).toEqual([false])
-    expect(evalExpr('infinite', Infinity)).toEqual([true])
+    expect(evalExpr('isinfinite', Infinity)).toEqual([true])
+    expect(evalExpr('infinite', null)).toEqual([Infinity])
     expect(evalExpr('isfinite', 1)).toEqual([true])
     expect(evalExpr('isfinite', Infinity)).toEqual([false])
   })

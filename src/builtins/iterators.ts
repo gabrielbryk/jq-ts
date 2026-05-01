@@ -94,6 +94,27 @@ export const iteratorBuiltins: BuiltinSpec[] = [
     },
   },
   {
+    name: 'skip',
+    arity: 2,
+    apply: function* (input, args, env, tracker, evaluate, span) {
+      for (const n of evaluate(args[0]!, input, env, tracker)) {
+        if (typeof n !== 'number') throw new RuntimeError('skip expects number', span)
+        let count = 0
+        for (const val of evaluate(args[1]!, input, env, tracker)) {
+          if (count >= n) yield val
+          count++
+        }
+      }
+    },
+  },
+  {
+    name: 'first',
+    arity: 0,
+    apply: function* (input) {
+      if (Array.isArray(input) && input.length > 0) yield input[0]!
+    },
+  },
+  {
     name: 'first',
     arity: 1,
     apply: function* (input, args, env, tracker, evaluate) {
@@ -102,6 +123,13 @@ export const iteratorBuiltins: BuiltinSpec[] = [
         yield val
         break
       }
+    },
+  },
+  {
+    name: 'last',
+    arity: 0,
+    apply: function* (input) {
+      if (Array.isArray(input) && input.length > 0) yield input[input.length - 1]!
     },
   },
   {
@@ -116,6 +144,18 @@ export const iteratorBuiltins: BuiltinSpec[] = [
         found = true
       }
       if (found) yield lastVal as Value
+    },
+  },
+  {
+    name: 'nth',
+    arity: 1,
+    apply: function* (input, args, env, tracker, evaluate, span) {
+      if (!Array.isArray(input)) throw new RuntimeError('nth expects array input', span)
+      for (const n of evaluate(args[0]!, input, env, tracker)) {
+        if (typeof n !== 'number') throw new RuntimeError('nth expects number', span)
+        const idx = Math.trunc(n)
+        if (idx >= 0 && idx < input.length) yield input[idx]!
+      }
     },
   },
   {
@@ -155,14 +195,50 @@ export const iteratorBuiltins: BuiltinSpec[] = [
   // --- Aggregators ---
   {
     name: 'all',
+    arity: 0,
+    apply: function* (input, _args, _env, tracker, _evaluate, span) {
+      if (!Array.isArray(input)) throw new RuntimeError('all expects an array', span)
+      yield emit(input.every(isTruthy), span, tracker)
+    },
+  },
+  {
+    name: 'all',
     arity: 1,
     apply: function* (input, args, env, tracker, evaluate, span) {
-      // all(expr): checks if all outputs of expr are truthy
+      if (!Array.isArray(input)) throw new RuntimeError('all expects an array', span)
       let result = true
-      for (const val of evaluate(args[0]!, input, env, tracker)) {
-        if (!isTruthy(val)) {
+      for (const item of input) {
+        let itemResult = false
+        for (const val of evaluate(args[0]!, item, env, tracker)) {
+          if (isTruthy(val)) {
+            itemResult = true
+            break
+          }
+        }
+        if (!itemResult) {
           result = false
-          break // short-circuit
+          break
+        }
+      }
+      yield emit(result, span, tracker)
+    },
+  },
+  {
+    name: 'all',
+    arity: 2,
+    apply: function* (input, args, env, tracker, evaluate, span) {
+      let result = true
+      for (const item of evaluate(args[0]!, input, env, tracker)) {
+        let itemResult = false
+        for (const condition of evaluate(args[1]!, item, env, tracker)) {
+          if (isTruthy(condition)) {
+            itemResult = true
+            break
+          }
+        }
+        if (!itemResult) {
+          result = false
+          break
         }
       }
       yield emit(result, span, tracker)
@@ -170,17 +246,61 @@ export const iteratorBuiltins: BuiltinSpec[] = [
   },
   {
     name: 'any',
+    arity: 0,
+    apply: function* (input, _args, _env, tracker, _evaluate, span) {
+      if (!Array.isArray(input)) throw new RuntimeError('any expects an array', span)
+      yield emit(input.some(isTruthy), span, tracker)
+    },
+  },
+  {
+    name: 'any',
     arity: 1,
     apply: function* (input, args, env, tracker, evaluate, span) {
-      // any(expr): checks if any output of expr is truthy
+      if (!Array.isArray(input)) throw new RuntimeError('any expects an array', span)
       let result = false
-      for (const val of evaluate(args[0]!, input, env, tracker)) {
-        if (isTruthy(val)) {
-          result = true
-          break // short-circuit
+      for (const item of input) {
+        for (const val of evaluate(args[0]!, item, env, tracker)) {
+          if (isTruthy(val)) {
+            result = true
+            break
+          }
         }
+        if (result) break
       }
       yield emit(result, span, tracker)
+    },
+  },
+  {
+    name: 'any',
+    arity: 2,
+    apply: function* (input, args, env, tracker, evaluate, span) {
+      let result = false
+      for (const item of evaluate(args[0]!, input, env, tracker)) {
+        for (const condition of evaluate(args[1]!, item, env, tracker)) {
+          if (isTruthy(condition)) {
+            result = true
+            break
+          }
+        }
+        if (result) break
+      }
+      yield emit(result, span, tracker)
+    },
+  },
+  {
+    name: 'recurse',
+    arity: 0,
+    apply: function* (input, _args, _env, tracker, _evaluate, span) {
+      const rec = function* (curr: Value): Generator<Value> {
+        yield emit(curr, span, tracker)
+        if (Array.isArray(curr)) {
+          for (const item of curr) yield* rec(item)
+        } else if (curr !== null && typeof curr === 'object') {
+          const keys = Object.keys(curr).sort()
+          for (const key of keys) yield* rec(curr[key]!)
+        }
+      }
+      yield* rec(input)
     },
   },
   {
@@ -192,6 +312,25 @@ export const iteratorBuiltins: BuiltinSpec[] = [
         yield emit(curr, span, tracker)
         const nexts = evaluate(args[0]!, curr, env, tracker)
         for (const next of nexts) {
+          yield* rec(next)
+        }
+      }
+      yield* rec(input)
+    },
+  },
+  {
+    name: 'recurse',
+    arity: 2,
+    apply: function* (input, args, env, tracker, evaluate, span) {
+      const stepExpr = args[0]!
+      const conditionExpr = args[1]!
+      const rec = function* (curr: Value): Generator<Value> {
+        yield emit(curr, span, tracker)
+        for (const condition of evaluate(conditionExpr, curr, env, tracker)) {
+          if (!isTruthy(condition)) return
+          break
+        }
+        for (const next of evaluate(stepExpr, curr, env, tracker)) {
           yield* rec(next)
         }
       }

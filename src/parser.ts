@@ -14,6 +14,8 @@ import type {
   ReduceNode,
   ForeachNode,
   AssignmentNode,
+  BindingPattern,
+  ObjectPatternEntry,
 } from './ast'
 
 /**
@@ -97,18 +99,104 @@ class Parser {
 
     let expr = this.parsePipe(allowComma)
     while (this.match('As')) {
-      const varToken = this.consume('Variable', 'Expected variable name after "as"')
-      this.consume('Pipe', 'Expected "|" after variable binding')
+      const pattern = this.parseBindingPattern()
+      this.consume('Pipe', 'Expected "|" after binding pattern')
       const body = this.parseBinding(allowComma)
       expr = {
         kind: 'As',
         bind: expr,
-        name: String(varToken.value),
+        pattern,
         body,
         span: spanBetween(expr.span, body.span),
       }
     }
     return expr
+  }
+
+  private parseBindingPattern(): BindingPattern {
+    if (this.match('Variable')) {
+      const token = this.previous()
+      return {
+        kind: 'VariablePattern',
+        name: String(token.value),
+        span: token.span,
+      }
+    }
+
+    if (this.match('LBracket')) {
+      const start = this.previous()
+      const items: BindingPattern[] = []
+      if (!this.match('RBracket')) {
+        do {
+          items.push(this.parseBindingPattern())
+        } while (this.match('Comma'))
+        this.consume('RBracket', 'Expected "]" after array binding pattern')
+      }
+      return {
+        kind: 'ArrayPattern',
+        items,
+        span: spanBetween(start.span, this.previous().span),
+      }
+    }
+
+    if (this.match('LBrace')) {
+      const start = this.previous()
+      const entries: ObjectPatternEntry[] = []
+      if (!this.match('RBrace')) {
+        do {
+          entries.push(this.parseObjectBindingPatternEntry())
+        } while (this.match('Comma'))
+        this.consume('RBrace', 'Expected "}" after object binding pattern')
+      }
+      return {
+        kind: 'ObjectPattern',
+        entries,
+        span: spanBetween(start.span, this.previous().span),
+      }
+    }
+
+    throw this.error(this.peek(), 'Expected variable or destructuring pattern after "as"')
+  }
+
+  private parseObjectBindingPatternEntry(): ObjectPatternEntry {
+    if (this.match('Variable')) {
+      const token = this.previous()
+      const name = String(token.value)
+      return {
+        key: name,
+        pattern: {
+          kind: 'VariablePattern',
+          name,
+          span: token.span,
+        },
+        span: token.span,
+      }
+    }
+
+    let key: string
+    let keySpan: Span
+    if (this.match('Identifier')) {
+      const token = this.previous()
+      key = String(token.value)
+      keySpan = token.span
+    } else if (this.match('String')) {
+      const token = this.previous()
+      key = String(token.value)
+      keySpan = token.span
+    } else {
+      throw this.error(
+        this.peek(),
+        'Expected identifier, string, or variable shorthand in object binding pattern'
+      )
+    }
+
+    this.consume('Colon', 'Expected ":" after object binding pattern key')
+    const pattern = this.parseBindingPattern()
+    return {
+      key,
+      pattern,
+      span: spanBetween(keySpan, pattern.span),
+    }
   }
 
   private parsePipe(allowComma = true): FilterNode {
@@ -386,7 +474,7 @@ class Parser {
         expr = {
           kind: 'Try',
           body: expr,
-          handler: { kind: 'Identity', span: op.span } as FilterNode,
+          handler: undefined,
           span: spanBetween(expr.span, op.span),
         }
         continue
@@ -462,8 +550,8 @@ class Parser {
   private parseReduce(start: Token): ReduceNode {
     const source = this.parsePipe()
     this.consume('As', 'Expected "as" after reduce source')
-    const varToken = this.consume('Variable', 'Expected variable after "as"')
-    this.consume('LParen', 'Expected "(" after variable')
+    const pattern = this.parseBindingPattern()
+    this.consume('LParen', 'Expected "(" after binding pattern')
     const init = this.parseComma()
     this.consume('Semicolon', 'Expected ";" after init')
     const update = this.parseComma()
@@ -471,7 +559,7 @@ class Parser {
     return {
       kind: 'Reduce',
       source,
-      var: String(varToken.value),
+      pattern,
       init,
       update,
       span: spanBetween(start.span, end.span),
@@ -481,8 +569,8 @@ class Parser {
   private parseForeach(start: Token): ForeachNode {
     const source = this.parsePipe()
     this.consume('As', 'Expected "as" after foreach source')
-    const varToken = this.consume('Variable', 'Expected variable after "as"')
-    this.consume('LParen', 'Expected "(" after variable')
+    const pattern = this.parseBindingPattern()
+    this.consume('LParen', 'Expected "(" after binding pattern')
     const init = this.parseComma()
     this.consume('Semicolon', 'Expected ";" after init')
     const update = this.parseComma()
@@ -494,7 +582,7 @@ class Parser {
     return {
       kind: 'Foreach',
       source,
-      var: String(varToken.value),
+      pattern,
       init,
       update,
       extract,
@@ -723,7 +811,7 @@ class Parser {
         expr = {
           kind: 'Try',
           body: expr,
-          handler: { kind: 'Identity', span: op.span } as FilterNode,
+          handler: undefined,
           span: spanBetween(expr.span, op.span),
         }
         continue

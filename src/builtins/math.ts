@@ -60,12 +60,26 @@ export const mathBuiltins: BuiltinSpec[] = [
   {
     name: 'infinite',
     arity: 0,
+    apply: function* (_input, _args, _env, tracker, _eval, span) {
+      yield emit(Infinity, span, tracker)
+    },
+  },
+  {
+    name: 'nan',
+    arity: 0,
+    apply: function* (_input, _args, _env, tracker, _eval, span) {
+      yield emit(NaN, span, tracker)
+    },
+  },
+  {
+    name: 'isinfinite',
+    arity: 0,
     apply: function* (input, _args, _env, tracker, _eval, span) {
-      if (typeof input !== 'number') {
-        yield emit(false, span, tracker)
-        return
-      }
-      yield emit(!Number.isFinite(input) && !Number.isNaN(input), span, tracker)
+      yield emit(
+        typeof input === 'number' && !Number.isFinite(input) && !Number.isNaN(input),
+        span,
+        tracker
+      )
     },
   },
   {
@@ -98,6 +112,13 @@ export const mathBuiltins: BuiltinSpec[] = [
       // Assuming simplistic "not zero, not infinite, not nan" for now as "normal" in JS context roughly covers it.
       // Strict IEEE subnormal check is harder.
       yield emit(true, span, tracker)
+    },
+  },
+  {
+    name: 'isnormal',
+    arity: 0,
+    apply: function* (input, _args, _env, tracker, _eval, span) {
+      yield emit(typeof input === 'number' && Number.isFinite(input) && input !== 0, span, tracker)
     },
   },
   {
@@ -231,6 +252,23 @@ export const mathBuiltins: BuiltinSpec[] = [
       for (let i = 1; i < input.length; i++) {
         tracker.step(span)
         acc = add(acc, input[i]!, span)
+      }
+      yield emit(acc, span, tracker)
+    },
+  },
+  {
+    name: 'add',
+    arity: 1,
+    apply: function* (input, args, env, tracker, evaluate, span) {
+      const values = Array.from(evaluate(args[0]!, input, env, tracker))
+      if (values.length === 0) {
+        yield emit(null, span, tracker)
+        return
+      }
+      let acc: Value = values[0]!
+      for (let i = 1; i < values.length; i++) {
+        tracker.step(span)
+        acc = add(acc, values[i]!, span)
       }
       yield emit(acc, span, tracker)
     },

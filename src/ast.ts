@@ -182,13 +182,28 @@ export interface IfNode {
 }
 
 /**
+ * Represents a variable binding pattern used by `as`.
+ * Supports jq-style scalar, array, object, and `{$name}` shorthand patterns.
+ */
+export type BindingPattern =
+  | { kind: 'VariablePattern'; name: string; span: Span }
+  | { kind: 'ArrayPattern'; items: BindingPattern[]; span: Span }
+  | { kind: 'ObjectPattern'; entries: ObjectPatternEntry[]; span: Span }
+
+export interface ObjectPatternEntry {
+  key: string
+  pattern: BindingPattern
+  span: Span
+}
+
+/**
  * Represents a variable binding expression.
- * `expression as $var | body`
+ * `expression as $var | body` or `expression as [$a, {b: $b}] | body`
  */
 export interface AsNode {
   kind: 'As'
   bind: FilterNode
-  name: string
+  pattern: BindingPattern
   body: FilterNode
   span: Span
 }
@@ -211,7 +226,7 @@ export interface CallNode {
 export interface ReduceNode {
   kind: 'Reduce'
   source: FilterNode
-  var: string
+  pattern: BindingPattern
   init: FilterNode
   update: FilterNode
   span: Span
@@ -224,7 +239,7 @@ export interface ReduceNode {
 export interface ForeachNode {
   kind: 'Foreach'
   source: FilterNode
-  var: string
+  pattern: BindingPattern
   init: FilterNode
   update: FilterNode
   extract?: FilterNode

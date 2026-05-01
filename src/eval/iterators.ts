@@ -5,6 +5,7 @@ import { isValueArray, isPlainObject, describeType, type Value } from '../value'
 import type { Evaluator } from '../builtins/types'
 import { emit } from './common'
 import type { EnvStack, EnvFrame } from './types'
+import { bindPattern } from './env'
 
 /**
  * Iterates over the values of an array or object (`.[]`).
@@ -70,7 +71,9 @@ export const evalReduce = function* (
   for (const item of evaluate(node.source, input, env, tracker)) {
     tracker.step(node.span)
     // Use a new frame for the binding to ensure correct scoping and avoid mutation issues
-    const newFrame: EnvFrame = { vars: new Map([[node.var, item]]), funcs: new Map() }
+    const vars = new Map<string, Value>()
+    bindPattern(node.pattern, item, vars)
+    const newFrame: EnvFrame = { vars, funcs: new Map() }
     const newEnv = [...env, newFrame]
 
     const updates = Array.from(evaluate(node.update, acc, newEnv, tracker))
@@ -109,7 +112,9 @@ export const evalForeach = function* (
   for (const item of evaluate(node.source, input, env, tracker)) {
     tracker.step(node.span)
     // Use a new frame for the binding to ensure correct scoping and avoid mutation issues
-    const newFrame: EnvFrame = { vars: new Map([[node.var, item]]), funcs: new Map() }
+    const vars = new Map<string, Value>()
+    bindPattern(node.pattern, item, vars)
+    const newFrame: EnvFrame = { vars, funcs: new Map() }
     const newEnv = [...env, newFrame]
 
     const updates = Array.from(evaluate(node.update, acc, newEnv, tracker))

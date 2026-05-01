@@ -54,8 +54,89 @@ export const stdBuiltins: BuiltinSpec[] = [
       } else if (input !== null && typeof input === 'object') {
         // Safe because isPlainObject check implies it's not null/array, but here we can just use Object.keys
         yield emit(Object.keys(input).length, span, tracker)
+      } else if (typeof input === 'number') {
+        yield emit(Math.abs(input), span, tracker)
       } else {
         throw new RuntimeError(`Cannot take length of ${describeType(input)}`, span)
+      }
+    },
+  },
+  {
+    name: 'arrays',
+    arity: 0,
+    apply: function* (input, _args, _env, tracker, _eval, span) {
+      if (Array.isArray(input)) yield emit(input, span, tracker)
+    },
+  },
+  {
+    name: 'objects',
+    arity: 0,
+    apply: function* (input, _args, _env, tracker, _eval, span) {
+      if (isPlainObject(input)) yield emit(input, span, tracker)
+    },
+  },
+  {
+    name: 'iterables',
+    arity: 0,
+    apply: function* (input, _args, _env, tracker, _eval, span) {
+      if (Array.isArray(input) || isPlainObject(input)) yield emit(input, span, tracker)
+    },
+  },
+  {
+    name: 'booleans',
+    arity: 0,
+    apply: function* (input, _args, _env, tracker, _eval, span) {
+      if (typeof input === 'boolean') yield emit(input, span, tracker)
+    },
+  },
+  {
+    name: 'numbers',
+    arity: 0,
+    apply: function* (input, _args, _env, tracker, _eval, span) {
+      if (typeof input === 'number') yield emit(input, span, tracker)
+    },
+  },
+  {
+    name: 'strings',
+    arity: 0,
+    apply: function* (input, _args, _env, tracker, _eval, span) {
+      if (typeof input === 'string') yield emit(input, span, tracker)
+    },
+  },
+  {
+    name: 'nulls',
+    arity: 0,
+    apply: function* (input, _args, _env, tracker, _eval, span) {
+      if (input === null) yield emit(input, span, tracker)
+    },
+  },
+  {
+    name: 'values',
+    arity: 0,
+    apply: function* (input, _args, _env, tracker, _eval, span) {
+      if (input !== null) yield emit(input, span, tracker)
+    },
+  },
+  {
+    name: 'scalars',
+    arity: 0,
+    apply: function* (input, _args, _env, tracker, _eval, span) {
+      if (input === null || typeof input !== 'object') yield emit(input, span, tracker)
+    },
+  },
+  {
+    name: 'finites',
+    arity: 0,
+    apply: function* (input, _args, _env, tracker, _eval, span) {
+      if (typeof input === 'number' && Number.isFinite(input)) yield emit(input, span, tracker)
+    },
+  },
+  {
+    name: 'normals',
+    arity: 0,
+    apply: function* (input, _args, _env, tracker, _eval, span) {
+      if (typeof input === 'number' && Number.isFinite(input) && input !== 0) {
+        yield emit(input, span, tracker)
       }
     },
   },
