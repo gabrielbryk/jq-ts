@@ -6,7 +6,9 @@ import { run, type Value } from '../src'
 
 const jqBin = process.env.JQ_BIN ?? 'jq'
 
-const jqAvailable = spawnSync(jqBin, ['--version'], { encoding: 'utf8' }).status === 0
+const jqVersionResult = spawnSync(jqBin, ['--version'], { encoding: 'utf8' })
+const jqAvailable = jqVersionResult.status === 0
+const jqVersion = jqAvailable ? parseJqVersion(jqVersionResult.stdout.trim()) : null
 const describeIfJq = jqAvailable ? describe : describe.skip
 
 const runJq = (expr: string, input: Value): Value[] => {
@@ -25,15 +27,24 @@ const runJq = (expr: string, input: Value): Value[] => {
   return output.split('\n').map((line) => JSON.parse(line))
 }
 
-type Fixture = { name: string; expr: string; input: Value; expectError?: boolean }
+type Fixture = {
+  name: string
+  expr: string
+  input: Value
+  expectError?: boolean
+  minJqVersion?: string
+}
 const fixturePath = resolve(__dirname, './fixtures/jq-compat.json')
 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 const fixtures: Fixture[] = JSON.parse(readFileSync(fixturePath, 'utf8'))
 
 describeIfJq('jq compatibility (integration)', () => {
-  test.each(fixtures.map((f) => [f.name, f.expr, f.input, f.expectError === true]))(
+  test.each(fixtures.map((f) => [f.name, f.expr, f.input, f.expectError === true, f.minJqVersion]))(
     '%s',
-    (_name, expr, input, shouldError) => {
+    (_name, expr, input, shouldError, minJqVersion) => {
+      if (minJqVersion && jqVersion && compareVersions(jqVersion, parseVersion(minJqVersion)) < 0) {
+        return
+      }
       const jqResult = (() => {
         try {
           return { ok: true as const, value: runJq(expr, input) }
@@ -65,3 +76,22 @@ describeIfJq('jq compatibility (integration)', () => {
     }
   )
 })
+
+function parseJqVersion(output: string): number[] {
+  return parseVersion(output.replace(/^jq-/, ''))
+}
+
+function parseVersion(version: string): number[] {
+  return version.split('.').map((part) => Number.parseInt(part, 10) || 0)
+}
+
+function compareVersions(left: number[], right: number[]): -1 | 0 | 1 {
+  const length = Math.max(left.length, right.length)
+  for (let index = 0; index < length; index += 1) {
+    const leftPart = left[index] ?? 0
+    const rightPart = right[index] ?? 0
+    if (leftPart < rightPart) return -1
+    if (leftPart > rightPart) return 1
+  }
+  return 0
+}

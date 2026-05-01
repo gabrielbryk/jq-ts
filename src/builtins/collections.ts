@@ -3,6 +3,8 @@ import { compareValues, isTruthy, valueEquals, type Value, type ValueObject } fr
 import { checkContains } from './strings'
 import type { BuiltinSpec } from './types'
 import { emit, ensureIndex } from './utils'
+import { deletePaths, getPath, updatePath } from './paths'
+import { evaluatePath } from '../eval/path_eval'
 
 // Helper for stable sort
 function sortStable<T>(arr: T[], compare: (a: T, b: T) => number): T[] {
@@ -68,6 +70,40 @@ export const collectionBuiltins: BuiltinSpec[] = [
         }
       }
       yield emit(result, span, tracker)
+    },
+  },
+  {
+    name: 'map_values',
+    arity: 1,
+    apply: function* (input, args, env, tracker, evaluate, span) {
+      const filter = args[0]!
+      if (Array.isArray(input)) {
+        const result: Value[] = []
+        for (const item of input) {
+          tracker.step(span)
+          for (const output of evaluate(filter, item, env, tracker)) {
+            result.push(output)
+          }
+        }
+        yield emit(result, span, tracker)
+        return
+      }
+      if (input !== null && typeof input === 'object') {
+        const result: ValueObject = {}
+        for (const key of Object.keys(input)) {
+          tracker.step(span)
+          let last: Value | undefined
+          let found = false
+          for (const output of evaluate(filter, input[key]!, env, tracker)) {
+            last = output
+            found = true
+          }
+          if (found) result[key] = last!
+        }
+        yield emit(result, span, tracker)
+        return
+      }
+      throw new RuntimeError('map_values expects an array or object', span)
     },
   },
   {
@@ -184,14 +220,15 @@ export const collectionBuiltins: BuiltinSpec[] = [
           throw new RuntimeError('from_entries expects array of objects', span)
         }
         const obj = item
-        if (!('key' in obj) || !('value' in obj)) {
-          throw new RuntimeError('from_entries items must have "key" and "value"', span)
+        const key = getEntryField(obj, ['key', 'Key', 'name', 'Name'])
+        const value = getEntryField(obj, ['value', 'Value'])
+        if (key === undefined || value === undefined) {
+          throw new RuntimeError('from_entries items must have key/name and value fields', span)
         }
-        const key = obj['key']
         if (typeof key !== 'string') {
           throw new RuntimeError('from_entries object keys must be strings', span)
         }
-        result[key] = obj['value']!
+        result[key] = value
       }
       yield emit(result, span, tracker)
     },
@@ -285,6 +322,51 @@ export const collectionBuiltins: BuiltinSpec[] = [
     apply: function* (input, _args, _env, tracker, _eval, span) {
       if (!Array.isArray(input)) throw new RuntimeError('reverse expects an array', span)
       yield emit([...input].reverse(), span, tracker)
+    },
+  },
+  {
+    name: 'in',
+    arity: 1,
+    apply: function* (input, args, env, tracker, evaluate, span) {
+      for (const container of evaluate(args[0]!, input, env, tracker)) {
+        if (Array.isArray(container)) {
+          if (typeof input !== 'number') {
+            throw new RuntimeError(`Cannot check whether array has a ${typeof input} key`, span)
+          }
+          const idx = ensureIndex(input)
+          yield emit(idx !== undefined && idx >= 0 && idx < container.length, span, tracker)
+          continue
+        }
+        if (container !== null && typeof container === 'object') {
+          if (typeof input !== 'string') {
+            throw new RuntimeError(`Cannot check whether object has a ${typeof input} key`, span)
+          }
+          yield emit(Object.prototype.hasOwnProperty.call(container, input), span, tracker)
+          continue
+        }
+        throw new RuntimeError('in expects an array or object argument', span)
+      }
+    },
+  },
+  {
+    name: 'del',
+    arity: 1,
+    apply: function* (input, args, env, tracker, evaluate, span) {
+      const paths = Array.from(evaluatePath(args[0]!, input, env, tracker, evaluate))
+      yield emit(deletePaths(input, paths, span), span, tracker)
+    },
+  },
+  {
+    name: 'pick',
+    arity: 1,
+    apply: function* (input, args, env, tracker, evaluate, span) {
+      const paths = Array.from(evaluatePath(args[0]!, input, env, tracker, evaluate))
+      let result: Value = null
+      for (const path of paths) {
+        const value = getPath(input, path)
+        result = updatePath(result, path, () => value ?? null, span) ?? null
+      }
+      yield emit(result, span, tracker)
     },
   },
   {
@@ -490,3 +572,10 @@ export const collectionBuiltins: BuiltinSpec[] = [
     },
   },
 ]
+
+const getEntryField = (obj: ValueObject, names: string[]): Value | undefined => {
+  for (const name of names) {
+    if (Object.prototype.hasOwnProperty.call(obj, name)) return obj[name]!
+  }
+  return undefined
+}

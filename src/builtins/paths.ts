@@ -17,26 +17,18 @@ function* traversePaths(
   tracker: LimitTracker
 ): Generator<Value> {
   tracker.step(span)
-  const isLeaf =
-    root === null ||
-    typeof root !== 'object' ||
-    (Array.isArray(root) && root.length === 0) ||
-    (isPlainObject(root) && Object.keys(root).length === 0)
-
-  if (isLeaf) {
-    yield emit([...currentPath], span, tracker)
-    return
-  }
-
   if (Array.isArray(root)) {
     for (let i = 0; i < root.length; i++) {
-      yield* traversePaths(root[i]!, [...currentPath, i], span, tracker)
+      const path = [...currentPath, i]
+      yield emit(path, span, tracker)
+      yield* traversePaths(root[i]!, path, span, tracker)
     }
   } else if (isPlainObject(root)) {
     const keys = Object.keys(root).sort()
     for (const key of keys) {
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
-      yield* traversePaths((root as ValueObject)[key]!, [...currentPath, key], span, tracker)
+      const path = [...currentPath, key]
+      yield emit(path, span, tracker)
+      yield* traversePaths(root[key]!, path, span, tracker)
     }
   }
 }
@@ -226,6 +218,24 @@ export const pathBuiltins: BuiltinSpec[] = [
     arity: 0,
     apply: function* (input, _args, _env, tracker, _eval, span) {
       yield* traversePaths(input, [], span, tracker)
+    },
+  },
+  {
+    name: 'paths',
+    arity: 1,
+    apply: function* (input, args, env, tracker, evaluate, span) {
+      for (const pathVal of traversePaths(input, [], span, tracker)) {
+        const path = ensurePath(pathVal, span)
+        const value = getPath(input, path) ?? null
+        let matched = false
+        for (const result of evaluate(args[0]!, value, env, tracker)) {
+          if (result !== null && result !== false) {
+            matched = true
+            break
+          }
+        }
+        if (matched) yield emit(path, span, tracker)
+      }
     },
   },
   {

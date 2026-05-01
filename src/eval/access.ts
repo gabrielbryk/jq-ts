@@ -143,8 +143,12 @@ export const evalSlice = function* (
     // Cartesian product of start/end
     for (const s of starts) {
       for (const e of ends) {
-        yield emit(target.slice(s, e), node.span, tracker)
+        yield emit(target.slice(normalizeSliceStart(s), normalizeSliceEnd(e)), node.span, tracker)
       }
     }
   }
 }
+
+const normalizeSliceStart = (value: number): number => Math.floor(value)
+
+const normalizeSliceEnd = (value: number): number => Math.ceil(value)

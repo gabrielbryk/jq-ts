@@ -40,4 +40,14 @@ describe('lexer', () => {
     expect(tokens[0]?.span).toEqual({ start: 0, end: 3 })
     expect(tokens[1]?.span).toEqual({ start: 4, end: 7 })
   })
+
+  it('ignores comments outside strings', () => {
+    expect(kinds('.a # comment\n| "# not a comment"')).toEqual([
+      'Dot',
+      'Identifier',
+      'Pipe',
+      'String',
+      'EOF',
+    ])
+  })
 })

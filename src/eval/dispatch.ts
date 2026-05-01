@@ -5,7 +5,7 @@ import { LimitTracker, resolveLimits, type LimitsConfig } from '../limits'
 import { isTruthy, type Value } from '../value'
 import { applyBinaryOp, applyUnaryNeg } from './ops'
 
-import { getVar } from './env'
+import { bindPattern, getVar } from './env'
 import { emit } from './common'
 import type { EnvStack, EnvFrame } from './types'
 
@@ -197,7 +197,9 @@ function* evaluate(
         const values = Array.from(evaluate(node.bind, input, env, tracker))
         for (const val of values) {
           // Use a new frame for the binding to ensure correct scoping and avoid mutation issues
-          const newFrame: EnvFrame = { vars: new Map([[node.name, val]]), funcs: new Map() }
+          const vars = new Map<string, Value>()
+          bindPattern(node.pattern, val, vars)
+          const newFrame: EnvFrame = { vars, funcs: new Map() }
           const newEnv = [...env, newFrame]
           yield* evaluate(node.body, input, newEnv, tracker)
         }

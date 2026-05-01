@@ -80,13 +80,10 @@ describe('Phase 3 Advanced Features', () => {
   describe('paths builtins', () => {
     describe('paths', () => {
       it('lists paths', () => {
-        // paths emits leaf paths
-        expect(evalExpr('paths', { a: [1], b: 2 })).toEqual([['a', 0], ['b']])
+        expect(evalExpr('paths', { a: [1], b: 2 })).toEqual([['a'], ['a', 0], ['b']])
       })
       it('scalar has empty path', () => {
-        // wait, my impl outputs `[]` for scalar input?
-        // `traversePaths` yields `[]` if leaf.
-        expect(evalExpr('paths', 1)).toEqual([[]]) // Assuming behavior matches impl/plan
+        expect(evalExpr('paths', 1)).toEqual([])
       })
     })
 

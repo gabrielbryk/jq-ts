@@ -78,6 +78,41 @@ describe('predefined variables and scoping', () => {
       // Iteration 2: $y=20. Acc = 11 + 20 + 1 = 32.
       expect(result).toEqual([32])
     })
+
+    it('supports array destructuring in as bindings', () => {
+      const result = run('. as [$a, $b, $c] | [$a, $b, $c]', [1, 2])
+      expect(result).toEqual([[1, 2, null]])
+    })
+
+    it('supports object and shorthand destructuring in as bindings', () => {
+      const result = run(
+        '. as {user: {id: $id}, $name, missing: $missing} | [$id, $name, $missing]',
+        {
+          user: { id: 7 },
+          name: 'Ada',
+        }
+      )
+      expect(result).toEqual([[7, 'Ada', null]])
+    })
+
+    it('supports destructuring in reduce and foreach bindings', () => {
+      const reduced = run('reduce (.[]) as [$x, $y] (0; . + $x + $y)', [
+        [1, 2],
+        [3, 4],
+      ])
+      expect(reduced).toEqual([10])
+
+      const foreach = run('foreach (.[]) as [$x, $y] (0; . + $x + $y; .)', [
+        [1, 2],
+        [3, 4],
+      ])
+      expect(foreach).toEqual([3, 10])
+    })
+
+    it('errors on destructuring from incompatible input types', () => {
+      expect(() => run('1 as [$x] | $x', null)).toThrow(/Cannot index number with number/)
+      expect(() => run('[] as {a: $x} | $x', null)).toThrow(/Cannot index array with string/)
+    })
   })
 
   // Option B verification (Future)

@@ -6,7 +6,19 @@ import { LimitTracker, resolveLimits, type LimitsConfig, type ResolvedLimits } f
 import { LexError, ParseError, ValidationError, RuntimeError } from './errors'
 
 export { parse, validate, runAst, LimitTracker, resolveLimits }
+export { checkCompatibility, analyzeCompatibility, compareWithJq } from './compat'
 export type { EvalOptions, Value, LimitsConfig, ResolvedLimits }
+export type {
+  CompatibilityAnalysisResult,
+  CompatibilityCheckResult,
+  CompatibilityFinding,
+  CompatibilityFindingCategory,
+  CompatibilityFindingSeverity,
+  CompatibilityStage,
+  CompareWithJqResult,
+  ExecutionResult,
+  JqRunner,
+} from './compat'
 export { LexError, ParseError, ValidationError, RuntimeError }
 
 /**

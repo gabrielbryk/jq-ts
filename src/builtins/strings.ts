@@ -1,7 +1,7 @@
 import { RuntimeError } from '../errors'
 import { describeType, isPlainObject, valueEquals, type Value } from '../value'
 import type { BuiltinSpec } from './types'
-import { emit } from './utils'
+import { emit, stableStringify } from './utils'
 
 export const checkContains = (a: Value, b: Value): boolean => {
   if (a === b) return true
@@ -49,10 +49,17 @@ export const stringBuiltins: BuiltinSpec[] = [
         if (typeof sep !== 'string') throw new RuntimeError('join separator must be a string', span)
         const parts: string[] = []
         for (const item of input) {
-          if (typeof item !== 'string') {
-            throw new RuntimeError(`join expects strings, but got ${describeType(item)}`, span)
+          if (item === null) {
+            parts.push('')
+          } else if (
+            typeof item === 'string' ||
+            typeof item === 'number' ||
+            typeof item === 'boolean'
+          ) {
+            parts.push(String(item))
+          } else {
+            throw new RuntimeError(`join cannot join ${describeType(item)}`, span)
           }
-          parts.push(item)
         }
         yield emit(parts.join(sep), span, tracker)
       }
@@ -218,6 +225,14 @@ export const stringBuiltins: BuiltinSpec[] = [
     },
   },
   {
+    name: 'utf8bytelength',
+    arity: 0,
+    apply: function* (input, _args, _env, tracker, _eval, span) {
+      if (typeof input !== 'string') throw new RuntimeError('utf8bytelength expects string', span)
+      yield emit(utf8ByteLength(input), span, tracker)
+    },
+  },
+  {
     name: 'implode',
     arity: 0,
     apply: function* (input, _args, _env, tracker, _eval, span) {
@@ -248,6 +263,45 @@ export const stringBuiltins: BuiltinSpec[] = [
     },
   },
   {
+    name: 'trimstr',
+    arity: 1,
+    apply: function* (input, args, env, tracker, evaluate, span) {
+      if (typeof input !== 'string') throw new RuntimeError('trimstr expects string', span)
+      for (const trim of evaluate(args[0]!, input, env, tracker)) {
+        if (typeof trim !== 'string')
+          throw new RuntimeError('trimstr argument must be string', span)
+        let result = input
+        if (result.startsWith(trim)) result = result.slice(trim.length)
+        if (result.endsWith(trim)) result = result.slice(0, result.length - trim.length)
+        yield emit(result, span, tracker)
+      }
+    },
+  },
+  {
+    name: 'trim',
+    arity: 0,
+    apply: function* (input, _args, _env, tracker, _eval, span) {
+      if (typeof input !== 'string') throw new RuntimeError('trim expects string', span)
+      yield emit(input.trim(), span, tracker)
+    },
+  },
+  {
+    name: 'ltrim',
+    arity: 0,
+    apply: function* (input, _args, _env, tracker, _eval, span) {
+      if (typeof input !== 'string') throw new RuntimeError('ltrim expects string', span)
+      yield emit(input.trimStart(), span, tracker)
+    },
+  },
+  {
+    name: 'rtrim',
+    arity: 0,
+    apply: function* (input, _args, _env, tracker, _eval, span) {
+      if (typeof input !== 'string') throw new RuntimeError('rtrim expects string', span)
+      yield emit(input.trimEnd(), span, tracker)
+    },
+  },
+  {
     name: 'rtrimstr',
     arity: 1,
     apply: function* (input, args, env, tracker, evaluate, span) {
@@ -269,7 +323,11 @@ export const stringBuiltins: BuiltinSpec[] = [
     arity: 0,
     apply: function* (input, _args, _env, tracker, _eval, span) {
       if (typeof input !== 'string') throw new RuntimeError('ascii_downcase expects string', span)
-      yield emit(input.toLowerCase(), span, tracker)
+      yield emit(
+        input.replace(/[A-Z]/g, (char) => char.toLowerCase()),
+        span,
+        tracker
+      )
     },
   },
   {
@@ -277,7 +335,42 @@ export const stringBuiltins: BuiltinSpec[] = [
     arity: 0,
     apply: function* (input, _args, _env, tracker, _eval, span) {
       if (typeof input !== 'string') throw new RuntimeError('ascii_upcase expects string', span)
-      yield emit(input.toUpperCase(), span, tracker)
+      yield emit(
+        input.replace(/[a-z]/g, (char) => char.toUpperCase()),
+        span,
+        tracker
+      )
+    },
+  },
+  {
+    name: 'tojson',
+    arity: 0,
+    apply: function* (input, _args, _env, tracker, _eval, span) {
+      yield emit(stableStringify(input), span, tracker)
+    },
+  },
+  {
+    name: 'fromjson',
+    arity: 0,
+    apply: function* (input, _args, _env, tracker, _eval, span) {
+      if (typeof input !== 'string') throw new RuntimeError('fromjson expects string', span)
+      try {
+        yield emit(JSON.parse(input) as Value, span, tracker)
+      } catch {
+        throw new RuntimeError('fromjson could not parse JSON', span)
+      }
     },
   },
 ]
+
+const utf8ByteLength = (input: string): number => {
+  let length = 0
+  for (const char of input) {
+    const codePoint = char.codePointAt(0)!
+    if (codePoint <= 0x7f) length += 1
+    else if (codePoint <= 0x7ff) length += 2
+    else if (codePoint <= 0xffff) length += 3
+    else length += 4
+  }
+  return length
+}
