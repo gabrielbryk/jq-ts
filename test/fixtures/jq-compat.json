@@ -175,7 +175,12 @@
   { "name": "range start end", "expr": "range(1; 4)", "input": null },
   { "name": "range start end step", "expr": "range(0; 6; 2)", "input": null },
   { "name": "limit iterator", "expr": "limit(2; range(5))", "input": null },
-  { "name": "skip iterator", "expr": "skip(2; range(5))", "input": null },
+  {
+    "name": "skip iterator",
+    "expr": "skip(2; range(5))",
+    "input": null,
+    "minJqVersion": "1.8"
+  },
   { "name": "first iterator", "expr": "first(range(5))", "input": null },
   { "name": "last iterator", "expr": "last(range(5))", "input": null },
   { "name": "nth iterator", "expr": "nth(2; range(5))", "input": null },
@@ -268,7 +273,7 @@
   { "name": "add array arrays", "expr": "add", "input": [[1], [2]] },
   { "name": "add array objects", "expr": "add", "input": [{ "a": 1 }, { "b": 2 }] },
   { "name": "add empty", "expr": "add", "input": [] },
-  { "name": "add generator", "expr": "add(.[])", "input": [1, 2, 3] },
+  { "name": "add generator", "expr": "add(.[])", "input": [1, 2, 3], "minJqVersion": "1.8" },
   { "name": "add error type", "expr": "add", "input": 1, "expectError": true },
   { "name": "add error mixed", "expr": "add", "input": [1, "a"], "expectError": true },
 
@@ -346,10 +351,15 @@
   { "name": "ltrimstr no match", "expr": "ltrimstr(\"bar\")", "input": "foobar" },
   { "name": "rtrimstr match", "expr": "rtrimstr(\"bar\")", "input": "foobar" },
   { "name": "rtrimstr no match", "expr": "rtrimstr(\"foo\")", "input": "foobar" },
-  { "name": "trimstr both", "expr": "trimstr(\"ab\")", "input": "abXXab" },
-  { "name": "trim whitespace", "expr": "trim", "input": "  hi  " },
-  { "name": "ltrim whitespace", "expr": "ltrim", "input": "  hi  " },
-  { "name": "rtrim whitespace", "expr": "rtrim", "input": "  hi  " },
+  {
+    "name": "trimstr both",
+    "expr": "trimstr(\"ab\")",
+    "input": "abXXab",
+    "minJqVersion": "1.8"
+  },
+  { "name": "trim whitespace", "expr": "trim", "input": "  hi  ", "minJqVersion": "1.8" },
+  { "name": "ltrim whitespace", "expr": "ltrim", "input": "  hi  ", "minJqVersion": "1.8" },
+  { "name": "rtrim whitespace", "expr": "rtrim", "input": "  hi  ", "minJqVersion": "1.8" },
   { "name": "utf8bytelength ascii", "expr": "utf8bytelength", "input": "abc" },
   { "name": "utf8bytelength unicode", "expr": "utf8bytelength", "input": "µ" },
 
