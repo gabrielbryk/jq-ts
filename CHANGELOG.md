@@ -1,5 +1,11 @@
 # jq-ts
 
+## 1.4.0
+
+### Minor Changes
+
+- 0cb187f: Expand jq compatibility for common pure builtins and arities, including `map_values`, `in`, `del`, `pick`, `tojson`, `fromjson`, trim helpers, type filters, `paths(filter)`, `add(generator)`, additional `all`/`any`/`first`/`last`/`nth`/`recurse` forms, jq comments, and destructuring bindings.
+
 ## 1.3.6
 
 ### Patch Changes
