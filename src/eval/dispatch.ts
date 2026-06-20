@@ -30,6 +30,23 @@ export interface EvalOptions {
    * Keys are variable names without the '$' prefix.
    */
   vars?: Record<string, Value>
+  /**
+   * The wall-clock instant the `now` builtin resolves to. Accepts a `Date` or
+   * a number of seconds since the Unix epoch (may be fractional). When omitted,
+   * `now` throws — jq-ts never reads the host clock on its own, so date
+   * programs stay deterministic unless a clock is explicitly injected. Pure
+   * date builtins that take an explicit epoch (`gmtime`, `strftime`, `todate`,
+   * …) work regardless of this option.
+   */
+  now?: Date | number
+}
+
+/**
+ * Normalizes the `now` option to seconds since the Unix epoch.
+ */
+const resolveNowSeconds = (now: Date | number | undefined): number | undefined => {
+  if (now === undefined) return undefined
+  return now instanceof Date ? now.getTime() / 1000 : now
 }
 
 /**
@@ -41,7 +58,7 @@ export interface EvalOptions {
  * @returns An array of all values yielded by the filter.
  */
 export const runAst = (ast: FilterNode, input: Value, options: EvalOptions = {}): Value[] => {
-  const tracker = new LimitTracker(resolveLimits(options.limits))
+  const tracker = new LimitTracker(resolveLimits(options.limits), resolveNowSeconds(options.now))
   const globalVars = new Map<string, Value>(Object.entries(options.vars ?? {}))
   const env: EnvStack = [{ vars: globalVars, funcs: new Map() }]
   return Array.from<Value>(evaluate(ast, input, env, tracker))
