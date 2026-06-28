@@ -26,10 +26,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 The codebase follows a classic interpreter pipeline:
 
-1. **Lexer** (`src/lexer.ts`) → tokenizes input with position tracking
-2. **Parser** (`src/parser.ts`) → builds an AST from tokens
+1. **Lexer** (`src/lexer.ts` barrel, modules under `src/lexer/`) → tokenizes input with position tracking
+2. **Parser** (`src/parser.ts` barrel, modules under `src/parser/`) → builds an AST from tokens
 3. **Validator** (`src/validate.ts`) → rejects unsupported constructs
-4. **Evaluator** (`src/eval/`, entry `src/eval/index.ts`) → executes filters as streams of values; builtins live in `src/builtins/`
+4. **Evaluator** (`src/eval/`, entry `src/eval/index.ts`) → executes filters as streams of values; builtins live in `src/builtins/` (organized by area: `collections/`, `dates/`, `iterators/`, `math/`, `paths/`, `std/`, `strings/`)
 
 ### Core Abstractions
 
@@ -90,10 +90,10 @@ Tests use **Vitest** and live in `test/`. The pipeline stages have dedicated fil
 
 1. Add a new `*Node` interface in `src/ast.ts`
 2. Add corresponding token(s) in `src/tokens.ts` if needed
-3. Update `src/lexer.ts` to recognize tokens
-4. Update `src/parser.ts` to build AST nodes from tokens
+3. Update the relevant lexer module under `src/lexer/` (e.g., `operators.ts`, `identifiers.ts`, `punctuation.ts`) to recognize tokens
+4. Update the relevant parser module under `src/parser/` (e.g., `primary.ts`, `postfix.ts`, `binary.ts`, `logical.ts`) to build AST nodes from tokens
 5. Add validation logic in `src/validate.ts` if needed
-6. Implement evaluation in `src/eval/` (or add a builtin under `src/builtins/`)
+6. Implement evaluation in `src/eval/` or add a builtin under `src/builtins/<area>/` (e.g., `src/builtins/strings/`, `src/builtins/math/`)
 7. Add test coverage in the relevant test file
 
 ### Error Handling

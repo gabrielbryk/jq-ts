@@ -116,11 +116,25 @@ describe('predefined variables and scoping', () => {
     })
   })
 
-  // Option B verification (Future)
-  describe('Option B: $ARGS (not implemented yet)', () => {
-    it.skip('populates $ARGS.named', () => {
+  describe('$ARGS', () => {
+    it('populates $ARGS.named from caller vars', () => {
       const result = run('$ARGS.named.foo', null, { vars: { foo: 123 } })
       expect(result).toEqual([123])
+    })
+
+    it('exposes the full named map', () => {
+      const result = run('$ARGS.named', null, { vars: { foo: 1, bar: 2 } })
+      expect(result).toEqual([{ foo: 1, bar: 2 }])
+    })
+
+    it('defaults $ARGS.positional to an empty array', () => {
+      const result = run('$ARGS.positional', null, { vars: { foo: 123 } })
+      expect(result).toEqual([[]])
+    })
+
+    it('populates $ARGS.positional when provided', () => {
+      const result = run('$ARGS.positional', null, { positionalArgs: ['a', 'b'] })
+      expect(result).toEqual([['a', 'b']])
     })
   })
 })

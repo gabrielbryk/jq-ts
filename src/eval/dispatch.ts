@@ -16,7 +16,11 @@ import type { EnvStack, EvalOptions } from './types'
  */
 export const runAst = (ast: FilterNode, input: Value, options: EvalOptions = {}): Value[] => {
   const tracker = new LimitTracker(resolveLimits(options.limits), resolveClock(options.now))
-  const globalVars = new Map<string, Value>(Object.entries(options.vars ?? {}))
+  const named = options.vars ?? {}
+  const globalVars = new Map<string, Value>(Object.entries(named))
+  // jq exposes named/positional arguments via `$ARGS`. Named args mirror the
+  // caller-supplied `vars`; positional args are empty unless explicitly given.
+  globalVars.set('ARGS', { positional: [...(options.positionalArgs ?? [])], named: { ...named } })
   const env: EnvStack = [{ vars: globalVars, funcs: new Map() }]
   return Array.from<Value>(evaluate(ast, input, env, tracker))
 }

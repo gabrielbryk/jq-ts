@@ -14,6 +14,11 @@ export interface EvalOptions {
    */
   vars?: Record<string, Value>
   /**
+   * Positional arguments exposed via `$ARGS.positional`. Defaults to an empty
+   * array. Named arguments in `$ARGS.named` are sourced from {@link vars}.
+   */
+  positionalArgs?: Value[]
+  /**
    * The wall-clock instant the `now` builtin resolves to — a `Date` or seconds
    * since the Unix epoch. When omitted, `now` throws (jq-ts never reads the
    * host clock on its own). Pure date builtins (`gmtime`, `strftime`, `todate`,
