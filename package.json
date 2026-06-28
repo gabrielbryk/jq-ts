@@ -61,7 +61,7 @@
     "@changesets/cli": "^2.29.8",
     "@commitlint/cli": "^20.2.0",
     "@commitlint/config-conventional": "^20.2.0",
-    "@eslint/js": "^9.39.2",
+    "@eslint/js": "^9.39.4",
     "@size-limit/preset-small-lib": "^11.2.0",
     "@types/bun": "latest",
     "@types/node": "^25.0.1",
