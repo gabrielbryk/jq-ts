@@ -183,3 +183,5 @@ tmp-*.md
 
 
 *.local.*
+# madge dependency graph (pnpm run graph)
+dependency-graph.svg
