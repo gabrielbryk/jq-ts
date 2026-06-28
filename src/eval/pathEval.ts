@@ -1,9 +1,12 @@
 import type { FilterNode } from '../ast'
 import { RuntimeError } from '../errors'
 import type { LimitTracker } from '../limits'
-import { getPath, type PathSegment } from '../path'
+import { type PathSegment } from '../path'
 import type { Evaluator } from '../types'
 import type { Value } from '../value'
+import { call, comma, pipe, tryPath } from './pathEval/combinators'
+import type { PathContext } from './pathEval/internal'
+import { fieldAccess, indexAccess, iterate, slice } from './pathEval/segments'
 import type { EnvStack } from './types'
 
 /**
@@ -23,108 +26,34 @@ export const evaluatePath = function* (
   tracker: LimitTracker,
   evaluate: Evaluator
 ): Generator<PathSegment[]> {
+  const ctx: PathContext = { input, env, tracker, evaluate, recurse: evaluatePath }
   switch (node.kind) {
     case 'Identity':
       yield []
       return
     case 'FieldAccess':
-      for (const parent of evaluatePath(node.target, input, env, tracker, evaluate)) {
-        yield [...parent, node.field]
-      }
+      yield* fieldAccess(node, ctx)
       return
-    case 'IndexAccess': {
-      const parentPaths = Array.from(evaluatePath(node.target, input, env, tracker, evaluate))
-      const output = evaluate(node.index, input, env, tracker)
-      for (const keyVal of output) {
-        let key: string | number
-        if (typeof keyVal === 'string') key = keyVal
-        else if (typeof keyVal === 'number' && Number.isInteger(keyVal)) key = keyVal
-        else throw new RuntimeError('Path index must be string or integer', node.span)
-
-        for (const parent of parentPaths) {
-          yield [...parent, key]
-        }
-      }
+    case 'IndexAccess':
+      yield* indexAccess(node, ctx)
       return
-    }
-    case 'Pipe': {
-      // For .a | .b
-      // 1. Get paths of left (.a)
-      // 2. For each path p, get value v = getPath(input, p)
-      // 3. Get paths of right (.b) against v -> q
-      // 4. Yield [...p, ...q]
-
-      const leftPaths = Array.from(evaluatePath(node.left, input, env, tracker, evaluate))
-      for (const p of leftPaths) {
-        const val = getPath(input, p) ?? null
-        for (const q of evaluatePath(node.right, val, env, tracker, evaluate)) {
-          yield [...p, ...q]
-        }
-      }
+    case 'Pipe':
+      yield* pipe(node, ctx)
       return
-    }
     case 'Comma':
-      yield* evaluatePath(node.left, input, env, tracker, evaluate)
-      yield* evaluatePath(node.right, input, env, tracker, evaluate)
+      yield* comma(node, ctx)
       return
-    case 'Iterate': {
-      const parentPaths = Array.from(evaluatePath(node.target, input, env, tracker, evaluate))
-      for (const p of parentPaths) {
-        const val = getPath(input, p)
-        if (Array.isArray(val)) {
-          for (let i = 0; i < val.length; i++) {
-            yield [...p, i]
-          }
-        } else if (val !== null && typeof val === 'object') {
-          // Object
-          for (const key of Object.keys(val)) {
-            yield [...p, key]
-          }
-        } else {
-          // Iterate on null is empty, others error?
-          if (val === null) continue
-          throw new RuntimeError(`Cannot iterate over ${typeof val}`, node.span)
-        }
-      }
+    case 'Iterate':
+      yield* iterate(node, ctx)
       return
-    }
     case 'Call':
-      if (node.name === 'select') {
-        const conds = evaluate(node.args[0]!, input, env, tracker)
-        let matched = false
-        for (const c of conds) {
-          if (c !== null && c !== false) {
-            matched = true // Truthy
-          }
-        }
-        if (matched) yield [] // Relative path is empty (identity)
-        return
-      }
-      throw new RuntimeError(`Function ${node.name} not supported in path expression`, node.span)
-    case 'Slice': {
-      const parentPaths = Array.from(evaluatePath(node.target, input, env, tracker, evaluate))
-      const startRes = node.start ? Array.from(evaluate(node.start, input, env, tracker)) : [null]
-      const endRes = node.end ? Array.from(evaluate(node.end, input, env, tracker)) : [null]
-
-      for (const startVal of startRes) {
-        for (const endVal of endRes) {
-          const sliceSpec: PathSegment = {
-            start: typeof startVal === 'number' ? startVal : null,
-            end: typeof endVal === 'number' ? endVal : null,
-          }
-          for (const p of parentPaths) {
-            yield [...p, sliceSpec]
-          }
-        }
-      }
+      yield* call(node, ctx)
       return
-    }
+    case 'Slice':
+      yield* slice(node, ctx)
+      return
     case 'Try':
-      try {
-        yield* evaluatePath(node.body, input, env, tracker, evaluate)
-      } catch (e) {
-        if (!(e instanceof RuntimeError)) throw e
-      }
+      yield* tryPath(node, ctx)
       return
     case 'Var':
       // Rooting a path in a variable is valid if the path is evaluated against the variable's value.
