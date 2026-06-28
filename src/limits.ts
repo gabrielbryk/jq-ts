@@ -50,7 +50,34 @@ export class LimitTracker {
   private depth = 0
   private outputs = 0
 
-  constructor(private readonly limits: ResolvedLimits) {}
+  /**
+   * @param limits - Resolved execution limits.
+   * @param nowSeconds - The wall-clock instant exposed to the `now` builtin, as
+   *   seconds since the Unix epoch (may be fractional). When `undefined`, the
+   *   `now` builtin throws rather than reading the host clock — jq-ts never
+   *   reads the real clock on its own, so date programs stay deterministic
+   *   unless the caller injects a clock via `options.now`.
+   */
+  constructor(
+    private readonly limits: ResolvedLimits,
+    private readonly nowSeconds?: number
+  ) {}
+
+  /**
+   * Returns the injected wall-clock instant (seconds since the Unix epoch) for
+   * the `now` builtin.
+   * @param span - The source span for error reporting.
+   * @throws {RuntimeError} If no clock was injected (`options.now` was unset).
+   */
+  now(span: Span): number {
+    if (this.nowSeconds === undefined) {
+      throw new RuntimeError(
+        'now/0 requires an injected clock; pass options.now (a Date or epoch seconds)',
+        span
+      )
+    }
+    return this.nowSeconds
+  }
 
   /**
    * Records a single execution step (AST node visit).
