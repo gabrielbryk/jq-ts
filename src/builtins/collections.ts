@@ -1,18 +1,18 @@
 import { RuntimeError } from '../errors'
+import { evaluatePath } from '../eval/pathEval'
+import { deletePaths, getPath, updatePath } from '../path'
+import type { Span } from '../span'
 import {
   compareValues,
   isPlainObject,
   isTruthy,
-  valueEquals,
   type Value,
+  valueEquals,
   type ValueObject,
 } from '../value'
-import type { Span } from '../span'
 import { checkContains } from './strings'
 import type { BuiltinSpec } from './types'
 import { emit, ensureIndex, objValue, stableStringify } from './utils'
-import { deletePaths, getPath, updatePath } from '../path'
-import { evaluatePath } from '../eval/pathEval'
 
 // Helper for stable sort
 function sortStable<T>(arr: T[], compare: (a: T, b: T) => number): T[] {

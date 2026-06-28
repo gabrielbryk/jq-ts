@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
-import { parse } from '../src/parser'
+
 import type { DefNode, IdentityNode, LiteralNode } from '../src/ast'
+import { parse } from '../src/parser'
 
 describe('parser def', () => {
   it('parses simple def', () => {

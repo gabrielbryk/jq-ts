@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest'
+
+import { type EvalOptions, runAst } from '../src/eval'
 import { parse } from '../src/parser'
 import { validate } from '../src/validate'
-import { runAst, type EvalOptions } from '../src/eval'
 import type { Value } from '../src/value'
 
 const evalExpr = (expr: string, input: Value = null, options?: EvalOptions) => {

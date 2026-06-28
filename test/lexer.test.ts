@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+
 import { lex } from '../src/lexer'
 
 const kinds = (code: string) => lex(code).map((t) => t.kind)

@@ -1,7 +1,7 @@
 import { RuntimeError } from '../errors'
 import type { LimitTracker } from '../limits'
 import type { Span } from '../span'
-import { describeType, isPlainObject, valueEquals, type Value } from '../value'
+import { describeType, isPlainObject, type Value, valueEquals } from '../value'
 import type { BuiltinSpec } from './types'
 import { emit, stableStringify } from './utils'
 

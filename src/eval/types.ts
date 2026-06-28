@@ -1,7 +1,7 @@
 import type { LimitsConfig } from '../limits'
 import type { Value } from '../value'
 
-export type { EnvFrame, EnvStack, FunctionDef, Evaluator } from '../types'
+export type { EnvFrame, EnvStack, Evaluator, FunctionDef } from '../types'
 
 /**
  * Options passed to the evaluator.

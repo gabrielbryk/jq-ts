@@ -1,7 +1,7 @@
-import { RuntimeError } from '../errors'
-import { compareValues, describeType, isPlainObject, valueEquals, type Value } from '../value'
 import { stableStringify } from '../builtins/utils'
+import { RuntimeError } from '../errors'
 import type { Span } from '../span'
+import { compareValues, describeType, isPlainObject, type Value, valueEquals } from '../value'
 
 /**
  * Applies a unary negation (`-`).

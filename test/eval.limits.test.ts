@@ -1,8 +1,9 @@
 import { describe, expect, it } from 'vitest'
+
+import { RuntimeError } from '../src/errors'
+import { type EvalOptions, runAst } from '../src/eval'
 import { parse } from '../src/parser'
 import { validate } from '../src/validate'
-import { runAst, type EvalOptions } from '../src/eval'
-import { RuntimeError } from '../src/errors'
 
 const evalWithLimits = (expr: string, limits: NonNullable<EvalOptions['limits']>) => {
   const ast = parse(expr)

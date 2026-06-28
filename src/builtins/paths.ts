@@ -1,10 +1,10 @@
 import { RuntimeError } from '../errors'
-import { isPlainObject, type Value } from '../value'
-import type { Span } from '../span'
-import type { LimitTracker } from '../limits'
-import type { BuiltinSpec } from './types'
-import { ensurePath, getPath, updatePath, deletePaths } from '../path'
 import { evaluatePath } from '../eval/pathEval'
+import type { LimitTracker } from '../limits'
+import { deletePaths, ensurePath, getPath, updatePath } from '../path'
+import type { Span } from '../span'
+import { isPlainObject, type Value } from '../value'
+import type { BuiltinSpec } from './types'
 import { emit } from './utils'
 
 // --- Internal Path Logic ---

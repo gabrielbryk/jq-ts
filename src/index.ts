@@ -1,25 +1,25 @@
+import { LexError, ParseError, RuntimeError, ValidationError } from './errors'
+import { type EvalOptions, runAst } from './eval'
+import { type LimitsConfig, LimitTracker, type ResolvedLimits, resolveLimits } from './limits'
 import { parse } from './parser'
 import { validate } from './validate'
-import { runAst, type EvalOptions } from './eval'
 import type { Value } from './value'
-import { LimitTracker, resolveLimits, type LimitsConfig, type ResolvedLimits } from './limits'
-import { LexError, ParseError, ValidationError, RuntimeError } from './errors'
 
-export { parse, validate, runAst, LimitTracker, resolveLimits }
-export { checkCompatibility, analyzeCompatibility, compareWithJq } from './compat'
-export type { EvalOptions, Value, LimitsConfig, ResolvedLimits }
+export { LimitTracker, parse, resolveLimits, runAst, validate }
+export { analyzeCompatibility, checkCompatibility, compareWithJq } from './compat'
+export type { EvalOptions, LimitsConfig, ResolvedLimits, Value }
 export type {
+  CompareWithJqResult,
   CompatibilityAnalysisResult,
   CompatibilityCheckResult,
   CompatibilityFinding,
   CompatibilityFindingCategory,
   CompatibilityFindingSeverity,
   CompatibilityStage,
-  CompareWithJqResult,
   ExecutionResult,
   JqRunner,
 } from './compat'
-export { LexError, ParseError, ValidationError, RuntimeError }
+export { LexError, ParseError, RuntimeError, ValidationError }
 
 /**
  * Runs a jq query against a JSON input.

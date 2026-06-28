@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
+
 import { runAst } from '../src/eval'
 import { parse } from '../src/parser'
-
 import type { Value } from '../src/value'
 
 const evalExpr = (expr: string, input: Value = null) => {

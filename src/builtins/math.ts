@@ -1,8 +1,8 @@
 import { RuntimeError } from '../errors'
+import { add } from '../eval/ops'
 import { compareValues, type Value } from '../value'
 import type { BuiltinSpec } from './types'
 import { emit } from './utils'
-import { add } from '../eval/ops'
 
 /** Smallest positive normal IEEE-754 double. */
 const MIN_NORMAL_DOUBLE = 2.2250738585072014e-308

@@ -73,6 +73,7 @@
     "@vitest/coverage-v8": "^4.0.15",
     "dpdm": "^4.2.0",
     "eslint": "^10.3.0",
+    "eslint-plugin-simple-import-sort": "^13.0.0",
     "husky": "^9.1.7",
     "js-yaml": "^5.2.0",
     "knip": "^6.11.0",

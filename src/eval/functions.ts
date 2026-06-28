@@ -1,9 +1,9 @@
 import type { CallNode, DefNode } from '../ast'
+import { builtins } from '../builtins'
 import { RuntimeError } from '../errors'
 import type { LimitTracker } from '../limits'
 import type { Value } from '../value'
-import { builtins } from '../builtins'
-import type { EnvStack, EnvFrame, Evaluator, FunctionDef } from './types'
+import type { EnvFrame, EnvStack, Evaluator, FunctionDef } from './types'
 
 /**
  * Evaluates a function call.

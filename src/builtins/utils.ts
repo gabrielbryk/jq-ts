@@ -1,5 +1,5 @@
-import type { Span } from '../span'
 import type { LimitTracker } from '../limits'
+import type { Span } from '../span'
 import { type Value, type ValueObject } from '../value'
 
 export const emit = (value: Value, span: Span, tracker: LimitTracker): Value => {

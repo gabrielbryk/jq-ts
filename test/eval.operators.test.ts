@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest'
+
+import { runAst } from '../src/eval' // Keep this import as runAst is used
 import { parse } from '../src/parser'
 import { validate } from '../src/validate'
-import { runAst } from '../src/eval' // Keep this import as runAst is used
 import type { Value } from '../src/value'
 
 const evalExpr = (expr: string, input: Value = null) => {

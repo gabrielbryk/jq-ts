@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+
 import { analyzeCompatibility, checkCompatibility, compareWithJq, type JqRunner } from '../src'
 
 describe('compatibility helpers', () => {

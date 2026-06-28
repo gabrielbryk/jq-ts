@@ -1,22 +1,20 @@
 import type { FilterNode } from '../ast'
-import { BreakSignal } from './break'
+import { resolveClock } from '../clock'
 import { RuntimeError } from '../errors'
 import { LimitTracker, resolveLimits } from '../limits'
-import { resolveClock } from '../clock'
 import { isTruthy, type Value } from '../value'
-import { applyBinaryOp, applyUnaryNeg } from './ops'
-
-import { bindFrame, getVar } from './env'
-import { emit } from './common'
-import type { EnvStack, EvalOptions } from './types'
-
+import { evalField, evalIndex, evalSlice } from './access'
 // Sub-modules
 import { evalAssignment } from './assignment'
-import { evalIterate, evalReduce, evalForeach, evalRecurse } from './iterators'
-import { evalField, evalIndex, evalSlice } from './access'
+import { BreakSignal } from './break'
+import { emit } from './common'
 import { buildArray, buildObjects } from './constructors'
+import { evalIf, evalLabel, evalTry } from './controlFlow'
+import { bindFrame, getVar } from './env'
 import { evalCall, evalDef } from './functions'
-import { evalIf, evalTry, evalLabel } from './controlFlow'
+import { evalForeach, evalIterate, evalRecurse, evalReduce } from './iterators'
+import { applyBinaryOp, applyUnaryNeg } from './ops'
+import type { EnvStack, EvalOptions } from './types'
 
 /**
  * Runs a jq AST against an input value.

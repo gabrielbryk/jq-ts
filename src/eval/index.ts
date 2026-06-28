@@ -1,2 +1,2 @@
-export * from './types'
 export { runAst } from './dispatch'
+export * from './types'

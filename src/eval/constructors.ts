@@ -1,8 +1,8 @@
 import type { ArrayNode, ObjectEntry, ObjectNode } from '../ast'
 import { RuntimeError } from '../errors'
 import type { LimitTracker } from '../limits'
-import type { Value } from '../value'
 import type { Evaluator } from '../types'
+import type { Value } from '../value'
 import type { EnvStack } from './types'
 
 /**

@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { compareValues, valueEquals, type Value } from '../src/value'
+
+import { compareValues, type Value, valueEquals } from '../src/value'
 
 describe('compareValues', () => {
   it('orders values across types as null < false < true < numbers < strings < arrays < objects', () => {

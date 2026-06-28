@@ -1,6 +1,6 @@
 import { RuntimeError } from './errors'
-import { describeType, isPlainObject, type Value, type ValueObject } from './value'
 import type { Span } from './span'
+import { describeType, isPlainObject, type Value, type ValueObject } from './value'
 
 /** A single step in a jq path: an object key, an array index, or an array slice. */
 export type PathSegment = string | number | { start: number | null; end: number | null }

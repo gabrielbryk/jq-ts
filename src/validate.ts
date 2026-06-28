@@ -1,6 +1,6 @@
 import type { FilterNode } from './ast'
-import { ValidationError } from './errors'
 import { builtins } from './builtins'
+import { ValidationError } from './errors'
 
 /**
  * Validates the AST for correctness and supported features.
