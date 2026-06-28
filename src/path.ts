@@ -1,0 +1,187 @@
+import { RuntimeError } from './errors'
+import { describeType, isPlainObject, type Value, type ValueObject } from './value'
+import type { Span } from './span'
+
+/** A single step in a jq path: an object key, an array index, or an array slice. */
+export type PathSegment = string | number | { start: number | null; end: number | null }
+
+const objValue = (obj: ValueObject, key: string): Value => obj[key]!
+
+const isPath = (val: Value): val is PathSegment[] => {
+  if (!Array.isArray(val)) return false
+  return val.every(
+    (p) =>
+      typeof p === 'string' ||
+      (typeof p === 'number' && Number.isInteger(p)) ||
+      (isPlainObject(p) && ('start' in p || 'end' in p))
+  )
+}
+
+/** Validates that a value is a well-formed jq path, or throws. */
+export const ensurePath = (val: Value, span: Span): PathSegment[] => {
+  if (isPath(val)) return val
+  throw new RuntimeError('Path must be an array of strings, integers, or slice objects', span)
+}
+
+/** Reads the value at a path, or `undefined` if any segment is missing. */
+export const getPath = (root: Value, path: PathSegment[]): Value | undefined => {
+  let curr = root
+  for (const part of path) {
+    if (curr === null) return undefined
+    if (typeof part === 'string' && isPlainObject(curr)) {
+      if (!Object.prototype.hasOwnProperty.call(curr, part)) return undefined
+      curr = objValue(curr, part)
+    } else if (typeof part === 'number' && Array.isArray(curr)) {
+      if (part < 0 || part >= curr.length) return undefined
+      curr = curr[part]!
+    } else {
+      return undefined
+    }
+  }
+  return curr
+}
+
+/** Returns a copy of `root` with the value at `path` transformed by `updateFn`. */
+export const updatePath = (
+  root: Value,
+  path: PathSegment[],
+  updateFn: (val: Value | undefined) => Value | undefined,
+  span: Span,
+  depth = 0
+): Value | undefined => {
+  if (path.length === 0) {
+    return updateFn(root)
+  }
+  const [head, ...tail] = path
+
+  if (typeof head === 'string') {
+    let obj: Record<string, Value> = {}
+    if (isPlainObject(root)) {
+      obj = { ...root }
+    } else if (root === null) {
+      obj = {}
+    } else {
+      throw new RuntimeError(`Cannot index ${describeType(root)} with string "${head}"`, span)
+    }
+
+    const child = Object.prototype.hasOwnProperty.call(obj, head) ? obj[head]! : undefined
+    const newVal = updatePath(child ?? null, tail, updateFn, span, depth + 1)
+    if (newVal === undefined) {
+      delete obj[head]
+    } else {
+      obj[head] = newVal
+    }
+    return obj
+  }
+
+  if (typeof head === 'number') {
+    let arr: Value[] = []
+    if (Array.isArray(root)) {
+      arr = [...root]
+    } else if (root === null) {
+      arr = []
+    } else {
+      throw new RuntimeError(`Cannot index ${describeType(root)} with number ${head}`, span)
+    }
+
+    const idx = head < 0 ? arr.length + head : head
+    if (idx < 0) throw new RuntimeError('Invalid negative index', span)
+
+    const child = idx < arr.length ? arr[idx] : null
+    const newVal = updatePath(child ?? null, tail, updateFn, span, depth + 1)
+
+    if (newVal === undefined) {
+      if (idx >= arr.length) {
+        while (arr.length < idx) arr.push(null)
+        arr.push(newVal!)
+      } else {
+        arr[idx] = newVal!
+      }
+    } else {
+      if (idx >= arr.length) {
+        while (arr.length < idx) arr.push(null)
+        arr.push(newVal)
+      } else {
+        arr[idx] = newVal
+      }
+    }
+    return arr
+  }
+
+  if (typeof head === 'object' && head !== null) {
+    // Slice assignment: { start: number | null, end: number | null }
+    if (!Array.isArray(root)) {
+      throw new RuntimeError(`Cannot slice ${describeType(root)}`, span)
+    }
+    const arr = [...root]
+    const start = head.start ?? 0
+    const end = head.end ?? arr.length
+    // In jq, slice assignment replaces the range with the RHS elements
+    const oldSlice = arr.slice(start, end)
+    const newSliceVal = updateFn(oldSlice)
+    if (!Array.isArray(newSliceVal)) {
+      throw new RuntimeError('Assignment to a slice must be an array', span)
+    }
+    arr.splice(start, end - start, ...newSliceVal)
+    return arr
+  }
+
+  throw new RuntimeError(`Path segment must be string, integer, or slice object`, span)
+}
+
+/** Returns a copy of `root` with all of the given paths removed. */
+export const deletePaths = (root: Value, paths: PathSegment[][], span: Span): Value => {
+  if (paths.some((p) => p.length === 0)) return null
+
+  if (isPlainObject(root)) {
+    const result: ValueObject = { ...root }
+    const relevantPaths = paths.filter((p) => p.length > 0 && typeof p[0] === 'string')
+
+    const byKey: Record<string, PathSegment[][]> = {}
+    for (const p of relevantPaths) {
+      const key = p[0] as string
+      if (!byKey[key]) byKey[key] = []
+      byKey[key].push(p.slice(1))
+    }
+
+    for (const key of Object.keys(byKey)) {
+      const tails = byKey[key]!
+      if (tails.some((t) => t.length === 0)) {
+        delete result[key]
+      } else {
+        result[key] = deletePaths(objValue(root, key), tails, span)
+      }
+    }
+    return result
+  }
+
+  if (Array.isArray(root)) {
+    const relevantPaths = paths.filter((p) => p.length > 0 && typeof p[0] === 'number')
+
+    const actions: Record<number, PathSegment[][]> = {}
+    for (const p of relevantPaths) {
+      let idx = p[0] as number
+      if (idx < 0) idx = root.length + idx
+      if (idx < 0 || idx >= root.length) continue
+      if (!actions[idx]) actions[idx] = []
+      actions[idx]!.push(p.slice(1))
+    }
+
+    const finalArr: Value[] = []
+    for (let i = 0; i < root.length; i++) {
+      const tails = actions[i]
+      if (tails) {
+        if (tails.some((t) => t.length === 0)) {
+          continue
+        } else {
+          finalArr.push(deletePaths(root[i]!, tails, span))
+        }
+      } else {
+        finalArr.push(root[i]!)
+      }
+    }
+    return finalArr
+  }
+
+  return root
+}

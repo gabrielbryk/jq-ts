@@ -2,8 +2,8 @@ import type { FilterNode } from '../ast'
 import { RuntimeError } from '../errors'
 import type { LimitTracker } from '../limits'
 import type { Value } from '../value'
-import { getPath, type PathSegment } from '../builtins/paths'
-import type { Evaluator } from '../builtins/types'
+import { getPath, type PathSegment } from '../path'
+import type { Evaluator } from '../types'
 import type { EnvStack } from './types'
 
 /**
