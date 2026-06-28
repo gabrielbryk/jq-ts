@@ -6,7 +6,7 @@ import { getPath, updatePath, deletePaths, type PathSegment } from '../builtins/
 import { applyBinaryOp } from './ops'
 import type { Evaluator } from '../builtins/types'
 import { emit } from './common'
-import { evaluatePath } from './path_eval'
+import { evaluatePath } from './pathEval'
 import type { EnvStack } from './types'
 
 /**
