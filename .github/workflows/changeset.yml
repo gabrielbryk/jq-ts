@@ -12,16 +12,24 @@ jobs:
   changeset:
     name: Require a changeset for src changes
     runs-on: ubuntu-latest
-    # Skip when the author has explicitly opted out (internal / no-release changes).
-    if: ${{ !contains(github.event.pull_request.labels.*.name, 'skip-changeset') }}
     steps:
       - uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
       - name: Check for a changeset
+        # The job always runs (no job-level skip) so it can be a required check;
+        # the skip-changeset label is honored inside the script instead.
+        env:
+          SKIP: ${{ contains(github.event.pull_request.labels.*.name, 'skip-changeset') }}
         run: |
           set -euo pipefail
+
+          if [ "$SKIP" = "true" ]; then
+            echo "skip-changeset label present — changeset not required."
+            exit 0
+          fi
+
           base="origin/${{ github.base_ref }}"
           changed="$(git diff --name-only "$base"...HEAD)"
 
