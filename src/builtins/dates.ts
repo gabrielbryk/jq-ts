@@ -510,7 +510,7 @@ export const dateBuiltins: BuiltinSpec[] = [
     name: 'now',
     arity: 0,
     apply: function* (_input, _args, _env, tracker, _eval, span) {
-      yield emit(tracker.now(span), span, tracker)
+      yield emit(tracker.clock.now(span), span, tracker)
     },
   },
   {

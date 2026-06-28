@@ -12,7 +12,7 @@ import { checkContains } from './strings'
 import type { BuiltinSpec } from './types'
 import { emit, ensureIndex, objValue, stableStringify } from './utils'
 import { deletePaths, getPath, updatePath } from './paths'
-import { evaluatePath } from '../eval/path_eval'
+import { evaluatePath } from '../eval/pathEval'
 
 // Helper for stable sort
 function sortStable<T>(arr: T[], compare: (a: T, b: T) => number): T[] {

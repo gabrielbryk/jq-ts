@@ -3,7 +3,7 @@ import { describeType, isPlainObject, type Value, type ValueObject } from '../va
 import type { Span } from '../span'
 import type { LimitTracker } from '../limits'
 import type { BuiltinSpec } from './types'
-import { evaluatePath } from '../eval/path_eval'
+import { evaluatePath } from '../eval/pathEval'
 import { emit, objValue } from './utils'
 
 export type PathSegment = string | number | { start: number | null; end: number | null }

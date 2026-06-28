@@ -2,6 +2,7 @@ import type { FilterNode } from '../ast'
 import { BreakSignal } from './break'
 import { RuntimeError } from '../errors'
 import { LimitTracker, resolveLimits } from '../limits'
+import { resolveClock } from '../clock'
 import { isTruthy, type Value } from '../value'
 import { applyBinaryOp, applyUnaryNeg } from './ops'
 
@@ -15,15 +16,7 @@ import { evalIterate, evalReduce, evalForeach, evalRecurse } from './iterators'
 import { evalField, evalIndex, evalSlice } from './access'
 import { buildArray, buildObjects } from './constructors'
 import { evalCall, evalDef } from './functions'
-import { evalIf, evalTry, evalLabel } from './control_flow'
-
-/**
- * Normalizes the `now` option to seconds since the Unix epoch.
- */
-const resolveNowSeconds = (now: Date | number | undefined): number | undefined => {
-  if (now === undefined) return undefined
-  return now instanceof Date ? now.getTime() / 1000 : now
-}
+import { evalIf, evalTry, evalLabel } from './controlFlow'
 
 /**
  * Runs a jq AST against an input value.
@@ -34,7 +27,7 @@ const resolveNowSeconds = (now: Date | number | undefined): number | undefined =
  * @returns An array of all values yielded by the filter.
  */
 export const runAst = (ast: FilterNode, input: Value, options: EvalOptions = {}): Value[] => {
-  const tracker = new LimitTracker(resolveLimits(options.limits), resolveNowSeconds(options.now))
+  const tracker = new LimitTracker(resolveLimits(options.limits), resolveClock(options.now))
   const globalVars = new Map<string, Value>(Object.entries(options.vars ?? {}))
   const env: EnvStack = [{ vars: globalVars, funcs: new Map() }]
   return Array.from<Value>(evaluate(ast, input, env, tracker))
