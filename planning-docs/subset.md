@@ -1,84 +1,47 @@
 # Supported subset
 
-We want a **maximal jq subset** that remains deterministic and isolate-safe for embedded use (e.g., in other DSLs).
+jq-ts implements a **maximal jq subset** that remains deterministic and isolate-safe for embedded use (e.g., as an expression engine inside other DSLs). This document describes what the interpreter accepts today; forward-looking work lives in [`roadmap.md`](roadmap.md), and the per-feature jq 1.8 comparison lives in [`compatibility.md`](compatibility.md).
 
-## Support target
+## Design target
 
-### Explicit exclusions (determinism/safety)
+Support as much of jq as possible, gated by static validation + execution limits, except for features that break determinism or isolate safety:
 
-We aim to support “as much jq as possible” except:
+- **External modules** via `.jq` files (`import` / `include`) — unnecessary for inline expressions and unsupported.
+- **External I/O / environment access** (`input`, `inputs`, `env`, `$ENV`, `debug`, and equivalents) — unsupported.
+- **Host clock access** — the interpreter never reads the system clock. The `now` builtin resolves only to a caller-injected instant (`EvalOptions.now`) and throws when none is provided. Pure date builtins are deterministic functions of their input.
 
-- `now` (non-deterministic)
-- external modules via `.jq` files (`import` / `include`)
-- external I/O / environment access (`input`, `inputs`, and any equivalent)
+## Supported syntax
 
-Everything else is on the table, gated by validation + execution limits.
+- Literals: `null`, `true`, `false`, numbers, strings (with interpolation).
+- Identity `.`; field/index access `.foo`, `."foo bar"`, `.[0]`, `.[expr]`; optional access `.foo?`, `.[expr]?`.
+- Slices `.[a:b]` and recursive descent `..`.
+- Array/object construction `[expr, …]`, `{key: value, …}`, computed keys `{(expr): value}`.
+- Composition: pipe `a | b`, comma `a, b`, parentheses.
+- Conditionals: `if a then b elif c then d else e end`.
+- Boolean ops `and`, `or`, `not`; comparisons `== != < <= > >=`.
+- Arithmetic `+ - * / %` and unary `-`; alternative `a // b`.
+- Bindings and destructuring: `expr as $x | …`, including array/object destructuring patterns.
+- Inline function definitions: `def name(args): expr;` (no module system).
+- Error handling: `try a catch b`.
+- Reduction/iteration forms: `reduce`, `foreach`.
+- Assignment/update operators: `=`, `|=`, `+=`, `-=`, `*=`, `/=`, `%=`, `//=`.
 
-## v0: “Initial subset”
+## Supported builtins
 
-Expressions may be embedded as `${ ... }` in host DSLs. The engine evaluates the expression body against the current context as `.`.
+A broad set of deterministic builtins is implemented across types/conversions, collections, strings, math, generators, path operations, and an injectable-clock date suite. See the [README builtins list](../README.md#builtins) for a categorized summary and [`compatibility.md`](compatibility.md) for the full jq 1.8 matrix.
 
-### Syntax (planned for v0)
+## Not yet supported
 
-- Literals: `null`, `true`, `false`, numbers, strings
-- Identity: `.`
-- Field/index:
-  - `.foo`, `."foo bar"`, `.[0]`, `.[expr]`
-  - Optional access: `.foo?`, `.[0]?`
-- Arrays/objects:
-  - `[expr, ...]`
-  - `{key: value, ...}` and computed keys `{(expr): value}`
-- Composition:
-  - Pipe: `a | b`
-  - Comma: `a, b`
-  - Parentheses
-- Conditionals: `if a then b elif c then d else e end`
-- Boolean ops: `and`, `or`, `not`
-- Comparisons: `== != < <= > >=`
-- Arithmetic: `+ - * / %` and unary `-`
-- Alternative: `a // b`
-- Simple binding: `expr as $x | ...`
-- Function definitions (inline): `def name(args): expr;` (no module system)
-- Error handling: `try a catch b`
-
-### Builtins (planned for v0)
-
-Start with common, deterministic builtins:
-
-- Type and conversion: `type`, `tostring` (deterministic key order), `tonumber`, `length`, `keys` (sorted), `has`
-- Collections: `map(f)`, `select(f)`, `sort` (stable), `sort_by(f)` (stable), `unique` (preserve order), `unique_by(f)` (preserve order)
-- Object/array transforms: `to_entries` (sorted keys), `from_entries`, `with_entries(f)`
-- Strings: `split`, `join` (strict string input), `startswith`, `endswith`, `contains` (recursive)
-
-## v1: “Maximal deterministic jq”
-
-Once the MVP is stable, expand language support toward jq parity (still excluding the safety exclusions above):
-
-### Additional syntax/features (v1 candidates)
-
-- `reduce` / `foreach`
-- Recursive descent `..`
-- Path/update operations: `path`, `paths`, `getpath`, `setpath`, `delpaths`
-- Assignment/update operators: `=`, `|=`, `+=`, etc. (where semantics are well-defined)
-- Richer patterns for `as $var` bindings (destructuring)
-
-### Builtins expansion (v1 candidates)
-
-- More string/array/object utilities from jq
-- Regex features (only with deterministic behavior guarantees)
-- Encoding/format filters (`@json`, `@csv`, etc.) with deterministic escaping
+- Regex family (`test`, `match`, `capture`, `scan`, regex `split`/`sub`/`gsub`).
+- Format/encoding filters (`@json`, `@csv`, `@base64`, …).
+- Streaming helpers (`fromstream`, `truncate_stream`) and the destructuring alternative operator `?//`.
 
 ## Validation model
 
-We will implement:
+1. Parse → AST.
+2. Validate: all AST node types supported, all called builtins supported and allowed, all operators supported.
+3. Interpret under execution limits.
 
-1. Parse → AST
-2. Validate:
-   - all AST node types supported
-   - all called builtins supported and allowed
-   - all operators supported
-3. Compile (optional) or interpret
+## Why external modules aren't needed
 
-## Why we don’t need external modules
-
-Expressions are evaluated inline; authors can still use inline `def ...;` to structure complex expressions without relying on separate `.jq` module files.
+Expressions are evaluated inline; authors can use inline `def …;` to structure complex expressions without separate `.jq` module files.

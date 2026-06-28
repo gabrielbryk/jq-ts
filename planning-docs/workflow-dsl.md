@@ -18,9 +18,10 @@ Because expressions are embedded inline:
 
 Support as much of jq as possible **except**:
 
-- non-deterministic builtins (e.g., `now`)
 - any I/O or environment-dependent behavior (reading inputs/files/env; debug side effects)
 - module loading from disk (`import/include`)
+
+`now` is available but only resolves to a clock the host injects (`EvalOptions.now`); it throws otherwise, so the engine never reads the system clock. A host that wants fully time-independent expressions can simply leave `now` uninjected.
 
 Everything else is gated by validator + execution limits to keep user-supplied expressions safe.
 
@@ -33,6 +34,7 @@ Everything else is gated by validator + execution limits to keep user-supplied e
 
 ### What to explicitly reject
 
-- `now`
 - `import` / `include`
 - external I/O builtins (`input`, `inputs`, and any equivalent)
+
+(`now` is gated by clock injection rather than rejected — see above.)
