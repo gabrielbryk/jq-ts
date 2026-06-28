@@ -43,7 +43,7 @@ const isPath = (val: Value): val is PathSegment[] => {
   )
 }
 
-export const ensurePath = (val: Value, span: Span): PathSegment[] => {
+const ensurePath = (val: Value, span: Span): PathSegment[] => {
   if (isPath(val)) return val
   throw new RuntimeError('Path must be an array of strings, integers, or slice objects', span)
 }

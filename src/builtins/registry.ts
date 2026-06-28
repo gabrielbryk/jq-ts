@@ -2,7 +2,7 @@ import type { BuiltinSpec } from './types'
 
 export const builtins: Record<string, BuiltinSpec[]> = {}
 
-export const registerBuiltin = (spec: BuiltinSpec) => {
+const registerBuiltin = (spec: BuiltinSpec) => {
   if (!builtins[spec.name]) {
     builtins[spec.name] = []
   }
