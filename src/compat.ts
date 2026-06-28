@@ -248,8 +248,11 @@ const classifyError = (err: JqTsError): CompatibilityFindingCategory => {
   return 'unsupported-syntax'
 }
 
+// `now` and the date builtins are implemented (see src/builtins/dates.ts), so
+// they are no longer excluded. `input`/`inputs` (streaming) and `env`
+// (host environment) remain intentional exclusions.
 const isIntentionalExclusion = (message: string): boolean =>
-  ['now', 'input', 'inputs', 'env'].some((name) => message === `Unknown function: ${name}`)
+  ['input', 'inputs', 'env'].some((name) => message === `Unknown function: ${name}`)
 
 const collectWarnings = (node: FilterNode): CompatibilityFinding[] => {
   const warnings: CompatibilityFinding[] = []

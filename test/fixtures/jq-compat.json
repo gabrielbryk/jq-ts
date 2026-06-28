@@ -1,36 +1,180 @@
 [
-  { "name": "identity null", "expr": ".", "input": null },
-  { "name": "identity object", "expr": ".", "input": { "a": 1, "b": [1, 2] } },
-  { "name": "field present", "expr": ".a", "input": { "a": 1 } },
-  { "name": "field nested", "expr": ".a.b", "input": { "a": { "b": 2 } } },
-  { "name": "field missing null", "expr": ".missing", "input": { "a": 1 } },
-  { "name": "field missing optional", "expr": ".missing?", "input": { "a": 1 } },
-  { "name": "field optional wrong type", "expr": ".missing?", "input": 1 },
-  { "name": "index array", "expr": ".[1]", "input": [10, 20, 30] },
-  { "name": "index array negative", "expr": ".[-1]", "input": [10, 20, 30] },
-  { "name": "index array out of bounds", "expr": ".[99]", "input": [1] },
-  { "name": "iterate optional wrong type", "expr": ".[]?", "input": 1 },
-  { "name": "index object string", "expr": ".[\"k\"]", "input": { "k": 5 } },
-  { "name": "index object variable", "expr": "\"k\" as $k | .[$k]", "input": { "k": 5 } },
-  { "name": "comma fanout", "expr": ".a, .b", "input": { "a": 1, "b": 2 } },
-  { "name": "comments ignored", "expr": ".a # comment\n| . + 1", "input": { "a": 1 } },
-  { "name": "comma fanout array", "expr": "[.a, .b]", "input": { "a": 1, "b": 2 } },
-  { "name": "pipe arithmetic", "expr": ".a | . + 2", "input": { "a": 3 } },
+  {
+    "name": "identity null",
+    "expr": ".",
+    "input": null
+  },
+  {
+    "name": "identity object",
+    "expr": ".",
+    "input": {
+      "a": 1,
+      "b": [1, 2]
+    }
+  },
+  {
+    "name": "field present",
+    "expr": ".a",
+    "input": {
+      "a": 1
+    }
+  },
+  {
+    "name": "field nested",
+    "expr": ".a.b",
+    "input": {
+      "a": {
+        "b": 2
+      }
+    }
+  },
+  {
+    "name": "field missing null",
+    "expr": ".missing",
+    "input": {
+      "a": 1
+    }
+  },
+  {
+    "name": "field missing optional",
+    "expr": ".missing?",
+    "input": {
+      "a": 1
+    }
+  },
+  {
+    "name": "field optional wrong type",
+    "expr": ".missing?",
+    "input": 1
+  },
+  {
+    "name": "index array",
+    "expr": ".[1]",
+    "input": [10, 20, 30]
+  },
+  {
+    "name": "index array negative",
+    "expr": ".[-1]",
+    "input": [10, 20, 30]
+  },
+  {
+    "name": "index array out of bounds",
+    "expr": ".[99]",
+    "input": [1]
+  },
+  {
+    "name": "iterate optional wrong type",
+    "expr": ".[]?",
+    "input": 1
+  },
+  {
+    "name": "index object string",
+    "expr": ".[\"k\"]",
+    "input": {
+      "k": 5
+    }
+  },
+  {
+    "name": "index object variable",
+    "expr": "\"k\" as $k | .[$k]",
+    "input": {
+      "k": 5
+    }
+  },
+  {
+    "name": "comma fanout",
+    "expr": ".a, .b",
+    "input": {
+      "a": 1,
+      "b": 2
+    }
+  },
+  {
+    "name": "comments ignored",
+    "expr": ".a # comment\n| . + 1",
+    "input": {
+      "a": 1
+    }
+  },
+  {
+    "name": "comma fanout array",
+    "expr": "[.a, .b]",
+    "input": {
+      "a": 1,
+      "b": 2
+    }
+  },
+  {
+    "name": "pipe arithmetic",
+    "expr": ".a | . + 2",
+    "input": {
+      "a": 3
+    }
+  },
   {
     "name": "boolean and or",
     "expr": "(.x and .y) or false",
-    "input": { "x": true, "y": false }
+    "input": {
+      "x": true,
+      "y": false
+    }
   },
-  { "name": "alt fallback", "expr": ".missing // \"ok\"", "input": { "a": null } },
-  { "name": "alt fallback chain", "expr": "null // false // 0 // .a", "input": { "a": 1 } },
-  { "name": "comparisons", "expr": "[.a == 2, .a < 2, .a >= 2]", "input": { "a": 2 } },
-  { "name": "deep comparisons", "expr": ".a == .b", "input": { "a": { "x": 1 }, "b": { "x": 1 } } },
-  { "name": "arrays build", "expr": "[.a, .b + 1]", "input": { "a": 1, "b": 2 } },
-  { "name": "objects build", "expr": "{x: .a, y: .b}", "input": { "a": 1, "b": 2 } },
+  {
+    "name": "alt fallback",
+    "expr": ".missing // \"ok\"",
+    "input": {
+      "a": null
+    }
+  },
+  {
+    "name": "alt fallback chain",
+    "expr": "null // false // 0 // .a",
+    "input": {
+      "a": 1
+    }
+  },
+  {
+    "name": "comparisons",
+    "expr": "[.a == 2, .a < 2, .a >= 2]",
+    "input": {
+      "a": 2
+    }
+  },
+  {
+    "name": "deep comparisons",
+    "expr": ".a == .b",
+    "input": {
+      "a": {
+        "x": 1
+      },
+      "b": {
+        "x": 1
+      }
+    }
+  },
+  {
+    "name": "arrays build",
+    "expr": "[.a, .b + 1]",
+    "input": {
+      "a": 1,
+      "b": 2
+    }
+  },
+  {
+    "name": "objects build",
+    "expr": "{x: .a, y: .b}",
+    "input": {
+      "a": 1,
+      "b": 2
+    }
+  },
   {
     "name": "objects build dynamic key",
     "expr": "{ (.k): .v }",
-    "input": { "k": "foo", "v": 123 }
+    "input": {
+      "k": "foo",
+      "v": 123
+    }
   },
   {
     "name": "objects build parenthesized value",
@@ -40,9 +184,15 @@
   {
     "name": "if branches",
     "expr": "if .a > 1 then \"big\" elif .a == 1 then \"mid\" else \"small\" end",
-    "input": { "a": 1 }
+    "input": {
+      "a": 1
+    }
   },
-  { "name": "variables reuse", "expr": ". as $x | [$x, $x]", "input": [1, 2, 3] },
+  {
+    "name": "variables reuse",
+    "expr": ". as $x | [$x, $x]",
+    "input": [1, 2, 3]
+  },
   {
     "name": "array destructuring binding",
     "expr": ". as [$a, $b, $c] | [$a, $b, $c]",
@@ -51,7 +201,12 @@
   {
     "name": "object destructuring binding",
     "expr": ". as {user: {id: $id}, $name, missing: $missing} | [$id, $name, $missing]",
-    "input": { "user": { "id": 7 }, "name": "Ada" }
+    "input": {
+      "user": {
+        "id": 7
+      },
+      "name": "Ada"
+    }
   },
   {
     "name": "reduce destructuring binding",
@@ -72,13 +227,47 @@
   {
     "name": "variables nested pipe",
     "expr": ".a as $x | .b | . + $x",
-    "input": { "a": 2, "b": 3 }
+    "input": {
+      "a": 2,
+      "b": 3
+    }
   },
-  { "name": "multiple outputs pipe", "expr": "(.a, .b) | . + 1", "input": { "a": 1, "b": 2 } },
-  { "name": "nested structures traversal", "expr": ".a[0].b", "input": { "a": [{ "b": 5 }] } },
-  { "name": "string escapes", "expr": "\"a\\nb\"", "input": null },
-  { "name": "string interpolation", "expr": "\"Val: \\(.a)\"", "input": { "a": 42 } },
-  { "name": "error builtin", "expr": "try error(\"oops\") catch .", "input": null },
+  {
+    "name": "multiple outputs pipe",
+    "expr": "(.a, .b) | . + 1",
+    "input": {
+      "a": 1,
+      "b": 2
+    }
+  },
+  {
+    "name": "nested structures traversal",
+    "expr": ".a[0].b",
+    "input": {
+      "a": [
+        {
+          "b": 5
+        }
+      ]
+    }
+  },
+  {
+    "name": "string escapes",
+    "expr": "\"a\\nb\"",
+    "input": null
+  },
+  {
+    "name": "string interpolation",
+    "expr": "\"Val: \\(.a)\"",
+    "input": {
+      "a": 42
+    }
+  },
+  {
+    "name": "error builtin",
+    "expr": "try error(\"oops\") catch .",
+    "input": null
+  },
   {
     "name": "complex: quicksort",
     "expr": "def quicksort: if length < 2 then . else (.[0]) as $pivot | (.[1:] | map(select(. < $pivot)) | quicksort) + [$pivot] + (.[1:] | map(select(. >= $pivot)) | quicksort) end; quicksort",
@@ -114,8 +303,14 @@
     "expr": "(.users[] | select(.score < 50) | .active) |= false",
     "input": {
       "users": [
-        { "score": 60, "active": true },
-        { "score": 40, "active": true }
+        {
+          "score": 60,
+          "active": true
+        },
+        {
+          "score": 40,
+          "active": true
+        }
       ]
     }
   },
@@ -124,97 +319,354 @@
     "expr": "try (1, error(\"fail\")) catch \"caught\"",
     "input": null
   },
-  { "name": "type builtin", "expr": "type", "input": 3.14 },
-  { "name": "tostring number", "expr": "tostring", "input": 42 },
-  { "name": "tonumber string", "expr": "tonumber", "input": "1.5" },
-  { "name": "length string", "expr": "length", "input": "hello" },
-  { "name": "length array", "expr": "length", "input": [1, 2, 3] },
-  { "name": "keys array", "expr": "keys", "input": ["a", "b"] },
-  { "name": "has array index", "expr": "has(1)", "input": [10, 20, 30] },
-  { "name": "has object key", "expr": "has(\"k\")", "input": { "k": 1, "x": 2 } },
-  { "name": "sort simple", "expr": "sort", "input": [3, 1, 2] },
+  {
+    "name": "type builtin",
+    "expr": "type",
+    "input": 3.14
+  },
+  {
+    "name": "tostring number",
+    "expr": "tostring",
+    "input": 42
+  },
+  {
+    "name": "tonumber string",
+    "expr": "tonumber",
+    "input": "1.5"
+  },
+  {
+    "name": "length string",
+    "expr": "length",
+    "input": "hello"
+  },
+  {
+    "name": "length array",
+    "expr": "length",
+    "input": [1, 2, 3]
+  },
+  {
+    "name": "keys array",
+    "expr": "keys",
+    "input": ["a", "b"]
+  },
+  {
+    "name": "has array index",
+    "expr": "has(1)",
+    "input": [10, 20, 30]
+  },
+  {
+    "name": "has object key",
+    "expr": "has(\"k\")",
+    "input": {
+      "k": 1,
+      "x": 2
+    }
+  },
+  {
+    "name": "sort simple",
+    "expr": "sort",
+    "input": [3, 1, 2]
+  },
   {
     "name": "sort_by object field",
     "expr": "sort_by(.x)",
-    "input": [{ "x": 2 }, { "x": 1 }, { "x": 2, "y": 0 }]
+    "input": [
+      {
+        "x": 2
+      },
+      {
+        "x": 1
+      },
+      {
+        "x": 2,
+        "y": 0
+      }
+    ]
   },
-  { "name": "unique numbers", "expr": "unique", "input": [1, 2, 1, 3, 2] },
+  {
+    "name": "unique numbers",
+    "expr": "unique",
+    "input": [1, 2, 1, 3, 2]
+  },
   {
     "name": "unique_by field",
     "expr": "unique_by(.k)",
     "input": [
-      { "k": 1, "v": "a" },
-      { "k": 2, "v": "b" },
-      { "k": 1, "v": "c" }
+      {
+        "k": 1,
+        "v": "a"
+      },
+      {
+        "k": 2,
+        "v": "b"
+      },
+      {
+        "k": 1,
+        "v": "c"
+      }
     ]
   },
-  { "name": "map increment", "expr": "map(. + 1)", "input": [1, 2, 3] },
-  { "name": "select greater than", "expr": "map(select(. > 1))", "input": [0, 2, 3] },
+  {
+    "name": "map increment",
+    "expr": "map(. + 1)",
+    "input": [1, 2, 3]
+  },
+  {
+    "name": "select greater than",
+    "expr": "map(select(. > 1))",
+    "input": [0, 2, 3]
+  },
   {
     "name": "to_entries/from_entries roundtrip",
     "expr": "to_entries | from_entries",
-    "input": { "a": 1, "b": 2 }
+    "input": {
+      "a": 1,
+      "b": 2
+    }
   },
   {
     "name": "with_entries transform",
     "expr": "with_entries({key: .key, value: (.value + 1)})",
-    "input": { "a": 1, "b": 2 }
+    "input": {
+      "a": 1,
+      "b": 2
+    }
   },
-  { "name": "split comma", "expr": "split(\",\")", "input": "a,b,c" },
-  { "name": "join dash", "expr": "join(\"-\")", "input": ["a", "b", "c"] },
-  { "name": "startswith", "expr": "startswith(\"ab\")", "input": "abc" },
-  { "name": "endswith", "expr": "endswith(\"bc\")", "input": "abc" },
-  { "name": "contains string", "expr": "contains(\"b\")", "input": "abc" },
-  { "name": "contains array element", "expr": "contains([2])", "input": [1, 2, 3] },
+  {
+    "name": "split comma",
+    "expr": "split(\",\")",
+    "input": "a,b,c"
+  },
+  {
+    "name": "join dash",
+    "expr": "join(\"-\")",
+    "input": ["a", "b", "c"]
+  },
+  {
+    "name": "startswith",
+    "expr": "startswith(\"ab\")",
+    "input": "abc"
+  },
+  {
+    "name": "endswith",
+    "expr": "endswith(\"bc\")",
+    "input": "abc"
+  },
+  {
+    "name": "contains string",
+    "expr": "contains(\"b\")",
+    "input": "abc"
+  },
+  {
+    "name": "contains array element",
+    "expr": "contains([2])",
+    "input": [1, 2, 3]
+  },
   {
     "name": "contains object key",
     "expr": "contains({\"a\":1})",
-    "input": { "a": 1, "b": 2 }
+    "input": {
+      "a": 1,
+      "b": 2
+    }
   },
-  { "name": "range end", "expr": "range(3)", "input": null },
-  { "name": "range start end", "expr": "range(1; 4)", "input": null },
-  { "name": "range start end step", "expr": "range(0; 6; 2)", "input": null },
-  { "name": "limit iterator", "expr": "limit(2; range(5))", "input": null },
+  {
+    "name": "range end",
+    "expr": "range(3)",
+    "input": null
+  },
+  {
+    "name": "range start end",
+    "expr": "range(1; 4)",
+    "input": null
+  },
+  {
+    "name": "range start end step",
+    "expr": "range(0; 6; 2)",
+    "input": null
+  },
+  {
+    "name": "limit iterator",
+    "expr": "limit(2; range(5))",
+    "input": null
+  },
   {
     "name": "skip iterator",
     "expr": "skip(2; range(5))",
     "input": null,
     "minJqVersion": "1.8"
   },
-  { "name": "first iterator", "expr": "first(range(5))", "input": null },
-  { "name": "last iterator", "expr": "last(range(5))", "input": null },
-  { "name": "nth iterator", "expr": "nth(2; range(5))", "input": null },
-  { "name": "first array shorthand", "expr": "first", "input": [10, 20] },
-  { "name": "last array shorthand", "expr": "last", "input": [10, 20] },
-  { "name": "nth array shorthand", "expr": "nth(1)", "input": [10, 20] },
-  { "name": "isempty basic", "expr": "isempty(empty)", "input": null },
-  { "name": "all aggregator", "expr": "all([true, true][])", "input": [] },
-  { "name": "all zero arity", "expr": "all", "input": [true, true] },
-  { "name": "any zero arity", "expr": "any", "input": [false, true] },
-  { "name": "any condition", "expr": "any(. == 1)", "input": [0, 1] },
-  { "name": "all condition", "expr": "all(. > 0)", "input": [1, 2] },
-  { "name": "all two arity", "expr": "all(.[]; . > 0)", "input": [1, 2] },
-  { "name": "any two arity", "expr": "any(.[]; . > 1)", "input": [0, 2] },
-  { "name": "math sqrt", "expr": "sqrt", "input": 9 },
-  { "name": "math floor", "expr": "floor", "input": 3.9 },
-  { "name": "min array", "expr": "min", "input": [3, 1, 2] },
-  { "name": "max array", "expr": "max", "input": [3, 1, 2] },
-  { "name": "path builtin", "expr": "path(.a.b)", "input": { "a": { "b": 1 } } },
-  { "name": "assignment simple", "expr": ".a = 1", "input": { "a": 0 } },
-  { "name": "assignment update", "expr": ".a |= . + 1", "input": { "a": 1 } },
-  { "name": "assignment add", "expr": ".a += 2", "input": { "a": 1 } },
-  { "name": "assignment sub", "expr": ".a -= 1", "input": { "a": 2 } },
-  { "name": "assignment mul", "expr": ".a *= 2", "input": { "a": 3 } },
-  { "name": "assignment div", "expr": ".a /= 2", "input": { "a": 4 } },
-  { "name": "assignment mod", "expr": ".a %= 3", "input": { "a": 5 } },
+  {
+    "name": "first iterator",
+    "expr": "first(range(5))",
+    "input": null
+  },
+  {
+    "name": "last iterator",
+    "expr": "last(range(5))",
+    "input": null
+  },
+  {
+    "name": "nth iterator",
+    "expr": "nth(2; range(5))",
+    "input": null
+  },
+  {
+    "name": "first array shorthand",
+    "expr": "first",
+    "input": [10, 20]
+  },
+  {
+    "name": "last array shorthand",
+    "expr": "last",
+    "input": [10, 20]
+  },
+  {
+    "name": "nth array shorthand",
+    "expr": "nth(1)",
+    "input": [10, 20]
+  },
+  {
+    "name": "isempty basic",
+    "expr": "isempty(empty)",
+    "input": null
+  },
+  {
+    "name": "all aggregator",
+    "expr": "all([true, true][])",
+    "input": []
+  },
+  {
+    "name": "all zero arity",
+    "expr": "all",
+    "input": [true, true]
+  },
+  {
+    "name": "any zero arity",
+    "expr": "any",
+    "input": [false, true]
+  },
+  {
+    "name": "any condition",
+    "expr": "any(. == 1)",
+    "input": [0, 1]
+  },
+  {
+    "name": "all condition",
+    "expr": "all(. > 0)",
+    "input": [1, 2]
+  },
+  {
+    "name": "all two arity",
+    "expr": "all(.[]; . > 0)",
+    "input": [1, 2]
+  },
+  {
+    "name": "any two arity",
+    "expr": "any(.[]; . > 1)",
+    "input": [0, 2]
+  },
+  {
+    "name": "math sqrt",
+    "expr": "sqrt",
+    "input": 9
+  },
+  {
+    "name": "math floor",
+    "expr": "floor",
+    "input": 3.9
+  },
+  {
+    "name": "min array",
+    "expr": "min",
+    "input": [3, 1, 2]
+  },
+  {
+    "name": "max array",
+    "expr": "max",
+    "input": [3, 1, 2]
+  },
+  {
+    "name": "path builtin",
+    "expr": "path(.a.b)",
+    "input": {
+      "a": {
+        "b": 1
+      }
+    }
+  },
+  {
+    "name": "assignment simple",
+    "expr": ".a = 1",
+    "input": {
+      "a": 0
+    }
+  },
+  {
+    "name": "assignment update",
+    "expr": ".a |= . + 1",
+    "input": {
+      "a": 1
+    }
+  },
+  {
+    "name": "assignment add",
+    "expr": ".a += 2",
+    "input": {
+      "a": 1
+    }
+  },
+  {
+    "name": "assignment sub",
+    "expr": ".a -= 1",
+    "input": {
+      "a": 2
+    }
+  },
+  {
+    "name": "assignment mul",
+    "expr": ".a *= 2",
+    "input": {
+      "a": 3
+    }
+  },
+  {
+    "name": "assignment div",
+    "expr": ".a /= 2",
+    "input": {
+      "a": 4
+    }
+  },
+  {
+    "name": "assignment mod",
+    "expr": ".a %= 3",
+    "input": {
+      "a": 5
+    }
+  },
   {
     "name": "assignment path complex",
     "expr": "(.a, .b) = 10",
-    "input": { "a": 1, "b": 2 }
+    "input": {
+      "a": 1,
+      "b": 2
+    }
   },
-  { "name": "reduce simple", "expr": "reduce .[] as $x (0; . + $x)", "input": [1, 2, 3] },
-  { "name": "foreach simple", "expr": "foreach .[] as $x (0; . + $x; .)", "input": [1, 2, 3] },
-  { "name": "label break basic", "expr": "label $out | 1, 2, (break $out), 3", "input": null },
+  {
+    "name": "reduce simple",
+    "expr": "reduce .[] as $x (0; . + $x)",
+    "input": [1, 2, 3]
+  },
+  {
+    "name": "foreach simple",
+    "expr": "foreach .[] as $x (0; . + $x; .)",
+    "input": [1, 2, 3]
+  },
+  {
+    "name": "label break basic",
+    "expr": "label $out | 1, 2, (break $out), 3",
+    "input": null
+  },
   {
     "name": "label break nested",
     "expr": "label $out | range(3) | if . == 1 then break $out else . end",
@@ -247,7 +699,12 @@
     "input": 1,
     "expectError": true
   },
-  { "name": "has on number error", "expr": "has(0)", "input": 1, "expectError": true },
+  {
+    "name": "has on number error",
+    "expr": "has(0)",
+    "input": 1,
+    "expectError": true
+  },
   {
     "name": "split non-string separator error",
     "expr": "split(1)",
@@ -263,57 +720,178 @@
   {
     "name": "tonumber object error",
     "expr": "tonumber",
-    "input": { "a": 1 },
+    "input": {
+      "a": 1
+    },
     "expectError": true
   },
-  { "name": "error builtin", "expr": "error(\"fail\")", "input": null, "expectError": true },
-
-  { "name": "add array numbers", "expr": "add", "input": [1, 2, 3] },
-  { "name": "add array strings", "expr": "add", "input": ["a", "b"] },
-  { "name": "add array arrays", "expr": "add", "input": [[1], [2]] },
-  { "name": "add array objects", "expr": "add", "input": [{ "a": 1 }, { "b": 2 }] },
-  { "name": "add empty", "expr": "add", "input": [] },
-  { "name": "add generator", "expr": "add(.[])", "input": [1, 2, 3], "minJqVersion": "1.8" },
-  { "name": "add error type", "expr": "add", "input": 1, "expectError": true },
-  { "name": "add error mixed", "expr": "add", "input": [1, "a"], "expectError": true },
-
+  {
+    "name": "error builtin",
+    "expr": "error(\"fail\")",
+    "input": null,
+    "expectError": true
+  },
+  {
+    "name": "add array numbers",
+    "expr": "add",
+    "input": [1, 2, 3]
+  },
+  {
+    "name": "add array strings",
+    "expr": "add",
+    "input": ["a", "b"]
+  },
+  {
+    "name": "add array arrays",
+    "expr": "add",
+    "input": [[1], [2]]
+  },
+  {
+    "name": "add array objects",
+    "expr": "add",
+    "input": [
+      {
+        "a": 1
+      },
+      {
+        "b": 2
+      }
+    ]
+  },
+  {
+    "name": "add empty",
+    "expr": "add",
+    "input": []
+  },
+  {
+    "name": "add generator",
+    "expr": "add(.[])",
+    "input": [1, 2, 3],
+    "minJqVersion": "1.8"
+  },
+  {
+    "name": "add error type",
+    "expr": "add",
+    "input": 1,
+    "expectError": true
+  },
+  {
+    "name": "add error mixed",
+    "expr": "add",
+    "input": [1, "a"],
+    "expectError": true
+  },
   {
     "name": "group_by simple",
     "expr": "group_by(.a)",
-    "input": [{ "a": 1 }, { "a": 2 }, { "a": 1 }]
+    "input": [
+      {
+        "a": 1
+      },
+      {
+        "a": 2
+      },
+      {
+        "a": 1
+      }
+    ]
   },
   {
     "name": "group_by missing key",
     "expr": "group_by(.a)",
-    "input": [{ "b": 1 }],
+    "input": [
+      {
+        "b": 1
+      }
+    ],
     "expectError": false
   },
-  { "name": "group_by error not array", "expr": "group_by(.a)", "input": {}, "expectError": true },
-
+  {
+    "name": "group_by error not array",
+    "expr": "group_by(.a)",
+    "input": {},
+    "expectError": true
+  },
   {
     "name": "map_values object delete empty",
     "expr": "map_values(select(. > 1))",
-    "input": { "a": 1, "b": 2 }
+    "input": {
+      "a": 1,
+      "b": 2
+    }
   },
-  { "name": "map_values array delete empty", "expr": "map_values(select(. > 1))", "input": [1, 2] },
-  { "name": "in object", "expr": "\"a\" | in({a:1})", "input": null },
-  { "name": "in array", "expr": "1 | in([10,20])", "input": null },
-  { "name": "del object path", "expr": "del(.a)", "input": { "a": 1, "b": 2 } },
+  {
+    "name": "map_values array delete empty",
+    "expr": "map_values(select(. > 1))",
+    "input": [1, 2]
+  },
+  {
+    "name": "in object",
+    "expr": "\"a\" | in({a:1})",
+    "input": null
+  },
+  {
+    "name": "in array",
+    "expr": "1 | in([10,20])",
+    "input": null
+  },
+  {
+    "name": "del object path",
+    "expr": "del(.a)",
+    "input": {
+      "a": 1,
+      "b": 2
+    }
+  },
   {
     "name": "pick object paths",
     "expr": "pick(.a, .b.c, .x.y)",
-    "input": { "a": 1, "b": { "c": 2, "d": 3 } }
+    "input": {
+      "a": 1,
+      "b": {
+        "c": 2,
+        "d": 3
+      }
+    }
   },
-
-  { "name": "reverse array", "expr": "reverse", "input": [1, 2, 3] },
-  { "name": "reverse string", "expr": "reverse", "input": "abc", "expectError": true },
-  { "name": "reverse error", "expr": "reverse", "input": 1, "expectError": true },
-
-  { "name": "flatten simple", "expr": "flatten", "input": [[1], [2, [3]]] },
-  { "name": "flatten empty", "expr": "flatten", "input": [] },
-  { "name": "flatten depth", "expr": "flatten(1)", "input": [[1], [2, [3]]] },
-  { "name": "flatten error", "expr": "flatten", "input": 1, "expectError": true },
-
+  {
+    "name": "reverse array",
+    "expr": "reverse",
+    "input": [1, 2, 3]
+  },
+  {
+    "name": "reverse string",
+    "expr": "reverse",
+    "input": "abc",
+    "expectError": true
+  },
+  {
+    "name": "reverse error",
+    "expr": "reverse",
+    "input": 1,
+    "expectError": true
+  },
+  {
+    "name": "flatten simple",
+    "expr": "flatten",
+    "input": [[1], [2, [3]]]
+  },
+  {
+    "name": "flatten empty",
+    "expr": "flatten",
+    "input": []
+  },
+  {
+    "name": "flatten depth",
+    "expr": "flatten(1)",
+    "input": [[1], [2, [3]]]
+  },
+  {
+    "name": "flatten error",
+    "expr": "flatten",
+    "input": 1,
+    "expectError": true
+  },
   {
     "name": "transpose matrix",
     "expr": "transpose",
@@ -330,128 +908,480 @@
       [4, 5]
     ]
   },
-  { "name": "transpose empty outer", "expr": "transpose", "input": [] },
-  { "name": "transpose empty inner", "expr": "transpose", "input": [[], []] },
-  { "name": "transpose error type", "expr": "transpose", "input": [1], "expectError": true },
-
-  { "name": "bsearch found", "expr": "bsearch(2)", "input": [1, 2, 3] },
-  { "name": "bsearch not found", "expr": "bsearch(0)", "input": [1, 2, 3] },
-  { "name": "bsearch error not array", "expr": "bsearch(0)", "input": 1, "expectError": true },
-
-  { "name": "keys_unsorted array", "expr": "keys_unsorted", "input": [10, 20] },
-  { "name": "keys_unsorted object", "expr": "keys_unsorted", "input": { "b": 1, "a": 2 } },
-  { "name": "keys_unsorted error", "expr": "keys_unsorted", "input": 1, "expectError": true },
-
-  { "name": "combinations simple", "expr": "combinations", "input": [[1, 2], [3]] },
-  { "name": "combinations n", "expr": "combinations(2)", "input": [0, 1] },
-  { "name": "combinations empty", "expr": "combinations", "input": [] },
-  { "name": "combinations inner empty", "expr": "combinations", "input": [[], [1]] },
-
-  { "name": "ltrimstr match", "expr": "ltrimstr(\"foo\")", "input": "foobar" },
-  { "name": "ltrimstr no match", "expr": "ltrimstr(\"bar\")", "input": "foobar" },
-  { "name": "rtrimstr match", "expr": "rtrimstr(\"bar\")", "input": "foobar" },
-  { "name": "rtrimstr no match", "expr": "rtrimstr(\"foo\")", "input": "foobar" },
+  {
+    "name": "transpose empty outer",
+    "expr": "transpose",
+    "input": []
+  },
+  {
+    "name": "transpose empty inner",
+    "expr": "transpose",
+    "input": [[], []]
+  },
+  {
+    "name": "transpose error type",
+    "expr": "transpose",
+    "input": [1],
+    "expectError": true
+  },
+  {
+    "name": "bsearch found",
+    "expr": "bsearch(2)",
+    "input": [1, 2, 3]
+  },
+  {
+    "name": "bsearch not found",
+    "expr": "bsearch(0)",
+    "input": [1, 2, 3]
+  },
+  {
+    "name": "bsearch error not array",
+    "expr": "bsearch(0)",
+    "input": 1,
+    "expectError": true
+  },
+  {
+    "name": "keys_unsorted array",
+    "expr": "keys_unsorted",
+    "input": [10, 20]
+  },
+  {
+    "name": "keys_unsorted object",
+    "expr": "keys_unsorted",
+    "input": {
+      "b": 1,
+      "a": 2
+    }
+  },
+  {
+    "name": "keys_unsorted error",
+    "expr": "keys_unsorted",
+    "input": 1,
+    "expectError": true
+  },
+  {
+    "name": "combinations simple",
+    "expr": "combinations",
+    "input": [[1, 2], [3]]
+  },
+  {
+    "name": "combinations n",
+    "expr": "combinations(2)",
+    "input": [0, 1]
+  },
+  {
+    "name": "combinations empty",
+    "expr": "combinations",
+    "input": []
+  },
+  {
+    "name": "combinations inner empty",
+    "expr": "combinations",
+    "input": [[], [1]]
+  },
+  {
+    "name": "ltrimstr match",
+    "expr": "ltrimstr(\"foo\")",
+    "input": "foobar"
+  },
+  {
+    "name": "ltrimstr no match",
+    "expr": "ltrimstr(\"bar\")",
+    "input": "foobar"
+  },
+  {
+    "name": "rtrimstr match",
+    "expr": "rtrimstr(\"bar\")",
+    "input": "foobar"
+  },
+  {
+    "name": "rtrimstr no match",
+    "expr": "rtrimstr(\"foo\")",
+    "input": "foobar"
+  },
   {
     "name": "trimstr both",
     "expr": "trimstr(\"ab\")",
     "input": "abXXab",
     "minJqVersion": "1.8"
   },
-  { "name": "trim whitespace", "expr": "trim", "input": "  hi  ", "minJqVersion": "1.8" },
-  { "name": "ltrim whitespace", "expr": "ltrim", "input": "  hi  ", "minJqVersion": "1.8" },
-  { "name": "rtrim whitespace", "expr": "rtrim", "input": "  hi  ", "minJqVersion": "1.8" },
-  { "name": "utf8bytelength ascii", "expr": "utf8bytelength", "input": "abc" },
-  { "name": "utf8bytelength unicode", "expr": "utf8bytelength", "input": "µ" },
-
-  { "name": "ascii_downcase", "expr": "ascii_downcase", "input": "FooBar" },
-  { "name": "ascii_upcase", "expr": "ascii_upcase", "input": "FooBar" },
-  { "name": "ascii_downcase non-ascii", "expr": "ascii_downcase", "input": "ÄBC" },
-  { "name": "ascii_upcase non-ascii", "expr": "ascii_upcase", "input": "äbc" },
-
-  { "name": "tojson simple", "expr": "tojson", "input": { "a": 1 } },
-  { "name": "fromjson simple", "expr": "fromjson", "input": "{\"a\":1}" },
+  {
+    "name": "trim whitespace",
+    "expr": "trim",
+    "input": "  hi  ",
+    "minJqVersion": "1.8"
+  },
+  {
+    "name": "ltrim whitespace",
+    "expr": "ltrim",
+    "input": "  hi  ",
+    "minJqVersion": "1.8"
+  },
+  {
+    "name": "rtrim whitespace",
+    "expr": "rtrim",
+    "input": "  hi  ",
+    "minJqVersion": "1.8"
+  },
+  {
+    "name": "utf8bytelength ascii",
+    "expr": "utf8bytelength",
+    "input": "abc"
+  },
+  {
+    "name": "utf8bytelength unicode",
+    "expr": "utf8bytelength",
+    "input": "µ"
+  },
+  {
+    "name": "ascii_downcase",
+    "expr": "ascii_downcase",
+    "input": "FooBar"
+  },
+  {
+    "name": "ascii_upcase",
+    "expr": "ascii_upcase",
+    "input": "FooBar"
+  },
+  {
+    "name": "ascii_downcase non-ascii",
+    "expr": "ascii_downcase",
+    "input": "ÄBC"
+  },
+  {
+    "name": "ascii_upcase non-ascii",
+    "expr": "ascii_upcase",
+    "input": "äbc"
+  },
+  {
+    "name": "tojson simple",
+    "expr": "tojson",
+    "input": {
+      "a": 1
+    }
+  },
+  {
+    "name": "fromjson simple",
+    "expr": "fromjson",
+    "input": "{\"a\":1}"
+  },
   {
     "name": "from_entries alternate names",
     "expr": "from_entries",
     "input": [
-      { "Key": "a", "Value": 1 },
-      { "Name": "b", "value": 2 }
+      {
+        "Key": "a",
+        "Value": 1
+      },
+      {
+        "Name": "b",
+        "value": 2
+      }
     ]
   },
-  { "name": "type filter arrays match", "expr": "arrays", "input": [1] },
-  { "name": "type filter arrays no match", "expr": "arrays", "input": 1 },
-  { "name": "type filter scalars", "expr": "scalars", "input": 1 },
-
-  { "name": "inside string", "expr": "inside(\"foobar\")", "input": "bar" },
-  { "name": "inside array", "expr": "inside([1,2,3])", "input": [1, 2] },
-  { "name": "inside object", "expr": "inside({a:1, b:2})", "input": { "a": 1 } },
-  { "name": "inside fail", "expr": "inside([1,2])", "input": [3] },
-
-  { "name": "while loop", "expr": "while(. < 5; . + 1)", "input": 1 },
-  { "name": "until loop", "expr": "until(. >= 5; . + 1)", "input": 1 },
-  { "name": "repeat with limit", "expr": "limit(3; repeat(1))", "input": null },
-
+  {
+    "name": "type filter arrays match",
+    "expr": "arrays",
+    "input": [1]
+  },
+  {
+    "name": "type filter arrays no match",
+    "expr": "arrays",
+    "input": 1
+  },
+  {
+    "name": "type filter scalars",
+    "expr": "scalars",
+    "input": 1
+  },
+  {
+    "name": "inside string",
+    "expr": "inside(\"foobar\")",
+    "input": "bar"
+  },
+  {
+    "name": "inside array",
+    "expr": "inside([1,2,3])",
+    "input": [1, 2]
+  },
+  {
+    "name": "inside object",
+    "expr": "inside({a:1, b:2})",
+    "input": {
+      "a": 1
+    }
+  },
+  {
+    "name": "inside fail",
+    "expr": "inside([1,2])",
+    "input": [3]
+  },
+  {
+    "name": "while loop",
+    "expr": "while(. < 5; . + 1)",
+    "input": 1
+  },
+  {
+    "name": "until loop",
+    "expr": "until(. >= 5; . + 1)",
+    "input": 1
+  },
+  {
+    "name": "repeat with limit",
+    "expr": "limit(3; repeat(1))",
+    "input": null
+  },
   {
     "name": "walk recursive",
     "expr": "walk(if type==\"number\" then .+1 else . end)",
-    "input": [[1], { "a": 2 }]
+    "input": [
+      [1],
+      {
+        "a": 2
+      }
+    ]
   },
-  { "name": "paths all", "expr": "paths", "input": { "a": [1], "b": 2 } },
-  { "name": "paths scalars", "expr": "paths(scalars)", "input": { "a": 1, "b": { "c": 2 } } },
-  { "name": "length number", "expr": "length", "input": -5 },
-  { "name": "join mixed scalars", "expr": "join(\"|\")", "input": ["a", null, false, true, 1] },
-
-  { "name": "assign simple", "expr": ".a = 1", "input": { "a": 0 } },
-  { "name": "assign nested", "expr": ".a.b = 2", "input": { "a": { "b": 1 } } },
-  { "name": "assign array index", "expr": ".[1] = 3", "input": [1, 2] },
-  { "name": "assign multiple paths", "expr": "(.a, .b) = 1", "input": { "a": 0, "b": 0 } },
-  { "name": "assign update", "expr": ".a |= . + 1", "input": { "a": 1 } },
-  { "name": "assign arithmetic plus", "expr": ".a += 1", "input": { "a": 1 } },
-  { "name": "assign arithmetic minus", "expr": ".a -= 1", "input": { "a": 1 } },
-  { "name": "assign arithmetic mult", "expr": ".a *= 2", "input": { "a": 2 } },
-  { "name": "assign arithmetic div", "expr": ".a /= 2", "input": { "a": 4 } },
-  { "name": "assign arithmetic mod", "expr": ".a %= 2", "input": { "a": 5 } },
-  { "name": "assign alternative", "expr": ".a //= 2", "input": { "a": null } },
-  { "name": "assign delete", "expr": ".a |= empty", "input": { "a": 1, "b": 2 } },
-  { "name": "assign delete array", "expr": ".[1] |= empty", "input": [1, 2, 3] },
-  { "name": "assign scope check", "expr": ".a += .b", "input": { "a": 1, "b": 2 } },
-  { "name": "assign select", "expr": "(.[] | select(. > 1)) = 0", "input": [1, 2, 3] },
-  { "name": "assign deep object creation", "expr": ".a.b.c = 1", "input": null },
-  { "name": "assign array index creation", "expr": ".[2] = 1", "input": [] },
-  { "name": "object shorthand simple", "expr": "{a, b}", "input": { "a": 1, "b": 2, "c": 3 } },
+  {
+    "name": "paths all",
+    "expr": "paths",
+    "input": {
+      "a": [1],
+      "b": 2
+    }
+  },
+  {
+    "name": "paths scalars",
+    "expr": "paths(scalars)",
+    "input": {
+      "a": 1,
+      "b": {
+        "c": 2
+      }
+    }
+  },
+  {
+    "name": "length number",
+    "expr": "length",
+    "input": -5
+  },
+  {
+    "name": "join mixed scalars",
+    "expr": "join(\"|\")",
+    "input": ["a", null, false, true, 1]
+  },
+  {
+    "name": "assign simple",
+    "expr": ".a = 1",
+    "input": {
+      "a": 0
+    }
+  },
+  {
+    "name": "assign nested",
+    "expr": ".a.b = 2",
+    "input": {
+      "a": {
+        "b": 1
+      }
+    }
+  },
+  {
+    "name": "assign array index",
+    "expr": ".[1] = 3",
+    "input": [1, 2]
+  },
+  {
+    "name": "assign multiple paths",
+    "expr": "(.a, .b) = 1",
+    "input": {
+      "a": 0,
+      "b": 0
+    }
+  },
+  {
+    "name": "assign update",
+    "expr": ".a |= . + 1",
+    "input": {
+      "a": 1
+    }
+  },
+  {
+    "name": "assign arithmetic plus",
+    "expr": ".a += 1",
+    "input": {
+      "a": 1
+    }
+  },
+  {
+    "name": "assign arithmetic minus",
+    "expr": ".a -= 1",
+    "input": {
+      "a": 1
+    }
+  },
+  {
+    "name": "assign arithmetic mult",
+    "expr": ".a *= 2",
+    "input": {
+      "a": 2
+    }
+  },
+  {
+    "name": "assign arithmetic div",
+    "expr": ".a /= 2",
+    "input": {
+      "a": 4
+    }
+  },
+  {
+    "name": "assign arithmetic mod",
+    "expr": ".a %= 2",
+    "input": {
+      "a": 5
+    }
+  },
+  {
+    "name": "assign alternative",
+    "expr": ".a //= 2",
+    "input": {
+      "a": null
+    }
+  },
+  {
+    "name": "assign delete",
+    "expr": ".a |= empty",
+    "input": {
+      "a": 1,
+      "b": 2
+    }
+  },
+  {
+    "name": "assign delete array",
+    "expr": ".[1] |= empty",
+    "input": [1, 2, 3]
+  },
+  {
+    "name": "assign scope check",
+    "expr": ".a += .b",
+    "input": {
+      "a": 1,
+      "b": 2
+    }
+  },
+  {
+    "name": "assign select",
+    "expr": "(.[] | select(. > 1)) = 0",
+    "input": [1, 2, 3]
+  },
+  {
+    "name": "assign deep object creation",
+    "expr": ".a.b.c = 1",
+    "input": null
+  },
+  {
+    "name": "assign array index creation",
+    "expr": ".[2] = 1",
+    "input": []
+  },
+  {
+    "name": "object shorthand simple",
+    "expr": "{a, b}",
+    "input": {
+      "a": 1,
+      "b": 2,
+      "c": 3
+    }
+  },
   {
     "name": "object shorthand string",
     "expr": "{\"a\", \"b\"}",
-    "input": { "a": 1, "b": 2, "c": 3 }
+    "input": {
+      "a": 1,
+      "b": 2,
+      "c": 3
+    }
   },
   {
     "name": "object shorthand mixed",
     "expr": "{a, \"b\", c: .c}",
-    "input": { "a": 1, "b": 2, "c": 3 }
+    "input": {
+      "a": 1,
+      "b": 2,
+      "c": 3
+    }
   },
-  { "name": "null + array identity", "expr": "null + [1, 2]", "input": null },
-  { "name": "array + null identity", "expr": "[1, 2] + null", "input": null },
-  { "name": "null + object identity", "expr": "null + {a: 1}", "input": null },
-  { "name": "object + null identity", "expr": "{a: 1} + null", "input": null },
-  { "name": "null + string identity", "expr": "null + \"abc\"", "input": null },
-  { "name": "string + null identity", "expr": "\"abc\" + null", "input": null },
-  { "name": "null + boolean identity", "expr": "null + true", "input": null },
-  { "name": "boolean + null identity", "expr": "false + null", "input": null },
-  { "name": "null + null identity", "expr": "null + null", "input": null },
+  {
+    "name": "null + array identity",
+    "expr": "null + [1, 2]",
+    "input": null
+  },
+  {
+    "name": "array + null identity",
+    "expr": "[1, 2] + null",
+    "input": null
+  },
+  {
+    "name": "null + object identity",
+    "expr": "null + {a: 1}",
+    "input": null
+  },
+  {
+    "name": "object + null identity",
+    "expr": "{a: 1} + null",
+    "input": null
+  },
+  {
+    "name": "null + string identity",
+    "expr": "null + \"abc\"",
+    "input": null
+  },
+  {
+    "name": "string + null identity",
+    "expr": "\"abc\" + null",
+    "input": null
+  },
+  {
+    "name": "null + boolean identity",
+    "expr": "null + true",
+    "input": null
+  },
+  {
+    "name": "boolean + null identity",
+    "expr": "false + null",
+    "input": null
+  },
+  {
+    "name": "null + null identity",
+    "expr": "null + null",
+    "input": null
+  },
   {
     "name": "string interpolation strings (compat)",
     "expr": "\"Hello \\(.first) \\(.last)!\"",
-    "input": { "first": "John", "last": "Doe" }
+    "input": {
+      "first": "John",
+      "last": "Doe"
+    }
   },
   {
     "name": "string interpolation mixed (compat)",
     "expr": "\"Value: \\(.val)\"",
-    "input": { "val": { "a": 1 } }
+    "input": {
+      "val": {
+        "a": 1
+      }
+    }
   },
   {
     "name": "piped assignment (from bug report)",
     "expr": ". | .user.settings.theme = \"light\"",
-    "input": { "user": { "settings": { "theme": "dark" } } }
+    "input": {
+      "user": {
+        "settings": {
+          "theme": "dark"
+        }
+      }
+    }
   },
   {
     "name": "slice assignment",
@@ -461,10 +1391,195 @@
   {
     "name": "optional path assignment",
     "expr": ".a? = 1",
-    "input": { "b": 2 }
+    "input": {
+      "b": 2
+    }
   },
-  { "name": "builtin not", "expr": ".value | not", "input": { "value": false } },
-  { "name": "float indexing truncation", "expr": ".[1.5]", "input": [1, 2, 3] },
-  { "name": "float indexing negative truncation", "expr": ".[-1.5]", "input": [1, 2, 3] },
-  { "name": "has float truncation", "expr": "has(1.9)", "input": [1, 2, 3] }
+  {
+    "name": "builtin not",
+    "expr": ".value | not",
+    "input": {
+      "value": false
+    }
+  },
+  {
+    "name": "float indexing truncation",
+    "expr": ".[1.5]",
+    "input": [1, 2, 3]
+  },
+  {
+    "name": "float indexing negative truncation",
+    "expr": ".[-1.5]",
+    "input": [1, 2, 3]
+  },
+  {
+    "name": "has float truncation",
+    "expr": "has(1.9)",
+    "input": [1, 2, 3]
+  },
+  {
+    "name": "gmtime epoch",
+    "expr": "gmtime",
+    "input": 1425599507
+  },
+  {
+    "name": "gmtime epoch zero",
+    "expr": "gmtime",
+    "input": 0
+  },
+  {
+    "name": "gmtime fractional seconds",
+    "expr": "gmtime",
+    "input": 1425599507.25
+  },
+  {
+    "name": "gmtime then mktime round-trip",
+    "expr": "gmtime | mktime",
+    "input": 1425599507
+  },
+  {
+    "name": "mktime from array",
+    "expr": "mktime",
+    "input": [2015, 2, 5, 23, 51, 47, 4, 63]
+  },
+  {
+    "name": "todate",
+    "expr": "todate",
+    "input": 1425599507
+  },
+  {
+    "name": "todateiso8601",
+    "expr": "todateiso8601",
+    "input": 1700000000
+  },
+  {
+    "name": "fromdate",
+    "expr": "fromdate",
+    "input": "2015-03-05T23:51:47Z"
+  },
+  {
+    "name": "fromdateiso8601 round-trip",
+    "expr": "fromdateiso8601 | todateiso8601",
+    "input": "2023-11-14T22:13:20Z"
+  },
+  {
+    "name": "strftime from broken-down array",
+    "expr": "strftime(\"%Y-%m-%dT%H:%M:%SZ\")",
+    "input": [2015, 2, 5, 23, 51, 47, 4, 63]
+  },
+  {
+    "name": "strftime accepts epoch number",
+    "expr": "strftime(\"%Y-%m-%d %H:%M:%S\")",
+    "input": 1425599507
+  },
+  {
+    "name": "strftime weekday month dayofyear",
+    "expr": "gmtime | strftime(\"%A %B %d %j %u %w\")",
+    "input": 1425599507
+  },
+  {
+    "name": "strftime 12-hour and date macros",
+    "expr": "gmtime | strftime(\"%I:%M %p %T %F %D\")",
+    "input": 1425599507
+  },
+  {
+    "name": "strptime to array",
+    "expr": "strptime(\"%Y-%m-%dT%H:%M:%SZ\")",
+    "input": "2015-03-05T23:51:47Z"
+  },
+  {
+    "name": "strptime then mktime",
+    "expr": "strptime(\"%Y-%m-%dT%H:%M:%SZ\") | mktime",
+    "input": "2015-03-05T23:51:47Z"
+  },
+  {
+    "name": "strptime named month",
+    "expr": "strptime(\"%d %b %Y\")",
+    "input": "05 Mar 2015"
+  },
+  {
+    "name": "gmtime negative epoch",
+    "expr": "gmtime",
+    "input": -1
+  },
+  {
+    "name": "gmtime leap day",
+    "expr": "gmtime",
+    "input": 1582977600
+  },
+  {
+    "name": "gmtime far future",
+    "expr": "gmtime",
+    "input": 4102444800
+  },
+  {
+    "name": "todate epoch origin",
+    "expr": "todate",
+    "input": 0
+  },
+  {
+    "name": "todate negative",
+    "expr": "todate",
+    "input": -1
+  },
+  {
+    "name": "strftime century and padded day",
+    "expr": "strftime(\"%C %e %D\")",
+    "input": [2015, 2, 5, 23, 51, 47, 4, 63]
+  },
+  {
+    "name": "strftime 12-hour midnight",
+    "expr": "strftime(\"%I %p\")",
+    "input": [2015, 0, 1, 0, 0, 0, 4, 0]
+  },
+  {
+    "name": "strftime 12-hour noon",
+    "expr": "strftime(\"%I %p\")",
+    "input": [2015, 0, 1, 12, 0, 0, 4, 0]
+  },
+  {
+    "name": "strftime leap day-of-year",
+    "expr": "strftime(\"%j\")",
+    "input": [2020, 11, 31, 0, 0, 0, 4, 365]
+  },
+  {
+    "name": "strftime ISO week prev-year",
+    "expr": "gmtime | strftime(\"%G-W%V\")",
+    "input": 1451606400
+  },
+  {
+    "name": "strftime ISO week next-year",
+    "expr": "gmtime | strftime(\"%G-W%V\")",
+    "input": 1577750400
+  },
+  {
+    "name": "strptime 12-hour with meridiem",
+    "expr": "strptime(\"%Y-%m-%d %I:%M %p\")",
+    "input": "2015-03-05 11:51 PM"
+  },
+  {
+    "name": "strptime y-pivot 2068",
+    "expr": "strptime(\"%y-%m-%d\")",
+    "input": "68-01-01"
+  },
+  {
+    "name": "strptime y-pivot 1969",
+    "expr": "strptime(\"%y-%m-%d\")",
+    "input": "69-01-01"
+  },
+  {
+    "name": "strptime full month name",
+    "expr": "strptime(\"%d %B %Y\")",
+    "input": "05 March 2015"
+  },
+  {
+    "name": "strptime tz offset consumed",
+    "expr": "strptime(\"%Y-%m-%dT%H:%M:%S%z\")",
+    "input": "2015-03-05T23:51:47+05:30"
+  },
+  {
+    "name": "strptime then mktime via offset",
+    "expr": "strptime(\"%Y-%m-%dT%H:%M:%S%z\") | mktime",
+    "input": "2015-03-05T23:51:47+05:30"
+  }
 ]

@@ -195,7 +195,7 @@ function mergeDeep(
     const sVal = source[key]!
     const tVal = result[key]
     if (isPlainObject(sVal) && tVal !== undefined && isPlainObject(tVal)) {
-      result[key] = mergeDeep(tVal as Record<string, Value>, sVal as Record<string, Value>)
+      result[key] = mergeDeep(tVal, sVal)
     } else {
       result[key] = sVal
     }

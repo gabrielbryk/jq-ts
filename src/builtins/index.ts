@@ -6,6 +6,7 @@ import { stringBuiltins } from './strings'
 import { pathBuiltins } from './paths'
 import { iteratorBuiltins } from './iterators'
 import { mathBuiltins } from './math'
+import { dateBuiltins } from './dates'
 
 export const registerAllBuiltins = () => {
   registerBuiltins(stdBuiltins)
@@ -15,4 +16,5 @@ export const registerAllBuiltins = () => {
   registerBuiltins(pathBuiltins)
   registerBuiltins(iteratorBuiltins)
   registerBuiltins(mathBuiltins)
+  registerBuiltins(dateBuiltins)
 }
