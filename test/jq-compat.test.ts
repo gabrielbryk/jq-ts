@@ -1,7 +1,9 @@
 import { spawnSync } from 'node:child_process'
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
+
 import { describe, expect, test } from 'vitest'
+
 import { run, type Value } from '../src'
 
 const jqBin = process.env.JQ_BIN ?? 'jq'

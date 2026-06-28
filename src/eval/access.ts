@@ -1,8 +1,8 @@
 import type { FilterNode } from '../ast'
 import { RuntimeError } from '../errors'
 import type { LimitTracker } from '../limits'
-import { isValueArray, isPlainObject, describeType, type Value } from '../value'
 import type { Evaluator } from '../types'
+import { describeType, isPlainObject, isValueArray, type Value } from '../value'
 import { emit, toIndex } from './common'
 import type { EnvStack } from './types'
 

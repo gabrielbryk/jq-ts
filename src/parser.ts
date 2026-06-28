@@ -1,22 +1,22 @@
+import type {
+  ArrayNode,
+  AssignmentNode,
+  BinaryOp,
+  BindingPattern,
+  FilterNode,
+  ForeachNode,
+  LiteralValue,
+  ObjectEntry,
+  ObjectKey,
+  ObjectNode,
+  ObjectPatternEntry,
+  ReduceNode,
+  TryNode,
+} from './ast'
 import { ParseError } from './errors'
 import { lex } from './lexer'
 import type { Span } from './span'
 import type { Token, TokenKind } from './tokens'
-import type {
-  FilterNode,
-  LiteralValue,
-  ArrayNode,
-  ObjectEntry,
-  ObjectKey,
-  ObjectNode,
-  BinaryOp,
-  TryNode,
-  ReduceNode,
-  ForeachNode,
-  AssignmentNode,
-  BindingPattern,
-  ObjectPatternEntry,
-} from './ast'
 
 /**
  * Parses a jq source string into an Abstract Syntax Tree (AST).

@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+
 import { run } from '../src/index'
 
 describe('predefined variables and scoping', () => {

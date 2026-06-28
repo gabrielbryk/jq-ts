@@ -1,7 +1,7 @@
 import type { BindingPattern } from '../ast'
 import { RuntimeError } from '../errors'
-import { describeType, isPlainObject } from '../value'
 import type { Value } from '../value'
+import { describeType, isPlainObject } from '../value'
 import type { EnvStack } from './types'
 
 /**

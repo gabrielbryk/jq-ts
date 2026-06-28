@@ -1,4 +1,5 @@
 import eslint from '@eslint/js'
+import simpleImportSort from 'eslint-plugin-simple-import-sort'
 import tseslint from 'typescript-eslint'
 
 export default tseslint.config(
@@ -14,7 +15,15 @@ export default tseslint.config(
         tsconfigRootDir: import.meta.dirname,
       },
     },
-    rules: { 'no-console': 'warn' },
+    plugins: {
+      'simple-import-sort': simpleImportSort,
+    },
+    rules: {
+      'no-console': 'warn',
+      'simple-import-sort/imports': 'error',
+      'simple-import-sort/exports': 'error',
+      '@typescript-eslint/consistent-type-imports': 'error',
+    },
   },
   {
     ignores: [

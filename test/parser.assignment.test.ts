@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
-import { parse } from '../src/parser'
+
 import type { AssignmentNode, CommaNode } from '../src/ast'
+import { parse } from '../src/parser'
 
 describe('parser assignments', () => {
   it('parses basic assignment', () => {

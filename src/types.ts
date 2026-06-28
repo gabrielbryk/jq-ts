@@ -1,7 +1,7 @@
 import type { FilterNode } from './ast'
-import type { Value } from './value'
-import type { Span } from './span'
 import type { LimitTracker } from './limits'
+import type { Span } from './span'
+import type { Value } from './value'
 
 /**
  * A user-defined function captured in the environment.

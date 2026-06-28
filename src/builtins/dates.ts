@@ -1,6 +1,6 @@
 import { RuntimeError } from '../errors'
-import { describeType, type Value } from '../value'
 import type { Span } from '../span'
+import { describeType, type Value } from '../value'
 import type { BuiltinSpec } from './types'
 import { emit } from './utils'
 

@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
-import { parse } from '../src/parser'
+
 import { runAst } from '../src/eval'
+import { parse } from '../src/parser'
 import { validate } from '../src/validate'
 import type { Value } from '../src/value'
 

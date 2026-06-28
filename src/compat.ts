@@ -1,9 +1,9 @@
 import type { FilterNode, ObjectEntry, ObjectKey } from './ast'
-import { LexError, ParseError, RuntimeError, ValidationError, type JqTsError } from './errors'
+import { type JqTsError, LexError, ParseError, RuntimeError, ValidationError } from './errors'
+import { type EvalOptions, runAst } from './eval'
 import { parse } from './parser'
-import { runAst, type EvalOptions } from './eval'
 import { validate } from './validate'
-import { valueEquals, type Value } from './value'
+import { type Value, valueEquals } from './value'
 
 export type CompatibilityStage = 'lex' | 'parse' | 'validate' | 'runtime' | 'compare'
 

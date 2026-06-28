@@ -1,6 +1,6 @@
+import type { Clock } from './clock'
 import { RuntimeError } from './errors'
 import type { Span } from './span'
-import type { Clock } from './clock'
 
 /**
  * Configuration options for execution limits.
