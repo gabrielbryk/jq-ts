@@ -58,7 +58,6 @@ A representative (not exhaustive) view of what's implemented; see [`planning-doc
 - [`planning-docs/workflow-dsl.md`](planning-docs/workflow-dsl.md) — embedding jq-ts as an expression engine in host DSLs (`${...}` envelopes)
 - [`planning-docs/subset.md`](planning-docs/subset.md) — supported syntax and builtins
 - [`planning-docs/design.md`](planning-docs/design.md) — interpreter design and safety limits
-- [`planning-docs/roadmap.md`](planning-docs/roadmap.md) — milestones
 - [`planning-docs/testing.md`](planning-docs/testing.md) — conformance strategy (incl. jq integration fixtures)
 
 ## Development

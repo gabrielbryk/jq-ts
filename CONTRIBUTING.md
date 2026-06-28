@@ -53,7 +53,7 @@ We welcome contributions from everyone. By participating in this project, you ag
 src/              # Library source
 test/             # Tests (unit + jq integration fixtures)
 dist/             # Build output (generated)
-planning-docs/    # Design/roadmap docs
+planning-docs/    # Design and reference docs
 ```
 
 ### Adding New Features

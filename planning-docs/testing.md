@@ -13,7 +13,7 @@ We need two levels:
   - input JSON
   - jq expression
   - expected output (as JSON stream)
-  - notes: which milestone introduced it
+  - notes: relevant context or known differences
 - For each test case:
   - Run `jq` CLI (pinned version) to produce expected output
   - Run jq-ts engine to produce output
@@ -22,13 +22,7 @@ We need two levels:
 ## Guardrails tests
 
 - Validate that disallowed features are rejected:
-  - `now`
   - `import/include`
+  - external I/O builtins (`input`, `inputs`, `env`, …)
   - any unsupported builtin
-
-## Property-based tests (later)
-
-- Generate random JSON inputs and random expressions from the supported grammar subset, and ensure:
-  - evaluator never crashes
-  - limits behave correctly
-  - results match jq CLI for the overlapping subset
+- Validate that `now` throws when no clock is injected (`EvalOptions.now`).
