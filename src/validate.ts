@@ -66,13 +66,7 @@ const visit = (node: FilterNode, scope: Set<string>[]): void => {
       // Check local scope first
       for (let i = scope.length - 1; i >= 0; i--) {
         if (scope[i]!.has(node.name)) {
-          // Local function (argument or nested def).
-          // We assume arity check matches or is loose for arguments (arity 0 effectively)
-          // If it is an ARGUMENT, it is arity 0.
-          // If it is a nested DEF, it has specific arity.
-          // However, validating arity for local functions is harder without tracking definitions in scope.
-          // For now, if name is in scope, we assume it's valid.
-          // Refine this if needed.
+          // Calls to in-scope local functions (args or nested defs) are not arity-checked; only builtins are.
           for (const arg of node.args) {
             visit(arg, scope)
           }
@@ -102,23 +96,13 @@ const visit = (node: FilterNode, scope: Set<string>[]): void => {
       visit(node.right, scope)
       return
     case 'Def': {
-      // Add name to scope for recursion (if recursive)
-      // And arguments to scope for body.
-      // Wait, Def name visible in 'next'? Yes.
-      // Def name visible in 'body'? Yes (recursion).
-
-      // Def args visible in BODY only.
-
-      // 1. Validate body with args usage
-      // Arguments are 0-arity functions
+      // The body sees its args (as 0-arity functions) and its own name (for recursion);
+      // the next filter sees only the function name. None of these are arity-checked.
       const bodyScope = new Set(node.args)
-      bodyScope.add(node.name) // Recursive
+      bodyScope.add(node.name)
 
       visit(node.body, [...scope, bodyScope])
 
-      // 2. Validate next with function name in scope
-      // We need to track the function definition itself.
-      // For simplicity, just add name to scope.
       const nextScope = new Set([node.name])
       visit(node.next, [...scope, nextScope])
       return

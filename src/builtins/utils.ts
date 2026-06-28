@@ -7,6 +7,14 @@ export const emit = (value: Value, span: Span, tracker: LimitTracker): Value => 
   return value
 }
 
+/**
+ * Typed accessor for an object value by key.
+ *
+ * Centralizes the `obj[key]` lookup so call sites stay narrowed to
+ * {@link ValueObject} without repeated assertions.
+ */
+export const objValue = (obj: ValueObject, key: string): Value => obj[key]!
+
 export const ensureIndex = (val: Value): number | undefined => {
   if (typeof val === 'number') {
     if (!Number.isFinite(val)) return undefined
@@ -26,10 +34,6 @@ export const stableStringify = (value: Value): string => {
   }
   // Object: sort keys
   const keys = Object.keys(value).sort()
-  const entries = keys.map(
-    (k) =>
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
-      `${JSON.stringify(k)}:${stableStringify((value as ValueObject)[k]!)}`
-  )
+  const entries = keys.map((k) => `${JSON.stringify(k)}:${stableStringify(objValue(value, k))}`)
   return `{${entries.join(',')}}`
 }

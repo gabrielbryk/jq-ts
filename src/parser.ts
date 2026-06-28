@@ -60,15 +60,12 @@ class Parser {
       }
 
       this.consume('Colon', 'Expected ":" after function signature')
-      // Function body always supports comma
+      // Function body always permits comma; the trailing expression inherits
+      // the caller's allowComma so comma stays restricted in contexts like
+      // object values and array elements.
       const body = this.parseDef(true)
 
       this.consume('Semicolon', 'Expected ";" after function body')
-      // Next expression inherits restriction?
-      // Def block ends with ; so it is safe. Next expression logic:
-      // def a: 1; b, c
-      // If we are in allowComma=false context (e.g. object), b, c is invalid.
-      // So next expression MUST respect allowComma.
       const next = this.parseDef(allowComma)
 
       return {
@@ -269,7 +266,7 @@ class Parser {
           op = '//='
           break
         default:
-          throw new Error(`Unknown assignment op: ${opToken.kind}`)
+          throw this.error(opToken, `Unknown assignment op: ${opToken.kind}`)
       }
       return {
         kind: 'Assignment',
@@ -280,10 +277,6 @@ class Parser {
       }
     }
     return expr
-  }
-
-  private parsePipeOperand(): FilterNode {
-    return this.parseAlt()
   }
 
   private parseAlt(): FilterNode {
@@ -407,6 +400,75 @@ class Parser {
     return this.parsePostfix()
   }
 
+  /**
+   * Consumes a bracket suffix (`[...]` index/slice/iterate) or a `?` try
+   * suffix on `expr`, returning the wrapped node, or null when the next token
+   * is neither. Shared by {@link parsePostfix} and {@link parseLeadingDot}.
+   */
+  private parseBracketSuffix(expr: FilterNode): FilterNode | null {
+    if (this.match('LBracket')) {
+      // Check for [:end]
+      if (this.match('Colon')) {
+        let end: FilterNode | null = null
+        if (!this.check('RBracket')) {
+          end = this.parsePipe()
+        }
+        const close = this.consume('RBracket', 'Expected "]" after slice')
+        return {
+          kind: 'Slice',
+          target: expr,
+          start: null,
+          end,
+          span: spanBetween(expr.span, close.span),
+        }
+      }
+
+      if (this.match('RBracket')) {
+        const close = this.previous()
+        return {
+          kind: 'Iterate',
+          target: expr,
+          span: spanBetween(expr.span, close.span),
+        }
+      }
+
+      const index = this.parsePipe()
+
+      if (this.match('Colon')) {
+        let end: FilterNode | null = null
+        if (!this.check('RBracket')) {
+          end = this.parsePipe()
+        }
+        const close = this.consume('RBracket', 'Expected "]" after slice')
+        return {
+          kind: 'Slice',
+          target: expr,
+          start: index,
+          end,
+          span: spanBetween(expr.span, close.span),
+        }
+      }
+
+      const closing = this.consume('RBracket', 'Expected "]" after index expression')
+      return {
+        kind: 'IndexAccess',
+        target: expr,
+        index,
+        span: spanBetween(expr.span, closing.span),
+      }
+    }
+    if (this.match('Question')) {
+      const op = this.previous()
+      return {
+        kind: 'Try',
+        body: expr,
+        handler: undefined,
+        span: spanBetween(expr.span, op.span),
+      }
+    }
+    return null
+  }
+
   private parsePostfix(): FilterNode {
     let expr = this.parsePrimary()
     while (true) {
@@ -414,69 +476,9 @@ class Parser {
         expr = this.finishFieldAccess(expr)
         continue
       }
-      if (this.match('LBracket')) {
-        // Check for [:end]
-        if (this.match('Colon')) {
-          let end: FilterNode | null = null
-          if (!this.check('RBracket')) {
-            end = this.parsePipe()
-          }
-          const close = this.consume('RBracket', 'Expected "]" after slice')
-          expr = {
-            kind: 'Slice',
-            target: expr,
-            start: null,
-            end,
-            span: spanBetween(expr.span, close.span),
-          }
-          continue
-        }
-
-        if (this.match('RBracket')) {
-          const close = this.previous()
-          expr = {
-            kind: 'Iterate',
-            target: expr,
-            span: spanBetween(expr.span, close.span),
-          }
-          continue
-        }
-
-        const index = this.parsePipe()
-
-        if (this.match('Colon')) {
-          let end: FilterNode | null = null
-          if (!this.check('RBracket')) {
-            end = this.parsePipe()
-          }
-          const close = this.consume('RBracket', 'Expected "]" after slice')
-          expr = {
-            kind: 'Slice',
-            target: expr,
-            start: index,
-            end,
-            span: spanBetween(expr.span, close.span),
-          }
-          continue
-        }
-
-        const closing = this.consume('RBracket', 'Expected "]" after index expression')
-        expr = {
-          kind: 'IndexAccess',
-          target: expr,
-          index,
-          span: spanBetween(expr.span, closing.span),
-        }
-        continue
-      }
-      if (this.match('Question')) {
-        const op = this.previous()
-        expr = {
-          kind: 'Try',
-          body: expr,
-          handler: undefined,
-          span: spanBetween(expr.span, op.span),
-        }
+      const suffixed = this.parseBracketSuffix(expr)
+      if (suffixed) {
+        expr = suffixed
         continue
       }
       break
@@ -535,8 +537,6 @@ class Parser {
     if (this.match('Not')) return this.finishIdentifier(this.previous())
     throw this.error(this.peek(), 'Unexpected token')
   }
-
-  // Moved ParseLabel to ParseBinding level
 
   private parseBreak(start: Token): FilterNode {
     const varToken = this.consume('Variable', 'Expected variable after "break"')
@@ -685,13 +685,6 @@ class Parser {
     }
   }
 
-  private parseObjectEntry(): ObjectEntry {
-    const key = this.parseObjectKey()
-    this.consume('Colon', 'Expected ":" after object key')
-    const value = this.parseDef(false)
-    return { key, value }
-  }
-
   private parseObjectKey(): ObjectKey {
     if (this.match('Identifier')) {
       const token = this.previous()
@@ -751,69 +744,9 @@ class Parser {
         expr = this.finishFieldAccess(expr)
         continue
       }
-      if (this.match('LBracket')) {
-        // Check for [:end]
-        if (this.match('Colon')) {
-          let end: FilterNode | null = null
-          if (!this.check('RBracket')) {
-            end = this.parsePipe()
-          }
-          const close = this.consume('RBracket', 'Expected "]" after slice')
-          expr = {
-            kind: 'Slice',
-            target: expr,
-            start: null,
-            end,
-            span: spanBetween(expr.span, close.span),
-          }
-          continue
-        }
-
-        if (this.match('RBracket')) {
-          const close = this.previous()
-          expr = {
-            kind: 'Iterate',
-            target: expr,
-            span: spanBetween(expr.span, close.span),
-          }
-          continue
-        }
-
-        const index = this.parsePipe()
-
-        if (this.match('Colon')) {
-          let end: FilterNode | null = null
-          if (!this.check('RBracket')) {
-            end = this.parsePipe()
-          }
-          const close = this.consume('RBracket', 'Expected "]" after slice')
-          expr = {
-            kind: 'Slice',
-            target: expr,
-            start: index,
-            end,
-            span: spanBetween(expr.span, close.span),
-          }
-          continue
-        }
-
-        const closing = this.consume('RBracket', 'Expected "]" after index expression')
-        expr = {
-          kind: 'IndexAccess',
-          target: expr,
-          index,
-          span: spanBetween(expr.span, closing.span),
-        }
-        continue
-      }
-      if (this.match('Question')) {
-        const op = this.previous()
-        expr = {
-          kind: 'Try',
-          body: expr,
-          handler: undefined,
-          span: spanBetween(expr.span, op.span),
-        }
+      const suffixed = this.parseBracketSuffix(expr)
+      if (suffixed) {
+        expr = suffixed
         continue
       }
       break

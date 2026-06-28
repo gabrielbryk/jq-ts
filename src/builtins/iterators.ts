@@ -110,8 +110,8 @@ export const iteratorBuiltins: BuiltinSpec[] = [
   {
     name: 'first',
     arity: 0,
-    apply: function* (input) {
-      if (Array.isArray(input) && input.length > 0) yield input[0]!
+    apply: function* (input, _args, _env, tracker, _eval, span) {
+      if (Array.isArray(input) && input.length > 0) yield emit(input[0]!, span, tracker)
     },
   },
   {
@@ -128,15 +128,16 @@ export const iteratorBuiltins: BuiltinSpec[] = [
   {
     name: 'last',
     arity: 0,
-    apply: function* (input) {
-      if (Array.isArray(input) && input.length > 0) yield input[input.length - 1]!
+    apply: function* (input, _args, _env, tracker, _eval, span) {
+      if (Array.isArray(input) && input.length > 0)
+        yield emit(input[input.length - 1]!, span, tracker)
     },
   },
   {
     name: 'last',
     arity: 1,
     apply: function* (input, args, env, tracker, evaluate) {
-      // last(expr)
+      // last(expr): the final output of expr
       let lastVal: Value | undefined
       let found = false
       for (const val of evaluate(args[0]!, input, env, tracker)) {
@@ -154,7 +155,7 @@ export const iteratorBuiltins: BuiltinSpec[] = [
       for (const n of evaluate(args[0]!, input, env, tracker)) {
         if (typeof n !== 'number') throw new RuntimeError('nth expects number', span)
         const idx = Math.trunc(n)
-        if (idx >= 0 && idx < input.length) yield input[idx]!
+        if (idx >= 0 && idx < input.length) yield emit(input[idx]!, span, tracker)
       }
     },
   },
@@ -170,7 +171,7 @@ export const iteratorBuiltins: BuiltinSpec[] = [
         for (const val of evaluate(args[1]!, input, env, tracker)) {
           if (count === n) {
             yield val
-            break // optimization: stop after finding nth? jq nth stops.
+            break // jq nth stops at the first matching index
           }
           count++
         }
@@ -196,7 +197,7 @@ export const iteratorBuiltins: BuiltinSpec[] = [
   {
     name: 'all',
     arity: 0,
-    apply: function* (input, _args, _env, tracker, _evaluate, span) {
+    apply: function* (input, _args, _env, tracker, _eval, span) {
       if (!Array.isArray(input)) throw new RuntimeError('all expects an array', span)
       yield emit(input.every(isTruthy), span, tracker)
     },
@@ -247,7 +248,7 @@ export const iteratorBuiltins: BuiltinSpec[] = [
   {
     name: 'any',
     arity: 0,
-    apply: function* (input, _args, _env, tracker, _evaluate, span) {
+    apply: function* (input, _args, _env, tracker, _eval, span) {
       if (!Array.isArray(input)) throw new RuntimeError('any expects an array', span)
       yield emit(input.some(isTruthy), span, tracker)
     },
@@ -290,7 +291,7 @@ export const iteratorBuiltins: BuiltinSpec[] = [
   {
     name: 'recurse',
     arity: 0,
-    apply: function* (input, _args, _env, tracker, _evaluate, span) {
+    apply: function* (input, _args, _env, tracker, _eval, span) {
       const rec = function* (curr: Value): Generator<Value> {
         yield emit(curr, span, tracker)
         if (Array.isArray(curr)) {

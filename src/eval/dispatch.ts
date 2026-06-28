@@ -1,13 +1,13 @@
 import type { FilterNode } from '../ast'
 import { BreakSignal } from './break'
 import { RuntimeError } from '../errors'
-import { LimitTracker, resolveLimits, type LimitsConfig } from '../limits'
+import { LimitTracker, resolveLimits } from '../limits'
 import { isTruthy, type Value } from '../value'
 import { applyBinaryOp, applyUnaryNeg } from './ops'
 
-import { bindPattern, getVar } from './env'
+import { bindFrame, getVar } from './env'
 import { emit } from './common'
-import type { EnvStack, EnvFrame } from './types'
+import type { EnvStack, EvalOptions } from './types'
 
 // Sub-modules
 import { evalAssignment } from './assignment'
@@ -16,30 +16,6 @@ import { evalField, evalIndex, evalSlice } from './access'
 import { buildArray, buildObjects } from './constructors'
 import { evalCall, evalDef } from './functions'
 import { evalIf, evalTry, evalLabel } from './control_flow'
-
-/**
- * Configuration options for the evaluation engine.
- */
-export interface EvalOptions {
-  /**
-   * Limit configuration to prevent infinite loops or excessive resource usage.
-   */
-  limits?: LimitsConfig
-  /**
-   * Predefined variables to seed the global environment.
-   * Keys are variable names without the '$' prefix.
-   */
-  vars?: Record<string, Value>
-  /**
-   * The wall-clock instant the `now` builtin resolves to. Accepts a `Date` or
-   * a number of seconds since the Unix epoch (may be fractional). When omitted,
-   * `now` throws — jq-ts never reads the host clock on its own, so date
-   * programs stay deterministic unless a clock is explicitly injected. Pure
-   * date builtins that take an explicit epoch (`gmtime`, `strftime`, `todate`,
-   * …) work regardless of this option.
-   */
-  now?: Date | number
-}
 
 /**
  * Normalizes the `now` option to seconds since the Unix epoch.
@@ -83,7 +59,7 @@ function* evaluate(
   tracker: LimitTracker
 ): Generator<Value, void, undefined> {
   if (!node) {
-    throw new Error('evaluate called with undefined node')
+    throw new RuntimeError('evaluate called with undefined node', { start: 0, end: 0 })
   }
   tracker.step(node.span)
   tracker.enter(node.span)
@@ -162,8 +138,9 @@ function* evaluate(
             if (!isTruthy(l)) {
               yield emit(false, node.span, tracker)
             } else {
+              // l is truthy here, so the result is the truthiness of r.
               for (const r of evaluate(node.right, input, env, tracker)) {
-                yield emit(isTruthy(l) && isTruthy(r), node.span, tracker)
+                yield emit(isTruthy(r), node.span, tracker)
               }
             }
           } else {
@@ -171,8 +148,9 @@ function* evaluate(
             if (isTruthy(l)) {
               yield emit(true, node.span, tracker)
             } else {
+              // l is falsy here, so the result is the truthiness of r.
               for (const r of evaluate(node.right, input, env, tracker)) {
-                yield emit(isTruthy(l) || isTruthy(r), node.span, tracker)
+                yield emit(isTruthy(r), node.span, tracker)
               }
             }
           }
@@ -214,10 +192,7 @@ function* evaluate(
         const values = Array.from(evaluate(node.bind, input, env, tracker))
         for (const val of values) {
           // Use a new frame for the binding to ensure correct scoping and avoid mutation issues
-          const vars = new Map<string, Value>()
-          bindPattern(node.pattern, val, vars)
-          const newFrame: EnvFrame = { vars, funcs: new Map() }
-          const newEnv = [...env, newFrame]
+          const newEnv = bindFrame(node.pattern, val, env)
           yield* evaluate(node.body, input, newEnv, tracker)
         }
         return

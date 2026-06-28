@@ -1,16 +1,19 @@
 import { RuntimeError } from '../errors'
+import type { LimitTracker } from '../limits'
+import type { Span } from '../span'
 import { describeType, isPlainObject, valueEquals, type Value } from '../value'
 import type { BuiltinSpec } from './types'
 import { emit, stableStringify } from './utils'
 
-export const checkContains = (a: Value, b: Value): boolean => {
+export const checkContains = (a: Value, b: Value, tracker?: LimitTracker, span?: Span): boolean => {
+  if (tracker && span) tracker.step(span)
   if (a === b) return true
   if (typeof a !== typeof b) return false
   if (typeof a === 'string' && typeof b === 'string') {
     return a.includes(b)
   }
   if (Array.isArray(a) && Array.isArray(b)) {
-    return b.every((bItem) => a.some((aItem) => checkContains(aItem, bItem)))
+    return b.every((bItem) => a.some((aItem) => checkContains(aItem, bItem, tracker, span)))
   }
   if (isPlainObject(a) && isPlainObject(b)) {
     const keys = Object.keys(b)
@@ -18,7 +21,7 @@ export const checkContains = (a: Value, b: Value): boolean => {
       if (!Object.prototype.hasOwnProperty.call(a, key)) return false
       const valA = a[key]!
       const valB = b[key]!
-      if (!checkContains(valA, valB)) return false
+      if (!checkContains(valA, valB, tracker, span)) return false
     }
     return true
   }
@@ -98,7 +101,7 @@ export const stringBuiltins: BuiltinSpec[] = [
     apply: function* (input, args, env, tracker, evaluate, span) {
       const bGen = evaluate(args[0]!, input, env, tracker)
       for (const b of bGen) {
-        yield emit(checkContains(input, b), span, tracker)
+        yield emit(checkContains(input, b, tracker, span), span, tracker)
       }
     },
   },
@@ -136,8 +139,7 @@ export const stringBuiltins: BuiltinSpec[] = [
     name: 'rindex',
     arity: 1,
     apply: function* (input, args, env, tracker, evaluate, span) {
-      // rindex only defined for strings in jq documentation? "index, rindex, indices" -> "match input against..."
-      // jq `[1,2,1] | rindex(1)` -> 2.
+      // rindex returns the last index of search in a string or array (null if absent).
       const searchGen = evaluate(args[0]!, input, env, tracker)
       for (const search of searchGen) {
         if (Array.isArray(input)) {
@@ -176,28 +178,14 @@ export const stringBuiltins: BuiltinSpec[] = [
           }
         } else if (typeof input === 'string') {
           if (typeof search !== 'string') throw new RuntimeError('indices expects string', span)
-          // Overlapping? jq `indices` documentation says "array of indices".
-          // jq `"aba" | indices("a")` -> `[0, 2]`.
-          // jq `"aba" | indices("ba")` -> `[1]`.
-          // Use indexOf loop
-          if (search.length === 0) {
-            // Special case: empty string?
-          } else {
+          // jq returns non-overlapping match positions, advancing by search.length
+          // after each hit (e.g. "aaaa" | indices("aa") -> [0, 2]).
+          if (search.length > 0) {
             let pos = 0
             while (pos < input.length) {
               const idx = input.indexOf(search, pos)
               if (idx === -1) break
               indices.push(idx)
-              pos = idx + 1 // allow overlapping? jq "aba" "aba" -> ?
-              // jq: `"abab" | indices("aba")` -> `[0]`. (No overlap)
-              // So advance by length?
-              // Wait, jq manual might specify overlap.
-              // Usually `indices` does NOT overlap.
-              // Just `pos = idx + 1` finds all starts?
-              // If I have "aaaa" and search "aa". `indexOf` at 0 -> 0. `indexOf` at 1 -> 1.
-              // Does jq return `[0, 1, 2]`?
-              // Checked jq: `"aaaa" | indices("aa")` -> `[0, 2]`. (Non-overlapping!)
-              // So `pos = idx + search.length`.
               pos = idx + search.length
             }
           }

@@ -4,8 +4,8 @@ import type { LimitTracker } from '../limits'
 import { isValueArray, isPlainObject, describeType, type Value } from '../value'
 import type { Evaluator } from '../builtins/types'
 import { emit } from './common'
-import type { EnvStack, EnvFrame } from './types'
-import { bindPattern } from './env'
+import type { EnvStack } from './types'
+import { bindFrame } from './env'
 
 /**
  * Iterates over the values of an array or object (`.[]`).
@@ -71,10 +71,7 @@ export const evalReduce = function* (
   for (const item of evaluate(node.source, input, env, tracker)) {
     tracker.step(node.span)
     // Use a new frame for the binding to ensure correct scoping and avoid mutation issues
-    const vars = new Map<string, Value>()
-    bindPattern(node.pattern, item, vars)
-    const newFrame: EnvFrame = { vars, funcs: new Map() }
-    const newEnv = [...env, newFrame]
+    const newEnv = bindFrame(node.pattern, item, env)
 
     const updates = Array.from(evaluate(node.update, acc, newEnv, tracker))
     if (updates.length !== 1) {
@@ -112,10 +109,7 @@ export const evalForeach = function* (
   for (const item of evaluate(node.source, input, env, tracker)) {
     tracker.step(node.span)
     // Use a new frame for the binding to ensure correct scoping and avoid mutation issues
-    const vars = new Map<string, Value>()
-    bindPattern(node.pattern, item, vars)
-    const newFrame: EnvFrame = { vars, funcs: new Map() }
-    const newEnv = [...env, newFrame]
+    const newEnv = bindFrame(node.pattern, item, env)
 
     const updates = Array.from(evaluate(node.update, acc, newEnv, tracker))
     if (updates.length !== 1) {
@@ -134,8 +128,9 @@ export const evalForeach = function* (
 }
 
 /**
- * Evaluates the recursive operator `..`.
- * Deprecated node type kept for compatibility; currently implements `..` logic.
+ * Evaluates the recursive descent operator `..`.
+ *
+ * `..` = emit self, then recurse over children.
  *
  * @param node - The recurse AST node.
  * @param input - The current input value.
@@ -150,23 +145,6 @@ export const evalRecurse = function* (
   tracker: LimitTracker,
   evaluate: Evaluator
 ): Generator<Value> {
-  // recurse: output input, then recurse on output of filter(input)
-  // But wait, `recurse` (arity 0) is equivalent to `recurse(.[]?)`.
-  // If `recurse(f)`: output input, then `f | recurse(f)`.
-  // The AST node `Recurse` handles `..` (recurse input). `..` means `recurse`.
-  // The builtin `recurse` handles arguments.
-  // The AST node `Recurse` is likely for `..` operator which is equivalent to `recurse`.
-
-  // Implementation of `..`:
-  // Yield input.
-  // Then recurse on children.
-  // `recurse` builtin logic:
-  // yield input.
-  // for x in f(input): yield* recurse(x)
-
-  // For `..`, f is `.[]?`.
-  // Let's implement `..` specifically.
-
   yield emit(input, node.span, tracker)
 
   const children: Value[] = []
@@ -179,7 +157,9 @@ export const evalRecurse = function* (
     }
   }
 
+  // Recurse through the shared evaluator so each level of input nesting goes
+  // through tracker.step / enter / exit and honors maxSteps and maxDepth.
   for (const child of children) {
-    yield* evalRecurse(node, child, env, tracker, evaluate)
+    yield* evaluate(node, child, env, tracker)
   }
 }

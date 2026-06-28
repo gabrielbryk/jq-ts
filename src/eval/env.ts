@@ -20,11 +20,7 @@ export const getVar = (env: EnvStack, name: string): Value | undefined => {
 /**
  * Binds jq `as` destructuring patterns into a variable map.
  */
-export const bindPattern = (
-  pattern: BindingPattern,
-  value: Value,
-  bindings: Map<string, Value>
-): void => {
+const bindPattern = (pattern: BindingPattern, value: Value, bindings: Map<string, Value>): void => {
   switch (pattern.kind) {
     case 'VariablePattern':
       bindings.set(pattern.name, value)
@@ -52,4 +48,15 @@ export const bindPattern = (
       return
     }
   }
+}
+
+/**
+ * Pushes a new scope onto the environment stack, binding `pattern` to `value`
+ * in a fresh variable frame (with its own empty function map). Used by `as`,
+ * `reduce`, and `foreach` to scope their loop bindings.
+ */
+export const bindFrame = (pattern: BindingPattern, value: Value, env: EnvStack): EnvStack => {
+  const vars = new Map<string, Value>()
+  bindPattern(pattern, value, vars)
+  return [...env, { vars, funcs: new Map() }]
 }

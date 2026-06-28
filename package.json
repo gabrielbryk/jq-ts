@@ -21,6 +21,7 @@
     "test:coverage": "vitest run --coverage",
     "test:watch": "vitest",
     "audit": "pnpm audit --audit-level=moderate",
+    "knip": "knip",
     "size": "size-limit",
     "size:why": "size-limit --why",
     "docs": "typedoc",
@@ -28,7 +29,7 @@
     "local-release": "changeset version && changeset publish",
     "release": "changeset publish",
     "prepublishOnly": "pnpm run ci",
-    "ci": "pnpm run build && pnpm run format:check && pnpm run check-exports && pnpm run lint && pnpm run test",
+    "ci": "pnpm run build && pnpm run typecheck && pnpm run format:check && pnpm run check-exports && pnpm run lint && pnpm run test",
     "prepare": "husky",
     "lint-staged": "lint-staged"
   },
