@@ -11,7 +11,7 @@ import type { Span } from '../span'
 import { checkContains } from './strings'
 import type { BuiltinSpec } from './types'
 import { emit, ensureIndex, objValue, stableStringify } from './utils'
-import { deletePaths, getPath, updatePath } from './paths'
+import { deletePaths, getPath, updatePath } from '../path'
 import { evaluatePath } from '../eval/pathEval'
 
 // Helper for stable sort
