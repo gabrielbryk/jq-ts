@@ -1,0 +1,39 @@
+name: Changeset
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, labeled, unlabeled]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  changeset:
+    name: Require a changeset for src changes
+    runs-on: ubuntu-latest
+    # Skip when the author has explicitly opted out (internal / no-release changes).
+    if: ${{ !contains(github.event.pull_request.labels.*.name, 'skip-changeset') }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Check for a changeset
+        run: |
+          set -euo pipefail
+          base="origin/${{ github.base_ref }}"
+          changed="$(git diff --name-only "$base"...HEAD)"
+
+          if ! echo "$changed" | grep -qE '^src/'; then
+            echo "No src/ changes in this PR — changeset not required."
+            exit 0
+          fi
+
+          if echo "$changed" | grep -E '^\.changeset/' | grep -vq 'README\.md'; then
+            echo "Changeset found."
+            exit 0
+          fi
+
+          echo "::error::This PR modifies src/ but adds no changeset. Run 'pnpm changeset' to record a version bump + changelog entry, or apply the 'skip-changeset' label for changes that need no release (e.g. internal refactors, behavior-preserving cleanups)."
+          exit 1
