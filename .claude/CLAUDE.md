@@ -79,7 +79,6 @@ Untrusted expressions are protected by configurable limits:
 - **planning-docs/workflow-dsl.md** — Embedding jq-ts as an expression engine in host DSLs (`${...}` envelopes)
 - **planning-docs/subset.md** — Supported syntax and builtins
 - **planning-docs/testing.md** — Conformance testing strategy
-- **planning-docs/roadmap.md** — Milestones and planned features
 
 ## Testing Strategy
 

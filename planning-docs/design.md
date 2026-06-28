@@ -29,7 +29,7 @@ This allows correct semantics for:
 
 ### Disallowed sources
 
-- Time: no `now`; no `Date.now()`; no timezone/locale formatting.
+- Time: the interpreter never reads the host clock. `now` resolves only to a caller-injected instant (`EvalOptions.now`) and throws otherwise; pure date builtins are deterministic functions of their input.
 - Randomness: no `Math.random()`.
 - Environment: no filesystem/network/env vars.
 
@@ -51,15 +51,6 @@ Because user expressions are untrusted, we need limits to avoid stalling executi
 
 These should be configurable and default to conservative values.
 
-## Compilation strategy
+## Execution model
 
-Phase 1:
-
-- Build an interpreter for correctness and fast iteration.
-
-Phase 2:
-
-- Add a bytecode compiler and a small VM for speed.
-- Keep the same validator + limits.
-
-We explicitly avoid generating JS source (`new Function`) to stay isolate-friendly and auditable.
+jq-ts evaluates the AST directly with a tree-walking interpreter. It never generates JS source (`new Function`), keeping execution isolate-friendly and auditable.

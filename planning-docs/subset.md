@@ -1,6 +1,6 @@
 # Supported subset
 
-jq-ts implements a **maximal jq subset** that remains deterministic and isolate-safe for embedded use (e.g., as an expression engine inside other DSLs). This document describes what the interpreter accepts today; forward-looking work lives in [`roadmap.md`](roadmap.md), and the per-feature jq 1.8 comparison lives in [`compatibility.md`](compatibility.md).
+jq-ts implements a **maximal jq subset** that remains deterministic and isolate-safe for embedded use (e.g., as an expression engine inside other DSLs). This document describes what the interpreter accepts today; the per-feature jq 1.8 comparison lives in [`compatibility.md`](compatibility.md).
 
 ## Design target
 
@@ -30,7 +30,7 @@ Support as much of jq as possible, gated by static validation + execution limits
 
 A broad set of deterministic builtins is implemented across types/conversions, collections, strings, math, generators, path operations, and an injectable-clock date suite. See the [README builtins list](../README.md#builtins) for a categorized summary and [`compatibility.md`](compatibility.md) for the full jq 1.8 matrix.
 
-## Not yet supported
+## Unsupported
 
 - Regex family (`test`, `match`, `capture`, `scan`, regex `split`/`sub`/`gsub`).
 - Format/encoding filters (`@json`, `@csv`, `@base64`, …).
