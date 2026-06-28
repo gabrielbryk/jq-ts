@@ -2,18 +2,8 @@ import type { FilterNode } from '../ast'
 import { resolveClock } from '../clock'
 import { RuntimeError } from '../errors'
 import { LimitTracker, resolveLimits } from '../limits'
-import { isTruthy, type Value } from '../value'
-import { evalField, evalIndex, evalSlice } from './access'
-// Sub-modules
-import { evalAssignment } from './assignment'
-import { BreakSignal } from './break'
-import { emit } from './common'
-import { buildArray, buildObjects } from './constructors'
-import { evalIf, evalLabel, evalTry } from './controlFlow'
-import { bindFrame, getVar } from './env'
-import { evalCall, evalDef } from './functions'
-import { evalForeach, evalIterate, evalRecurse, evalReduce } from './iterators'
-import { applyBinaryOp, applyUnaryNeg } from './ops'
+import type { Value } from '../value'
+import { handlers } from './dispatchTable'
 import type { EnvStack, EvalOptions } from './types'
 
 /**
@@ -34,8 +24,9 @@ export const runAst = (ast: FilterNode, input: Value, options: EvalOptions = {})
 /**
  * The core evaluation generator.
  *
- * This function dispatches execution to specific handlers based on the AST node kind.
- * It uses a generator to support jq's streaming nature (backtracking and multiple outputs).
+ * Dispatches execution to the handler registered for the AST node's kind in the
+ * {@link handlers} table. It uses a generator to support jq's streaming nature
+ * (backtracking and multiple outputs).
  *
  * @param node - The current AST node to evaluate.
  * @param input - The current input value (context).
@@ -55,146 +46,7 @@ function* evaluate(
   tracker.step(node.span)
   tracker.enter(node.span)
   try {
-    switch (node.kind) {
-      case 'Identity':
-        yield emit(input, node.span, tracker)
-        return
-      case 'Literal':
-        yield emit(node.value, node.span, tracker)
-        return
-      case 'Var': {
-        const val = getVar(env, node.name)
-        if (val === undefined) {
-          throw new RuntimeError(`Undefined variable: ${node.name}`, node.span)
-        }
-        yield emit(val, node.span, tracker)
-        return
-      }
-      case 'FieldAccess':
-        yield* evalField(node, input, env, tracker, evaluate)
-        return
-      case 'IndexAccess':
-        yield* evalIndex(node, input, env, tracker, evaluate)
-        return
-      case 'Slice':
-        yield* evalSlice(node, input, env, tracker, evaluate)
-        return
-      case 'Array':
-        yield* buildArray(node, input, env, tracker, evaluate)
-        return
-      case 'Object':
-        yield* buildObjects(node, input, env, tracker, evaluate)
-        return
-      case 'Label':
-        yield* evalLabel(node, input, env, tracker, evaluate)
-        return
-      case 'Break':
-        throw new BreakSignal(node.label)
-      case 'Pipe':
-        for (const leftVal of evaluate(node.left, input, env, tracker)) {
-          yield* evaluate(node.right, leftVal, env, tracker)
-        }
-        return
-      case 'Comma':
-        yield* evaluate(node.left, input, env, tracker)
-        yield* evaluate(node.right, input, env, tracker)
-        return
-      case 'Alt': {
-        const leftValues = Array.from<Value>(evaluate(node.left, input, env, tracker))
-        const valid = leftValues.filter((v) => v !== null && v !== false)
-        if (valid.length > 0) {
-          for (const v of valid) {
-            yield v
-          }
-        } else {
-          yield* evaluate(node.right, input, env, tracker)
-        }
-        return
-      }
-      case 'Unary':
-        if (node.op === 'Not') {
-          for (const value of evaluate(node.expr, input, env, tracker)) {
-            yield emit(!isTruthy(value), node.span, tracker)
-          }
-        } else {
-          for (const value of evaluate(node.expr, input, env, tracker)) {
-            yield emit(applyUnaryNeg(value, node.span), node.span, tracker)
-          }
-        }
-        return
-      case 'Bool': {
-        // Short-circuiting logic
-        for (const l of evaluate(node.left, input, env, tracker)) {
-          if (node.op === 'And') {
-            if (!isTruthy(l)) {
-              yield emit(false, node.span, tracker)
-            } else {
-              // l is truthy here, so the result is the truthiness of r.
-              for (const r of evaluate(node.right, input, env, tracker)) {
-                yield emit(isTruthy(r), node.span, tracker)
-              }
-            }
-          } else {
-            // Or
-            if (isTruthy(l)) {
-              yield emit(true, node.span, tracker)
-            } else {
-              // l is falsy here, so the result is the truthiness of r.
-              for (const r of evaluate(node.right, input, env, tracker)) {
-                yield emit(isTruthy(r), node.span, tracker)
-              }
-            }
-          }
-        }
-        return
-      }
-      case 'Binary': {
-        const leftRes = Array.from(evaluate(node.left, input, env, tracker))
-        const rightRes = Array.from(evaluate(node.right, input, env, tracker))
-        for (const l of leftRes) {
-          for (const r of rightRes) {
-            yield emit(applyBinaryOp(node.op, l, r, node.span), node.span, tracker)
-          }
-        }
-        return
-      }
-      case 'If':
-        yield* evalIf(node, input, env, tracker, evaluate)
-        return
-      case 'Try':
-        yield* evalTry(node, input, env, tracker, evaluate)
-        return
-      case 'Recurse':
-        yield* evalRecurse(node, input, env, tracker, evaluate)
-        return
-      case 'Iterate':
-        yield* evalIterate(node, input, env, tracker, evaluate)
-        return
-      case 'Assignment':
-        yield* evalAssignment(node, input, env, tracker, evaluate)
-        return
-      case 'Reduce':
-        yield* evalReduce(node, input, env, tracker, evaluate)
-        return
-      case 'Foreach':
-        yield* evalForeach(node, input, env, tracker, evaluate)
-        return
-      case 'As': {
-        const values = Array.from(evaluate(node.bind, input, env, tracker))
-        for (const val of values) {
-          // Use a new frame for the binding to ensure correct scoping and avoid mutation issues
-          const newEnv = bindFrame(node.pattern, val, env)
-          yield* evaluate(node.body, input, newEnv, tracker)
-        }
-        return
-      }
-      case 'Call':
-        yield* evalCall(node, input, env, tracker, evaluate)
-        return
-      case 'Def':
-        yield* evalDef(node, input, env, tracker, evaluate)
-        return
-    }
+    yield* handlers[node.kind](node, input, env, tracker, evaluate)
   } finally {
     tracker.exit()
   }

@@ -24,7 +24,7 @@
     "knip": "knip",
     "check:cycles": "dpdm --no-warning --no-tree --exit-code circular:1 -T src/index.ts",
     "check:madge": "madge --circular --extensions ts src/index.ts",
-    "check:complexity": "fta src --score-cap 90",
+    "check:complexity": "fta src --score-cap 50",
     "graph": "madge --image dependency-graph.svg --extensions ts src/index.ts",
     "fta": "fta src",
     "compat-audit": "pnpm run build && node scripts/compat-audit.mjs",
