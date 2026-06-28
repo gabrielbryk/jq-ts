@@ -23,7 +23,7 @@ body:
       label: Steps to Reproduce
       description: How can we reproduce this issue?
       placeholder: |
-        1. Install package with 'npm install npm-starter'
+        1. Install package with 'npm install @gabrielbryk/jq-ts'
         2. Import and use...
         3. See error
     validations:
@@ -51,7 +51,7 @@ body:
     id: version
     attributes:
       label: Package Version
-      description: Which version of npm-starter are you using?
+      description: Which version of @gabrielbryk/jq-ts are you using?
       placeholder: e.g., 1.0.1
     validations:
       required: true

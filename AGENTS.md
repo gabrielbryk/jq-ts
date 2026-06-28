@@ -1,13 +1,13 @@
 # Repository Guidelines
 
 jq-ts is a pure TypeScript implementation of a Workflow-safe subset of the jq query language. Code in
-`src/` must be deterministic and isolate-friendly (see `docs/requirements.md`).
+`src/` must be deterministic and isolate-friendly (see `planning-docs/requirements.md`).
 
 ## Project Structure & Module Organization
 
 - `src/` — library source (public entrypoint: `src/index.ts`)
 - `test/` — Vitest unit tests (`*.test.ts`)
-- `docs/` — design/requirements/subset notes (update when behavior changes)
+- `planning-docs/` — design/requirements/subset notes (update when behavior changes)
 - `.changeset/` — release notes and version bumps
 - `dist/` — build output (generated; do not edit by hand)
 
@@ -32,7 +32,7 @@ jq-ts is a pure TypeScript implementation of a Workflow-safe subset of the jq qu
 ## Testing Guidelines
 
 - Framework: Vitest; place tests under `test/` and name them `*.test.ts`.
-- Add tests for new syntax/builtins and keep `docs/testing.md` in sync with the approach.
+- Add tests for new syntax/builtins and keep `planning-docs/testing.md` in sync with the approach.
 
 ## Commit & Pull Request Guidelines
 

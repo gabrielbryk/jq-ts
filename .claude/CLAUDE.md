@@ -29,7 +29,7 @@ The codebase follows a classic interpreter pipeline:
 1. **Lexer** (`src/lexer.ts`) → tokenizes input with position tracking
 2. **Parser** (`src/parser.ts`) → builds an AST from tokens
 3. **Validator** (`src/validate.ts`) → rejects unsupported constructs
-4. **Evaluator** (`src/value.ts`) → executes filters as streams of values
+4. **Evaluator** (`src/eval/`, entry `src/eval/index.ts`) → executes filters as streams of values; builtins live in `src/builtins/`
 
 ### Core Abstractions
 
@@ -57,7 +57,7 @@ This enables correct semantics for:
 
 The interpreter enforces:
 
-- **No time operations**: no `now`, no `Date.now()`, no timezone/locale formatting
+- **No host clock**: the interpreter never reads `Date.now()`. The `now` builtin resolves only to a caller-injected instant (`EvalOptions.now`) and throws when none is provided; pure date builtins (`gmtime`, `strftime`, `todate`, …) are deterministic functions of their input
 - **No randomness**: no `Math.random()`
 - **No I/O**: no filesystem, network, or environment variable access
 - **Canonical ordering**: object key iteration follows a deterministic convention (typically lexicographic sort)
@@ -73,12 +73,13 @@ Untrusted expressions are protected by configurable limits:
 
 ## Documentation
 
-- **docs/design.md** — Architecture, semantic model, determinism, safety limits
-- **docs/requirements.md** — Constraints and compatibility contract
-- **docs/workflow-dsl.md** — Integration with Workflow DSL expressions
-- **docs/subset.md** — Supported syntax and builtins
-- **docs/testing.md** — Conformance testing strategy
-- **docs/roadmap.md** — Milestones and planned features
+- **planning-docs/design.md** — Architecture, semantic model, determinism, safety limits
+- **planning-docs/requirements.md** — Constraints and compatibility contract
+- **planning-docs/compatibility.md** — jq 1.8 compatibility matrix and helper API notes
+- **planning-docs/workflow-dsl.md** — Embedding jq-ts as an expression engine in host DSLs (`${...}` envelopes)
+- **planning-docs/subset.md** — Supported syntax and builtins
+- **planning-docs/testing.md** — Conformance testing strategy
+- **planning-docs/roadmap.md** — Milestones and planned features
 
 ## Testing Strategy
 
@@ -99,7 +100,7 @@ Each test file mirrors its source counterpart. When adding features, ensure corr
 3. Update `src/lexer.ts` to recognize tokens
 4. Update `src/parser.ts` to build AST nodes from tokens
 5. Add validation logic in `src/validate.ts` if needed
-6. Implement evaluation in `src/value.ts`
+6. Implement evaluation in `src/eval/` (or add a builtin under `src/builtins/`)
 7. Add test coverage in the relevant test file
 
 ### Error Handling
@@ -128,7 +129,7 @@ Commits follow **Conventional Commits** format (checked by Commitlint).
 The built package exports from `src/index.ts` and is available in three formats:
 
 - **CommonJS** (`dist/index.cjs`) — for Node.js/CommonJS environments
-- **ESM** (`dist/index.js`) — for modern modules
-- **TypeScript** (`dist/index.d.ts`) — type definitions
+- **ESM** (`dist/index.mjs`) — for modern modules
+- **TypeScript** (`dist/index.d.mts` / `dist/index.d.cts`) — type definitions
 
 Exports are validated with `pnpm run check-exports` before releases.

@@ -7,7 +7,7 @@ This document provides an overview of all the automated tooling configured in th
 ### ESLint
 
 - **Purpose**: Static code analysis and linting
-- **Config**: `eslint.config.js` (ESLint v9 flat config)
+- **Config**: `eslint.config.js` (ESLint flat config)
 - **Run**: `pnpm run lint` or `pnpm run lint:fix`
 - **Features**:
   - TypeScript ESLint with type checking
@@ -86,8 +86,8 @@ This document provides an overview of all the automated tooling configured in th
 - **Run**: `pnpm run build`
 - **Output**:
   - `dist/index.cjs` (CommonJS)
-  - `dist/index.js` (ESM)
-  - `dist/index.d.ts` (TypeScript declarations)
+  - `dist/index.mjs` (ESM)
+  - `dist/index.d.mts` / `dist/index.d.cts` (TypeScript declarations)
 
 ### Are The Types Wrong (ATTW)
 
