@@ -1,3 +1,4 @@
 {
-  "*.{js,jsx,ts,tsx,json,md,yml}": ["prettier --write", "pnpm run lint:fix"]
+  "*.ts": ["prettier --write", "eslint --fix"],
+  "*.{json,md,yml,yaml}": ["prettier --write"]
 }

@@ -30,14 +30,12 @@ export const lex = (text: string): Token[] => {
     !!ch && ((ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z') || ch === '_')
   const isIdentifierPart = (ch: string | undefined) => isIdentifierStart(ch) || isDigit(ch)
 
-  // Modes: 0=Normal, 1=Interpolation
+  // Tracks interpolation nesting; only the stack depth is read, the pushed values are unused.
   const modeStack: number[] = [0]
 
   while (pos < length) {
-    // Check for interpolation end ')' if in String mode (actually it's handled by ) case)
     const ch = peek()
 
-    // ... whitespace, comments ...
     if (isWhitespace(ch)) {
       advance()
       continue
@@ -84,7 +82,6 @@ export const lex = (text: string): Token[] => {
         }
         continue
       }
-      // ... same cases ...
       case '.': {
         advance()
         if (peek() === '.') {
@@ -282,7 +279,6 @@ export const lex = (text: string): Token[] => {
       while (isIdentifierPart(peek())) advance()
       const raw = text.slice(start, pos)
       const keyword = keywordKinds[raw]
-      // ...
       if (keyword === 'Null' || keyword === 'True' || keyword === 'False') {
         pushToken(keyword, start, pos)
       } else if (keyword) {
@@ -326,13 +322,11 @@ export const lex = (text: string): Token[] => {
       }
       if (current === '\\') {
         if (peek() === '(') {
-          advance() // consum (
+          advance() // consume (
           return pos
         }
-        // Escape handling
         const esc = advance()
         if (!esc) break
-        // ... (standard escapes)
         if ('"\\/bfnrt'.includes(esc)) continue
         if (esc === 'u') {
           for (let i = 0; i < 4; i++) {

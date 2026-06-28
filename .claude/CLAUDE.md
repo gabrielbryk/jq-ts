@@ -82,13 +82,7 @@ Untrusted expressions are protected by configurable limits:
 
 ## Testing Strategy
 
-Tests use **Vitest** and are organized by component:
-
-- `test/lexer.test.ts` — Token generation
-- `test/parser.test.ts` — AST construction
-- `test/validate.test.ts` — Expression validation
-
-Each test file mirrors its source counterpart. When adding features, ensure corresponding tests exist and pass before committing.
+Tests use **Vitest** and live in `test/`. The pipeline stages have dedicated files (`lexer.test.ts`, `parser.test.ts` / `parser.*.test.ts`, `validate.test.ts`), and jq compatibility is covered by `compat.test.ts` and `jq-compat.test.ts`. Evaluator tests are not 1:1 with source files—they are grouped by behavior (`eval.access`, `eval.strings`, `eval.dates`, `eval.builtins`, `eval.assignment`, etc.). When adding a feature, add cases to the behavior-appropriate file (or create a new `eval.<area>.test.ts`) and ensure they pass before committing.
 
 ## Code Patterns
 

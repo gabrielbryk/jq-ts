@@ -4,6 +4,13 @@ import type { BuiltinSpec } from './types'
 import { emit } from './utils'
 import { add } from '../eval/ops'
 
+/** Smallest positive normal IEEE-754 double. */
+const MIN_NORMAL_DOUBLE = 2.2250738585072014e-308
+
+/** Returns true when input is a non-zero finite number. */
+const isNormalNumber = (input: Value): boolean =>
+  typeof input === 'number' && Number.isFinite(input) && input !== 0
+
 export const mathBuiltins: BuiltinSpec[] = [
   // --- Basic Math ---
   {
@@ -51,7 +58,8 @@ export const mathBuiltins: BuiltinSpec[] = [
     arity: 0,
     apply: function* (input, _args, _env, tracker, _eval, span) {
       if (typeof input !== 'number') {
-        yield emit(false, span, tracker) // jq behavior: isnan("foo") -> false? or error? jq isnan("foo") -> `false`.
+        // jq treats non-numbers as not NaN: isnan("foo") -> false.
+        yield emit(false, span, tracker)
         return
       }
       yield emit(Number.isNaN(input), span, tracker)
@@ -94,47 +102,32 @@ export const mathBuiltins: BuiltinSpec[] = [
     },
   },
   {
+    // normal is a non-standard alias for isnormal in this implementation.
     name: 'normal',
     arity: 0,
     apply: function* (input, _args, _env, tracker, _eval, span) {
-      if (typeof input !== 'number') {
-        yield emit(false, span, tracker)
-        return
-      }
-      // normal: normal finite number (not subnormal, not 0, not infinite, not nan)
-      // JS doesn't distinguish subnormal easily, but `Number.isFinite(x) && Math.abs(x) >= Number.MIN_NORMAL` roughly?
-      // jq source says: `isnormal`.
-      // For JS:
-      if (!Number.isFinite(input) || Number.isNaN(input) || input === 0) {
-        yield emit(false, span, tracker)
-        return
-      }
-      // Assuming simplistic "not zero, not infinite, not nan" for now as "normal" in JS context roughly covers it.
-      // Strict IEEE subnormal check is harder.
-      yield emit(true, span, tracker)
+      yield emit(isNormalNumber(input), span, tracker)
     },
   },
   {
     name: 'isnormal',
     arity: 0,
     apply: function* (input, _args, _env, tracker, _eval, span) {
-      yield emit(typeof input === 'number' && Number.isFinite(input) && input !== 0, span, tracker)
+      yield emit(isNormalNumber(input), span, tracker)
     },
   },
   {
     name: 'subnormal',
     arity: 0,
     apply: function* (input, _args, _env, tracker, _eval, span) {
-      if (typeof input !== 'number') {
-        yield emit(false, span, tracker)
-        return
-      }
-      // In JS, subnormals are handled transparently, but `x !== 0 && Math.abs(x) < Number.MIN_VALUE`? No `MIN_VALUE` is roughly 5e-324 (smallest positive).
-      // `Number.MIN_NORMAL` (if available in polyfill) or check?
-      // Let's assume false for JS numbers unless extremely small?
-      // jq checks `fpclassify`.
-      // For now, let's just return false unless 0.
-      yield emit(false, span, tracker)
+      // A subnormal is a non-zero finite number smaller in magnitude than the
+      // smallest positive normal double (2.2250738585072014e-308).
+      const isSubnormal =
+        typeof input === 'number' &&
+        input !== 0 &&
+        Number.isFinite(input) &&
+        Math.abs(input) < MIN_NORMAL_DOUBLE
+      yield emit(isSubnormal, span, tracker)
     },
   },
 

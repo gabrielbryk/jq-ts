@@ -1,8 +1,16 @@
 import { RuntimeError } from '../errors'
-import { compareValues, isTruthy, valueEquals, type Value, type ValueObject } from '../value'
+import {
+  compareValues,
+  isPlainObject,
+  isTruthy,
+  valueEquals,
+  type Value,
+  type ValueObject,
+} from '../value'
+import type { Span } from '../span'
 import { checkContains } from './strings'
 import type { BuiltinSpec } from './types'
-import { emit, ensureIndex } from './utils'
+import { emit, ensureIndex, objValue, stableStringify } from './utils'
 import { deletePaths, getPath, updatePath } from './paths'
 import { evaluatePath } from '../eval/path_eval'
 
@@ -200,8 +208,7 @@ export const collectionBuiltins: BuiltinSpec[] = [
         yield emit(result, span, tracker)
       } else if (input !== null && typeof input === 'object') {
         const keys = Object.keys(input).sort()
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
-        const result = keys.map((k) => ({ key: k, value: (input as ValueObject)[k]! }))
+        const result = keys.map((k) => ({ key: k, value: objValue(input, k) }))
         yield emit(result, span, tracker)
       } else {
         throw new RuntimeError('to_entries expects array or object', span)
@@ -216,18 +223,7 @@ export const collectionBuiltins: BuiltinSpec[] = [
       const result: ValueObject = {}
       for (const item of input) {
         tracker.step(span)
-        if (item === null || typeof item !== 'object' || Array.isArray(item)) {
-          throw new RuntimeError('from_entries expects array of objects', span)
-        }
-        const obj = item
-        const key = getEntryField(obj, ['key', 'Key', 'name', 'Name'])
-        const value = getEntryField(obj, ['value', 'Value'])
-        if (key === undefined || value === undefined) {
-          throw new RuntimeError('from_entries items must have key/name and value fields', span)
-        }
-        if (typeof key !== 'string') {
-          throw new RuntimeError('from_entries object keys must be strings', span)
-        }
+        const { key, value } = decodeEntry(item, span)
         result[key] = value
       }
       yield emit(result, span, tracker)
@@ -243,8 +239,7 @@ export const collectionBuiltins: BuiltinSpec[] = [
         entries = input.map((v, i) => ({ key: i, value: v }))
       } else if (input !== null && typeof input === 'object') {
         const keys = Object.keys(input).sort()
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
-        entries = keys.map((k) => ({ key: k, value: (input as ValueObject)[k]! }))
+        entries = keys.map((k) => ({ key: k, value: objValue(input, k) }))
       } else {
         throw new RuntimeError('with_entries expects array or object', span)
       }
@@ -262,18 +257,8 @@ export const collectionBuiltins: BuiltinSpec[] = [
       // from_entries
       const result: ValueObject = {}
       for (const item of transformed) {
-        if (item === null || typeof item !== 'object' || Array.isArray(item)) {
-          throw new RuntimeError('with_entries filter must produce objects', span)
-        }
-        const obj = item
-        if (!('key' in obj) || !('value' in obj)) {
-          throw new RuntimeError('with_entries items must have "key" and "value"', span)
-        }
-        const key = obj['key']
-        if (typeof key !== 'string') {
-          throw new RuntimeError('with_entries keys must be strings', span)
-        }
-        result[key] = obj['value']!
+        const { key, value } = decodeEntry(item, span)
+        result[key] = value
       }
       yield emit(result, span, tracker)
     },
@@ -377,6 +362,7 @@ export const collectionBuiltins: BuiltinSpec[] = [
       const flattenRec = (arr: Value[]): Value[] => {
         let res: Value[] = []
         for (const item of arr) {
+          tracker.step(span)
           if (Array.isArray(item)) {
             res = res.concat(flattenRec(item))
           } else {
@@ -401,6 +387,7 @@ export const collectionBuiltins: BuiltinSpec[] = [
           if (d <= 0) return arr
           let res: Value[] = []
           for (const item of arr) {
+            tracker.step(span)
             if (Array.isArray(item)) {
               res = res.concat(flattenDepth(item, d - 1))
             } else {
@@ -433,7 +420,7 @@ export const collectionBuiltins: BuiltinSpec[] = [
     arity: 0,
     apply: function* (input, _args, _env, tracker, _eval, span) {
       if (!Array.isArray(input)) throw new RuntimeError('transpose expects an array', span)
-      const arr = input as Value[]
+      const arr = input
       if (arr.length === 0) {
         yield emit([], span, tracker)
         return
@@ -551,12 +538,8 @@ export const collectionBuiltins: BuiltinSpec[] = [
             current.pop()
           }
         }
-        if (input.length === 0 && nVal > 0) {
-          // empty
-        } else {
-          for (const combo of helper(0, [])) {
-            yield emit(combo, span, tracker)
-          }
+        for (const combo of helper(0, [])) {
+          yield emit(combo, span, tracker)
         }
       }
     },
@@ -573,9 +556,35 @@ export const collectionBuiltins: BuiltinSpec[] = [
   },
 ]
 
-const getEntryField = (obj: ValueObject, names: string[]): Value | undefined => {
-  for (const name of names) {
-    if (Object.prototype.hasOwnProperty.call(obj, name)) return obj[name]!
+const ENTRY_KEY_ALIASES = ['key', 'k', 'name', 'Name', 'Key', 'K']
+const ENTRY_VALUE_ALIASES = ['value', 'v', 'Value']
+
+/**
+ * Decodes a single from_entries/with_entries entry the way jq does.
+ *
+ * The key is resolved through the alias chain `key // k // name // Name // Key // K`
+ * (the first non-null, non-false value wins) and coerced to a string via the same
+ * rules as `tostring` for non-string values. The value is taken from the first
+ * present of `value`, `v`, or `Value`, defaulting to `null` when absent.
+ */
+const decodeEntry = (item: Value, span: Span): { key: string; value: Value } => {
+  if (!isPlainObject(item)) {
+    throw new RuntimeError('Cannot use non-object as an entry', span)
   }
-  return undefined
+  let keyVal: Value = null
+  for (const alias of ENTRY_KEY_ALIASES) {
+    if (Object.prototype.hasOwnProperty.call(item, alias)) {
+      keyVal = objValue(item, alias)
+      if (keyVal !== null && keyVal !== false) break
+    }
+  }
+  const key = typeof keyVal === 'string' ? keyVal : stableStringify(keyVal)
+  let value: Value = null
+  for (const alias of ENTRY_VALUE_ALIASES) {
+    if (Object.prototype.hasOwnProperty.call(item, alias)) {
+      value = objValue(item, alias)
+      break
+    }
+  }
+  return { key, value }
 }

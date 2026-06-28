@@ -1,7 +1,7 @@
 import { RuntimeError } from '../errors'
 import { describeType, isPlainObject, isTruthy, type Value, type ValueObject } from '../value'
 import type { BuiltinSpec } from './types'
-import { emit, stableStringify } from './utils'
+import { emit, objValue, stableStringify } from './utils'
 
 const toJqString = (value: Value): string => {
   if (typeof value === 'string') return value
@@ -52,7 +52,7 @@ export const stdBuiltins: BuiltinSpec[] = [
       } else if (Array.isArray(input)) {
         yield emit(input.length, span, tracker)
       } else if (input !== null && typeof input === 'object') {
-        // Safe because isPlainObject check implies it's not null/array, but here we can just use Object.keys
+        // Object: number of keys
         yield emit(Object.keys(input).length, span, tracker)
       } else if (typeof input === 'number') {
         yield emit(Math.abs(input), span, tracker)
@@ -179,27 +179,17 @@ export const stdBuiltins: BuiltinSpec[] = [
           }
           newStruct = newArr
         } else if (isPlainObject(curr)) {
+          // jq: map_values(w) === .[] |= w — the first output of w replaces each
+          // value, and a key is dropped when w yields nothing for it.
           const newObj: ValueObject = {}
           const keys = Object.keys(curr).sort()
-          let objValid = true
           for (const key of keys) {
-            // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
-            const val = (curr as ValueObject)[key]!
-            let lastVal: Value | undefined
-            let found = false
+            const val = objValue(curr, key)
             for (const walkedVal of walkRec(val)) {
-              lastVal = walkedVal
-              found = true
-            }
-            if (found) {
-              newObj[key] = lastVal!
-            } else {
-              // If any value is empty, the reduce (and thus the object) becomes empty
-              objValid = false
+              newObj[key] = walkedVal
               break
             }
           }
-          if (!objValid) return // Yield nothing
           newStruct = newObj
         }
 

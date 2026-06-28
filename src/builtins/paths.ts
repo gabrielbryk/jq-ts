@@ -4,7 +4,7 @@ import type { Span } from '../span'
 import type { LimitTracker } from '../limits'
 import type { BuiltinSpec } from './types'
 import { evaluatePath } from '../eval/path_eval'
-import { emit } from './utils'
+import { emit, objValue } from './utils'
 
 export type PathSegment = string | number | { start: number | null; end: number | null }
 
@@ -54,8 +54,7 @@ export const getPath = (root: Value, path: PathSegment[]): Value | undefined => 
     if (curr === null) return undefined
     if (typeof part === 'string' && isPlainObject(curr)) {
       if (!Object.prototype.hasOwnProperty.call(curr, part)) return undefined
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
-      curr = (curr as ValueObject)[part]!
+      curr = objValue(curr, part)
     } else if (typeof part === 'number' && Array.isArray(curr)) {
       if (part < 0 || part >= curr.length) return undefined
       curr = curr[part]!
@@ -172,8 +171,7 @@ export const deletePaths = (root: Value, paths: PathSegment[][], span: Span): Va
       if (tails.some((t) => t.length === 0)) {
         delete result[key]
       } else {
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
-        result[key] = deletePaths((root as ValueObject)[key]!, tails, span)
+        result[key] = deletePaths(objValue(root, key), tails, span)
       }
     }
     return result

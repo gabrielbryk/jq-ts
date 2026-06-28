@@ -165,6 +165,9 @@ export interface BoolNode {
   span: Span
 }
 
+/**
+ * Represents a single `if`/`elif` branch: a condition and its `then` body.
+ */
 export interface IfBranch {
   cond: FilterNode
   then: FilterNode
@@ -190,6 +193,10 @@ export type BindingPattern =
   | { kind: 'ArrayPattern'; items: BindingPattern[]; span: Span }
   | { kind: 'ObjectPattern'; entries: ObjectPatternEntry[]; span: Span }
 
+/**
+ * Represents a single entry in an object binding pattern: a key and the
+ * sub-pattern bound to its value.
+ */
 export interface ObjectPatternEntry {
   key: string
   pattern: BindingPattern
@@ -258,8 +265,8 @@ export interface TryNode {
 }
 
 /**
- * Represents the `recurse` builtin when used as a node (deprecated/internal mainly, usually Call).
- * KEPT FOR COMPATIBILITY/Internal use.
+ * Represents the recursive-descent operator `..`, which yields the input and
+ * all of its descendants.
  */
 export interface RecurseNode {
   kind: 'Recurse'
@@ -354,4 +361,7 @@ export type FilterNode =
   | BreakNode
   | SliceNode
 
+/**
+ * The set of binary operators supported by {@link BinaryNode}.
+ */
 export type BinaryOp = BinaryNode['op']

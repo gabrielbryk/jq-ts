@@ -30,13 +30,15 @@ export const isTruthy = (value: Value): boolean => !(value === false || value ==
 /**
  * deeply compares two JSON values for equality.
  *
+ * Numbers are compared with `Object.is`, so two `NaN` values compare equal.
+ *
  * @param a - The first value.
  * @param b - The second value.
  * @returns `true` if the values are structurally equal, `false` otherwise.
  */
 export const valueEquals = (a: Value, b: Value): boolean => {
-  if (a === b) {
-    // Handles primitives not involving NaN.
+  if (Object.is(a, b)) {
+    // Handles primitive identity, including NaN and distinguishing +0/-0.
     return true
   }
   if (typeof a !== typeof b) {
