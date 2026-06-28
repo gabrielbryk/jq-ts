@@ -1,5 +1,7 @@
 # jq-ts
 
+[![CI](https://github.com/gabrielbryk/jq-ts/actions/workflows/ci.yml/badge.svg)](https://github.com/gabrielbryk/jq-ts/actions/workflows/ci.yml) [![npm version](https://img.shields.io/npm/v/@gabrielbryk/jq-ts)](https://www.npmjs.com/package/@gabrielbryk/jq-ts) [![license](https://img.shields.io/npm/l/@gabrielbryk/jq-ts)](LICENSE) [![node engines](https://img.shields.io/node/v/@gabrielbryk/jq-ts)](https://github.com/gabrielbryk/jq-ts)
+
 Pure TypeScript implementation of a deterministic, zero-dependency subset of the **jq query language**. Safe for V8 isolates (no Node.js built-ins, no filesystem/network), making it compatible with Temporal Workflows and other sandboxed runtimes.
 
 ## Features
