@@ -18,20 +18,6 @@ export const getVar = (env: EnvStack, name: string): Value | undefined => {
 }
 
 /**
- * Bounds a value to a variable name in the current scope frame.
- */
-export const pushBinding = (env: EnvStack, name: string, value: Value) => {
-  env[env.length - 1]!.vars.set(name, value)
-}
-
-/**
- * Removes a variable binding from the current scope frame.
- */
-export const popBinding = (env: EnvStack, name: string) => {
-  env[env.length - 1]!.vars.delete(name)
-}
-
-/**
  * Binds jq `as` destructuring patterns into a variable map.
  */
 export const bindPattern = (
