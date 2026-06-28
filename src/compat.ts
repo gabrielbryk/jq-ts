@@ -62,9 +62,6 @@ const semanticWarnings: Record<string, string> = {
   tojson: 'jq tojson preserves input object order; jq-ts uses stable sorted-key stringification.',
   infinite:
     'jq serializes infinite as a finite JSON number; jq-ts returns JavaScript Infinity internally.',
-  normal:
-    'jq documents isnormal; jq-ts exposes normal with approximate JavaScript number semantics.',
-  subnormal: 'jq documents subnormal classification; jq-ts currently approximates this as false.',
 }
 
 const specialVariableWarnings: Record<string, string> = {
