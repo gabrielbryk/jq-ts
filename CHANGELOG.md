@@ -1,5 +1,20 @@
 # jq-ts
 
+## 1.6.0
+
+### Minor Changes
+
+- a7efc8a: Add `$ARGS` support. `$ARGS.named` is populated from the caller-provided `options.vars`, and a new `positionalArgs` option backs `$ARGS.positional` (defaults to `[]`). jq-ts never reads process argv — these values come only from the options you pass to `run`.
+
+### Patch Changes
+
+- 949de03: Fix several builtins to match jq 1.8 output exactly. These divergences were
+  uncovered by a large batch of new differential fixtures (run against the real
+  jq binary) for previously self-asserted builtins:
+  - `round` now rounds half away from zero (jq semantics) instead of JavaScript's round-half-toward-+∞.
+  - `sqrt` of a negative number now yields `null` (as jq does) instead of `NaN`.
+  - Corrected float classification (`isnan`, `isfinite`, `isinfinite`, `isnormal`), `min_by`/`max_by` (tie and empty-array handling), `toboolean`, `getpath`, `index`/`rindex`/`indices`, `limit`, `nth`, and a comparison-operator edge case to match jq.
+
 ## 1.5.0
 
 ### Minor Changes
