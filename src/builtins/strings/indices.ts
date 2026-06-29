@@ -5,15 +5,15 @@ import { emit } from '../utils'
 
 const stringIndices = (input: string, search: string): number[] => {
   const indices: number[] = []
-  // jq returns non-overlapping match positions, advancing by search.length
-  // after each hit (e.g. "aaaa" | indices("aa") -> [0, 2]).
+  // jq returns overlapping match positions, advancing by 1 after each hit
+  // (e.g. "aaaa" | indices("aa") -> [0, 1, 2]).
   if (search.length > 0) {
     let pos = 0
     while (pos < input.length) {
       const idx = input.indexOf(search, pos)
       if (idx === -1) break
       indices.push(idx)
-      pos = idx + search.length
+      pos = idx + 1
     }
   }
   return indices
@@ -21,9 +21,25 @@ const stringIndices = (input: string, search: string): number[] => {
 
 const arrayIndices = (input: Value[], search: Value): number[] => {
   const indices: number[] = []
-  for (let i = 0; i < input.length; i++) {
-    const val = input[i]
-    if (val !== undefined && valueEquals(val, search)) indices.push(i)
+  if (Array.isArray(search)) {
+    // Subsequence search: find all positions where input[i..i+n] equals search
+    if (search.length > 0) {
+      for (let i = 0; i <= input.length - search.length; i++) {
+        let match = true
+        for (let j = 0; j < search.length; j++) {
+          if (!valueEquals(input[i + j]!, search[j]!)) {
+            match = false
+            break
+          }
+        }
+        if (match) indices.push(i)
+      }
+    }
+  } else {
+    for (let i = 0; i < input.length; i++) {
+      const val = input[i]
+      if (val !== undefined && valueEquals(val, search)) indices.push(i)
+    }
   }
   return indices
 }

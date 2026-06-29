@@ -23,6 +23,7 @@ export const nthBuiltins: BuiltinSpec[] = [
       const indices = evaluate(args[0]!, input, env, tracker)
       for (const n of indices) {
         if (typeof n !== 'number') throw new RuntimeError('nth expects number', span)
+        if (n < 0) throw new RuntimeError('nth index must not be negative', span)
         let count = 0
         for (const val of evaluate(args[1]!, input, env, tracker)) {
           if (count === n) {

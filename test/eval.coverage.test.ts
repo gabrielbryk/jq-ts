@@ -36,10 +36,10 @@ describe('math finiteness builtins', () => {
     it('returns false for -Infinity', () => {
       expect(r('isfinite', -Infinity)).toEqual([false])
     })
-    it('returns true for non-number (jq semantics: only numbers can be infinite)', () => {
-      expect(r('isfinite', 'hello')).toEqual([true])
-      expect(r('isfinite', null)).toEqual([true])
-      expect(r('isfinite', true)).toEqual([true])
+    it('returns false for non-number (jq semantics: non-numbers are not finite)', () => {
+      expect(r('isfinite', 'hello')).toEqual([false])
+      expect(r('isfinite', null)).toEqual([false])
+      expect(r('isfinite', true)).toEqual([false])
     })
   })
 
@@ -169,8 +169,8 @@ describe('indices builtin', () => {
     expect(r('"abcabc" | indices("b")')).toEqual([[1, 4]])
   })
 
-  it('handles non-overlapping matches in string ("aaaa" -> [0,2])', () => {
-    expect(r('"aaaa" | indices("aa")')).toEqual([[0, 2]])
+  it('handles overlapping matches in string ("aaaa" -> [0,1,2])', () => {
+    expect(r('"aaaa" | indices("aa")')).toEqual([[0, 1, 2]])
   })
 
   it('returns empty array when no match in string', () => {

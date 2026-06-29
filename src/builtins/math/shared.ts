@@ -5,9 +5,12 @@ import type { BuiltinSpec } from '../types'
 /** Smallest positive normal IEEE-754 double. */
 export const MIN_NORMAL_DOUBLE = 2.2250738585072014e-308
 
-/** Returns true when input is a non-zero finite number. */
+/** Returns true when input is a non-zero finite number above the subnormal threshold. */
 export const isNormalNumber = (input: Value): boolean =>
-  typeof input === 'number' && Number.isFinite(input) && input !== 0
+  typeof input === 'number' &&
+  Number.isFinite(input) &&
+  input !== 0 &&
+  Math.abs(input) >= MIN_NORMAL_DOUBLE
 
 export type EvaluateFn = Parameters<BuiltinSpec['apply']>[4]
 export type Tracker = Parameters<BuiltinSpec['apply']>[3]
@@ -17,6 +20,7 @@ export type Span = Parameters<BuiltinSpec['apply']>[5]
 
 export const lt = (cmp: number): boolean => cmp < 0
 export const gt = (cmp: number): boolean => cmp > 0
+export const gte = (cmp: number): boolean => cmp >= 0
 
 /** Evaluate a key expression that must produce exactly one value. */
 const evalSingleKey = (

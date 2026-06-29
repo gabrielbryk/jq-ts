@@ -12,6 +12,7 @@ export const limitBuiltins: BuiltinSpec[] = [
       const limits = evaluate(args[0]!, input, env, tracker)
       for (const n of limits) {
         if (typeof n !== 'number') throw new RuntimeError('limit expects number', span)
+        if (n < 0) throw new RuntimeError('limit count must not be negative', span)
         let count = 0
         if (n > 0) {
           for (const val of evaluate(args[1]!, input, env, tracker)) {

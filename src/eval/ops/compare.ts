@@ -14,8 +14,14 @@ import { compareValues, type Value, valueEquals } from '../../value'
 export function applyComparison(op: string, left: Value, right: Value, span: Span): boolean {
   switch (op) {
     case 'Eq':
+      // IEEE 754: NaN != NaN
+      if (typeof left === 'number' && isNaN(left)) return false
+      if (typeof right === 'number' && isNaN(right)) return false
       return valueEquals(left, right)
     case 'Neq':
+      // IEEE 754: NaN != NaN
+      if (typeof left === 'number' && isNaN(left)) return true
+      if (typeof right === 'number' && isNaN(right)) return true
       return !valueEquals(left, right)
     case 'Lt':
       return compareValues(left, right) < 0

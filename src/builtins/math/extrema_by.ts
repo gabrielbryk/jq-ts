@@ -1,7 +1,7 @@
 import { RuntimeError } from '../../errors'
 import type { BuiltinSpec } from '../types'
 import { emit } from '../utils'
-import { gt, lt, pickExtremeBy } from './shared'
+import { gte, lt, pickExtremeBy } from './shared'
 
 export const extremaByBuiltins: BuiltinSpec[] = [
   {
@@ -30,7 +30,7 @@ export const extremaByBuiltins: BuiltinSpec[] = [
         return
       }
       yield emit(
-        pickExtremeBy(input, gt, evaluate, args, env, tracker, span, 'max_by'),
+        pickExtremeBy(input, gte, evaluate, args, env, tracker, span, 'max_by'),
         span,
         tracker
       )
