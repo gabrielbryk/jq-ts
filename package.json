@@ -70,7 +70,7 @@
     "@arethetypeswrong/cli": "^0.18.2",
     "@changesets/cli": "^2.29.8",
     "@commitlint/cli": "^20.2.0",
-    "@commitlint/config-conventional": "^20.2.0",
+    "@commitlint/config-conventional": "^21.1.0",
     "@eslint/js": "^9.39.4",
     "@size-limit/preset-small-lib": "^11.2.0",
     "@types/node": "^25.0.1",
