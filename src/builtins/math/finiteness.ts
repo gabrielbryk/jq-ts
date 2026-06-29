@@ -8,10 +8,12 @@ export const finitenessBuiltins: BuiltinSpec[] = [
     arity: 0,
     apply: function* (input, _args, _env, tracker, _eval, span) {
       if (typeof input !== 'number') {
-        yield emit(true, span, tracker) // jq `isfinite("foo")` -> true. Only numbers can be infinite.
+        // Non-numbers (string, null, boolean, array, object) are not infinite → false
+        yield emit(false, span, tracker)
         return
       }
-      yield emit(Number.isFinite(input), span, tracker)
+      // jq defines isfinite as !isinfinite (not IEEE isFinite), so NaN → true
+      yield emit(input !== Infinity && input !== -Infinity, span, tracker)
     },
   },
   {

@@ -1031,7 +1031,7 @@
   {
     "name": "utf8bytelength unicode",
     "expr": "utf8bytelength",
-    "input": "µ"
+    "input": "\u00b5"
   },
   {
     "name": "ascii_downcase",
@@ -1046,12 +1046,12 @@
   {
     "name": "ascii_downcase non-ascii",
     "expr": "ascii_downcase",
-    "input": "ÄBC"
+    "input": "\u00c4BC"
   },
   {
     "name": "ascii_upcase non-ascii",
     "expr": "ascii_upcase",
-    "input": "äbc"
+    "input": "\u00e4bc"
   },
   {
     "name": "tojson simple",
@@ -1581,5 +1581,1484 @@
     "name": "strptime then mktime via offset",
     "expr": "strptime(\"%Y-%m-%dT%H:%M:%S%z\") | mktime",
     "input": "2015-03-05T23:51:47+05:30"
+  },
+  {
+    "name": "error-paths: arithmetic number + string",
+    "expr": ". + \"a\"",
+    "input": 1,
+    "expectError": true
+  },
+  {
+    "name": "error-paths: arithmetic boolean + number",
+    "expr": ". + 1",
+    "input": true,
+    "expectError": true
+  },
+  {
+    "name": "error-paths: arithmetic div by zero integer",
+    "expr": ". / 0",
+    "input": 10,
+    "expectError": true
+  },
+  {
+    "name": "error-paths: arithmetic mod by zero",
+    "expr": ". % 0",
+    "input": 7,
+    "expectError": true
+  },
+  {
+    "name": "error-paths: arithmetic number - string",
+    "expr": ". - \"b\"",
+    "input": 5,
+    "expectError": true
+  },
+  {
+    "name": "error-paths: field access on number",
+    "expr": ".foo",
+    "input": 1,
+    "expectError": true
+  },
+  {
+    "name": "error-paths: field access on string",
+    "expr": ".foo",
+    "input": "hello",
+    "expectError": true
+  },
+  {
+    "name": "error-paths: array index on number",
+    "expr": ".[0]",
+    "input": 42,
+    "expectError": true
+  },
+  {
+    "name": "error-paths: iterate boolean",
+    "expr": ".[]",
+    "input": true,
+    "expectError": true
+  },
+  {
+    "name": "error-paths: sort on string non-array",
+    "expr": "sort",
+    "input": "hello",
+    "expectError": true
+  },
+  {
+    "name": "error-paths: unique on number non-array",
+    "expr": "unique",
+    "input": 5,
+    "expectError": true
+  },
+  {
+    "name": "error-paths: min on string non-array",
+    "expr": "min",
+    "input": "hello",
+    "expectError": true
+  },
+  {
+    "name": "error-paths: max on number non-array",
+    "expr": "max",
+    "input": 5,
+    "expectError": true
+  },
+  {
+    "name": "error-paths: unique_by on string non-array",
+    "expr": "unique_by(.)",
+    "input": "hello",
+    "expectError": true
+  },
+  {
+    "name": "error-paths: min_by on number non-array",
+    "expr": "min_by(.)",
+    "input": 5,
+    "expectError": true
+  },
+  {
+    "name": "error-paths: has string key on string",
+    "expr": "has(\"a\")",
+    "input": "hello",
+    "expectError": true
+  },
+  {
+    "name": "error-paths: has string key on boolean",
+    "expr": "has(\"a\")",
+    "input": true,
+    "expectError": true
+  },
+  {
+    "name": "error-paths: ascii_downcase on number",
+    "expr": "ascii_downcase",
+    "input": 42,
+    "expectError": true
+  },
+  {
+    "name": "error-paths: test regex on number",
+    "expr": "test(\".\")",
+    "input": 1,
+    "expectError": true
+  },
+  {
+    "name": "error-paths: utf8bytelength on null",
+    "expr": "utf8bytelength",
+    "input": null,
+    "expectError": true
+  },
+  {
+    "name": "error-paths: split string on array input",
+    "expr": "split(\"a\")",
+    "input": ["a", "b"],
+    "expectError": true
+  },
+  {
+    "name": "error-paths: keys on number",
+    "expr": "keys",
+    "input": 42,
+    "expectError": true
+  },
+  {
+    "name": "error-paths: length on boolean",
+    "expr": "length",
+    "input": true,
+    "expectError": true
+  },
+  {
+    "name": "error-paths: limit negative count",
+    "expr": "[limit(-1; range(5))]",
+    "input": null,
+    "expectError": true
+  },
+  {
+    "name": "error-paths: nth negative index",
+    "expr": "nth(-1; range(5))",
+    "input": null,
+    "expectError": true
+  },
+  {
+    "name": "error-paths: getpath with non-array path",
+    "expr": "getpath(\"a\")",
+    "input": {
+      "a": 1
+    },
+    "expectError": true
+  },
+  {
+    "name": "error-paths: map_values on number",
+    "expr": "map_values(. + 1)",
+    "input": 5,
+    "expectError": true
+  },
+  {
+    "name": "error-paths: tonumber on non-numeric string",
+    "expr": "tonumber",
+    "input": "abc",
+    "expectError": true
+  },
+  {
+    "name": "error-paths: fromjson on number",
+    "expr": "fromjson",
+    "input": 42,
+    "expectError": true
+  },
+  {
+    "name": "float-classification: isnan on positive float",
+    "expr": "isnan",
+    "input": 1.5
+  },
+  {
+    "name": "float-classification: isnan on integer",
+    "expr": "isnan",
+    "input": 42
+  },
+  {
+    "name": "float-classification: isnan on zero",
+    "expr": "isnan",
+    "input": 0
+  },
+  {
+    "name": "float-classification: isnan on nan builtin",
+    "expr": "nan | isnan",
+    "input": null
+  },
+  {
+    "name": "float-classification: isnan on infinite",
+    "expr": "infinite | isnan",
+    "input": null
+  },
+  {
+    "name": "float-classification: isnan on string returns false",
+    "expr": "isnan",
+    "input": "hello"
+  },
+  {
+    "name": "float-classification: isnan on null returns false",
+    "expr": "isnan",
+    "input": null
+  },
+  {
+    "name": "float-classification: isnan on boolean returns false",
+    "expr": "isnan",
+    "input": true
+  },
+  {
+    "name": "float-classification: isfinite on normal float",
+    "expr": "isfinite",
+    "input": 1.5
+  },
+  {
+    "name": "float-classification: isfinite on zero",
+    "expr": "isfinite",
+    "input": 0
+  },
+  {
+    "name": "float-classification: isfinite on nan (jq returns true)",
+    "expr": "nan | isfinite",
+    "input": null
+  },
+  {
+    "name": "float-classification: isfinite on infinite returns false",
+    "expr": "infinite | isfinite",
+    "input": null
+  },
+  {
+    "name": "float-classification: isfinite on string returns false",
+    "expr": "isfinite",
+    "input": "hello"
+  },
+  {
+    "name": "float-classification: isfinite on null returns false",
+    "expr": "isfinite",
+    "input": null
+  },
+  {
+    "name": "float-classification: isinfinite on normal float",
+    "expr": "isinfinite",
+    "input": 1.5
+  },
+  {
+    "name": "float-classification: isinfinite on zero",
+    "expr": "isinfinite",
+    "input": 0
+  },
+  {
+    "name": "float-classification: isinfinite on nan returns false",
+    "expr": "nan | isinfinite",
+    "input": null
+  },
+  {
+    "name": "float-classification: isinfinite on infinite returns true",
+    "expr": "infinite | isinfinite",
+    "input": null
+  },
+  {
+    "name": "float-classification: isinfinite on negative infinite returns true",
+    "expr": "(-infinite) | isinfinite",
+    "input": null
+  },
+  {
+    "name": "float-classification: isinfinite on string returns false",
+    "expr": "isinfinite",
+    "input": "hello"
+  },
+  {
+    "name": "float-classification: isnormal on positive float",
+    "expr": "isnormal",
+    "input": 1.5
+  },
+  {
+    "name": "float-classification: isnormal on large normal float",
+    "expr": "isnormal",
+    "input": 1e308
+  },
+  {
+    "name": "float-classification: isnormal on zero returns false",
+    "expr": "isnormal",
+    "input": 0
+  },
+  {
+    "name": "float-classification: isnormal on nan returns false",
+    "expr": "nan | isnormal",
+    "input": null
+  },
+  {
+    "name": "float-classification: isnormal on infinite returns false",
+    "expr": "infinite | isnormal",
+    "input": null
+  },
+  {
+    "name": "float-classification: isnormal on subnormal float returns false",
+    "expr": "5e-324 | isnormal",
+    "input": null
+  },
+  {
+    "name": "float-classification: isnormal on string returns false",
+    "expr": "isnormal",
+    "input": "hello"
+  },
+  {
+    "name": "float-classification: nan builtin has type number",
+    "expr": "nan | type",
+    "input": null
+  },
+  {
+    "name": "float-classification: infinite builtin has type number",
+    "expr": "infinite | type",
+    "input": null
+  },
+  {
+    "name": "float-classification: infinite is greater than large finite number",
+    "expr": "infinite > 1e308",
+    "input": null
+  },
+  {
+    "name": "float-classification: nan not equal to nan (IEEE 754)",
+    "expr": "nan == nan",
+    "input": null
+  },
+  {
+    "name": "float-classification: infinite equal to infinite",
+    "expr": "infinite == infinite",
+    "input": null
+  },
+  {
+    "name": "float-classification: both infinite and nan classifiers combined",
+    "expr": "(infinite | isinfinite) and (nan | isnan)",
+    "input": null
+  },
+  {
+    "name": "float-classification: map isnan over mixed array",
+    "expr": "[nan, infinite, 0, 1, -1, 1.5] | map(isnan)",
+    "input": null
+  },
+  {
+    "name": "float-classification: map isfinite over mixed array",
+    "expr": "[nan, infinite, 0, 1, -1, 1.5] | map(isfinite)",
+    "input": null
+  },
+  {
+    "name": "float-classification: map isinfinite over mixed array",
+    "expr": "[nan, infinite, 0, 1, -1, 1.5] | map(isinfinite)",
+    "input": null
+  },
+  {
+    "name": "float-classification: map isnormal over mixed array",
+    "expr": "[nan, infinite, 0, 1, -1, 1.5] | map(isnormal)",
+    "input": null
+  },
+  {
+    "name": "float-classification: all classifiers on array returns false",
+    "expr": "isnormal, isnan, isfinite, isinfinite",
+    "input": []
+  },
+  {
+    "name": "float-classification: all classifiers on object returns false",
+    "expr": "isnormal, isnan, isfinite, isinfinite",
+    "input": {}
+  },
+  {
+    "name": "math-rounding: abs positive integer",
+    "expr": "abs",
+    "input": 7
+  },
+  {
+    "name": "math-rounding: abs negative integer",
+    "expr": "abs",
+    "input": -7
+  },
+  {
+    "name": "math-rounding: abs zero",
+    "expr": "abs",
+    "input": 0
+  },
+  {
+    "name": "math-rounding: abs positive float",
+    "expr": "abs",
+    "input": 3.7
+  },
+  {
+    "name": "math-rounding: abs negative float",
+    "expr": "abs",
+    "input": -3.7
+  },
+  {
+    "name": "math-rounding: abs large negative",
+    "expr": "abs",
+    "input": -1000000
+  },
+  {
+    "name": "math-rounding: abs null errors",
+    "expr": "abs",
+    "input": null,
+    "expectError": true
+  },
+  {
+    "name": "math-rounding: abs boolean errors",
+    "expr": "abs",
+    "input": true,
+    "expectError": true
+  },
+  {
+    "name": "math-rounding: ceil positive fraction low",
+    "expr": "ceil",
+    "input": 3.2
+  },
+  {
+    "name": "math-rounding: ceil positive fraction high",
+    "expr": "ceil",
+    "input": 3.9
+  },
+  {
+    "name": "math-rounding: ceil negative fraction low",
+    "expr": "ceil",
+    "input": -3.9
+  },
+  {
+    "name": "math-rounding: ceil negative fraction high",
+    "expr": "ceil",
+    "input": -3.2
+  },
+  {
+    "name": "math-rounding: ceil exact integer",
+    "expr": "ceil",
+    "input": 5
+  },
+  {
+    "name": "math-rounding: ceil negative exact integer",
+    "expr": "ceil",
+    "input": -5
+  },
+  {
+    "name": "math-rounding: ceil string errors",
+    "expr": "ceil",
+    "input": "hello",
+    "expectError": true
+  },
+  {
+    "name": "math-rounding: ceil null errors",
+    "expr": "ceil",
+    "input": null,
+    "expectError": true
+  },
+  {
+    "name": "math-rounding: floor positive fraction low",
+    "expr": "floor",
+    "input": 3.2
+  },
+  {
+    "name": "math-rounding: floor positive fraction high",
+    "expr": "floor",
+    "input": 3.9
+  },
+  {
+    "name": "math-rounding: floor negative fraction low",
+    "expr": "floor",
+    "input": -3.2
+  },
+  {
+    "name": "math-rounding: floor negative fraction high",
+    "expr": "floor",
+    "input": -3.9
+  },
+  {
+    "name": "math-rounding: floor exact integer",
+    "expr": "floor",
+    "input": 5
+  },
+  {
+    "name": "math-rounding: floor string errors",
+    "expr": "floor",
+    "input": "hello",
+    "expectError": true
+  },
+  {
+    "name": "math-rounding: round fraction below half",
+    "expr": "round",
+    "input": 3.4
+  },
+  {
+    "name": "math-rounding: round fraction at half",
+    "expr": "round",
+    "input": 3.5
+  },
+  {
+    "name": "math-rounding: round fraction above half",
+    "expr": "round",
+    "input": 3.6
+  },
+  {
+    "name": "math-rounding: round negative fraction below half",
+    "expr": "round",
+    "input": -3.4
+  },
+  {
+    "name": "math-rounding: round negative fraction at half",
+    "expr": "round",
+    "input": -3.5
+  },
+  {
+    "name": "math-rounding: round negative fraction above half",
+    "expr": "round",
+    "input": -3.6
+  },
+  {
+    "name": "math-rounding: round 0.4 rounds to zero",
+    "expr": "round",
+    "input": 0.4
+  },
+  {
+    "name": "math-rounding: round 0.5 rounds to one",
+    "expr": "round",
+    "input": 0.5
+  },
+  {
+    "name": "math-rounding: round 2.5 rounds up",
+    "expr": "round",
+    "input": 2.5
+  },
+  {
+    "name": "math-rounding: round -2.5 rounds down",
+    "expr": "round",
+    "input": -2.5
+  },
+  {
+    "name": "math-rounding: round exact integer unchanged",
+    "expr": "round",
+    "input": 7
+  },
+  {
+    "name": "math-rounding: round string errors",
+    "expr": "round",
+    "input": "hello",
+    "expectError": true
+  },
+  {
+    "name": "math-rounding: round null errors",
+    "expr": "round",
+    "input": null,
+    "expectError": true
+  },
+  {
+    "name": "math-rounding: sqrt perfect square 4",
+    "expr": "sqrt",
+    "input": 4
+  },
+  {
+    "name": "math-rounding: sqrt perfect square 9",
+    "expr": "sqrt",
+    "input": 9
+  },
+  {
+    "name": "math-rounding: sqrt perfect square 100",
+    "expr": "sqrt",
+    "input": 100
+  },
+  {
+    "name": "math-rounding: sqrt zero",
+    "expr": "sqrt",
+    "input": 0
+  },
+  {
+    "name": "math-rounding: sqrt one",
+    "expr": "sqrt",
+    "input": 1
+  },
+  {
+    "name": "math-rounding: sqrt fraction 0.25",
+    "expr": "sqrt",
+    "input": 0.25
+  },
+  {
+    "name": "math-rounding: sqrt irrational 2",
+    "expr": "sqrt",
+    "input": 2
+  },
+  {
+    "name": "math-rounding: sqrt negative returns null",
+    "expr": "sqrt",
+    "input": -4
+  },
+  {
+    "name": "math-rounding: sqrt negative one returns null",
+    "expr": "sqrt",
+    "input": -1
+  },
+  {
+    "name": "math-rounding: sqrt string errors",
+    "expr": "sqrt",
+    "input": "hello",
+    "expectError": true
+  },
+  {
+    "name": "math-rounding: sqrt null errors",
+    "expr": "sqrt",
+    "input": null,
+    "expectError": true
+  },
+  {
+    "name": "minby-maxby-bool: min_by basic numeric key",
+    "expr": "min_by(.a)",
+    "input": [
+      {
+        "a": 2
+      },
+      {
+        "a": 1
+      },
+      {
+        "a": 3
+      }
+    ]
+  },
+  {
+    "name": "minby-maxby-bool: max_by basic numeric key",
+    "expr": "max_by(.a)",
+    "input": [
+      {
+        "a": 2
+      },
+      {
+        "a": 1
+      },
+      {
+        "a": 3
+      }
+    ]
+  },
+  {
+    "name": "minby-maxby-bool: min_by empty array returns null",
+    "expr": "min_by(.a)",
+    "input": []
+  },
+  {
+    "name": "minby-maxby-bool: max_by empty array returns null",
+    "expr": "max_by(.a)",
+    "input": []
+  },
+  {
+    "name": "minby-maxby-bool: min_by single element",
+    "expr": "min_by(.a)",
+    "input": [
+      {
+        "a": 42
+      }
+    ]
+  },
+  {
+    "name": "minby-maxby-bool: max_by single element",
+    "expr": "max_by(.a)",
+    "input": [
+      {
+        "a": 42
+      }
+    ]
+  },
+  {
+    "name": "minby-maxby-bool: min_by string key",
+    "expr": "min_by(.name)",
+    "input": [
+      {
+        "name": "banana"
+      },
+      {
+        "name": "apple"
+      },
+      {
+        "name": "cherry"
+      }
+    ]
+  },
+  {
+    "name": "minby-maxby-bool: max_by string key",
+    "expr": "max_by(.name)",
+    "input": [
+      {
+        "name": "banana"
+      },
+      {
+        "name": "apple"
+      },
+      {
+        "name": "cherry"
+      }
+    ]
+  },
+  {
+    "name": "minby-maxby-bool: min_by with negative numbers",
+    "expr": "min_by(.a)",
+    "input": [
+      {
+        "a": -5
+      },
+      {
+        "a": 3
+      },
+      {
+        "a": -1
+      }
+    ]
+  },
+  {
+    "name": "minby-maxby-bool: max_by with negative numbers",
+    "expr": "max_by(.a)",
+    "input": [
+      {
+        "a": -5
+      },
+      {
+        "a": 3
+      },
+      {
+        "a": -1
+      }
+    ]
+  },
+  {
+    "name": "minby-maxby-bool: min_by with floats",
+    "expr": "min_by(.v)",
+    "input": [
+      {
+        "v": 1.5
+      },
+      {
+        "v": 0.5
+      },
+      {
+        "v": 2.5
+      }
+    ]
+  },
+  {
+    "name": "minby-maxby-bool: max_by with floats",
+    "expr": "max_by(.v)",
+    "input": [
+      {
+        "v": 1.5
+      },
+      {
+        "v": 0.5
+      },
+      {
+        "v": 2.5
+      }
+    ]
+  },
+  {
+    "name": "minby-maxby-bool: min_by tie returns first",
+    "expr": "min_by(.a)",
+    "input": [
+      {
+        "a": 1,
+        "id": 1
+      },
+      {
+        "a": 1,
+        "id": 2
+      },
+      {
+        "a": 2
+      }
+    ]
+  },
+  {
+    "name": "minby-maxby-bool: max_by tie returns last",
+    "expr": "max_by(.a)",
+    "input": [
+      {
+        "a": 3,
+        "id": 1
+      },
+      {
+        "a": 3,
+        "id": 2
+      },
+      {
+        "a": 1
+      }
+    ]
+  },
+  {
+    "name": "minby-maxby-bool: min_by all equal returns first",
+    "expr": "min_by(.a)",
+    "input": [
+      {
+        "a": 5
+      },
+      {
+        "a": 5
+      },
+      {
+        "a": 5
+      }
+    ]
+  },
+  {
+    "name": "minby-maxby-bool: max_by all equal returns last",
+    "expr": "max_by(.a)",
+    "input": [
+      {
+        "a": 5
+      },
+      {
+        "a": 5
+      },
+      {
+        "a": 5
+      }
+    ]
+  },
+  {
+    "name": "minby-maxby-bool: min_by nested key expression",
+    "expr": "min_by(.x.v)",
+    "input": [
+      {
+        "x": {
+          "v": 3
+        }
+      },
+      {
+        "x": {
+          "v": 1
+        }
+      },
+      {
+        "x": {
+          "v": 2
+        }
+      }
+    ]
+  },
+  {
+    "name": "minby-maxby-bool: max_by nested key expression",
+    "expr": "max_by(.x.v)",
+    "input": [
+      {
+        "x": {
+          "v": 3
+        }
+      },
+      {
+        "x": {
+          "v": 1
+        }
+      },
+      {
+        "x": {
+          "v": 2
+        }
+      }
+    ]
+  },
+  {
+    "name": "minby-maxby-bool: min_by on array elements by index",
+    "expr": "min_by(.[0])",
+    "input": [
+      [3, 1],
+      [1, 2],
+      [2, 3]
+    ]
+  },
+  {
+    "name": "minby-maxby-bool: max_by on array elements by index",
+    "expr": "max_by(.[0])",
+    "input": [
+      [3, 1],
+      [1, 2],
+      [2, 3]
+    ]
+  },
+  {
+    "name": "minby-maxby-bool: min_by with null values sorts null first",
+    "expr": "min_by(.a)",
+    "input": [
+      {
+        "a": null
+      },
+      {
+        "a": 1
+      },
+      {
+        "a": 2
+      }
+    ]
+  },
+  {
+    "name": "minby-maxby-bool: max_by with null values sorts null last",
+    "expr": "max_by(.a)",
+    "input": [
+      {
+        "a": null
+      },
+      {
+        "a": 1
+      },
+      {
+        "a": 2
+      }
+    ]
+  },
+  {
+    "name": "minby-maxby-bool: min_by non-array input errors",
+    "expr": "min_by(.a)",
+    "input": {
+      "a": 1
+    },
+    "expectError": true
+  },
+  {
+    "name": "minby-maxby-bool: max_by non-array input errors",
+    "expr": "max_by(.a)",
+    "input": {
+      "a": 1
+    },
+    "expectError": true
+  },
+  {
+    "name": "minby-maxby-bool: toboolean string true",
+    "expr": "toboolean",
+    "input": "true"
+  },
+  {
+    "name": "minby-maxby-bool: toboolean string false",
+    "expr": "toboolean",
+    "input": "false"
+  },
+  {
+    "name": "minby-maxby-bool: toboolean boolean true passthrough",
+    "expr": "toboolean",
+    "input": true
+  },
+  {
+    "name": "minby-maxby-bool: toboolean boolean false passthrough",
+    "expr": "toboolean",
+    "input": false
+  },
+  {
+    "name": "minby-maxby-bool: toboolean other string errors",
+    "expr": "toboolean",
+    "input": "other",
+    "expectError": true
+  },
+  {
+    "name": "minby-maxby-bool: toboolean capital TRUE errors",
+    "expr": "toboolean",
+    "input": "TRUE",
+    "expectError": true
+  },
+  {
+    "name": "minby-maxby-bool: toboolean number errors",
+    "expr": "toboolean",
+    "input": 1,
+    "expectError": true
+  },
+  {
+    "name": "minby-maxby-bool: toboolean null errors",
+    "expr": "toboolean",
+    "input": null,
+    "expectError": true
+  },
+  {
+    "name": "minby-maxby-bool: toboolean array errors",
+    "expr": "toboolean",
+    "input": [],
+    "expectError": true
+  },
+  {
+    "name": "minby-maxby-bool: toboolean object errors",
+    "expr": "toboolean",
+    "input": {},
+    "expectError": true
+  },
+  {
+    "name": "minby-maxby-bool: toboolean piped to not",
+    "expr": "toboolean | not",
+    "input": "true"
+  },
+  {
+    "name": "minby-maxby-bool: toboolean false piped to not",
+    "expr": "toboolean | not",
+    "input": "false"
+  },
+  {
+    "name": "path-mutation: getpath nested object",
+    "expr": "getpath([\"a\",\"b\"])",
+    "input": {
+      "a": {
+        "b": 1
+      }
+    }
+  },
+  {
+    "name": "path-mutation: getpath returns intermediate object",
+    "expr": "getpath([\"a\"])",
+    "input": {
+      "a": {
+        "b": 1
+      }
+    }
+  },
+  {
+    "name": "path-mutation: getpath missing top-level key returns null",
+    "expr": "getpath([\"x\"])",
+    "input": {
+      "a": 1
+    }
+  },
+  {
+    "name": "path-mutation: getpath missing nested key returns null",
+    "expr": "getpath([\"a\",\"x\"])",
+    "input": {
+      "a": {
+        "b": 1
+      }
+    }
+  },
+  {
+    "name": "path-mutation: getpath on array by index",
+    "expr": "getpath([1])",
+    "input": [1, 2, 3]
+  },
+  {
+    "name": "path-mutation: getpath on array nested in object",
+    "expr": "getpath([\"a\", 2])",
+    "input": {
+      "a": [10, 20, 30]
+    }
+  },
+  {
+    "name": "path-mutation: getpath on nested array of objects",
+    "expr": "getpath([1,\"a\"])",
+    "input": [
+      {
+        "a": 1
+      },
+      {
+        "a": 2
+      }
+    ]
+  },
+  {
+    "name": "path-mutation: getpath empty path returns input",
+    "expr": "getpath([])",
+    "input": {
+      "a": 1
+    }
+  },
+  {
+    "name": "path-mutation: getpath negative index returns last element",
+    "expr": "getpath([-1])",
+    "input": [1, 2, 3]
+  },
+  {
+    "name": "path-mutation: getpath index beyond array length returns null",
+    "expr": "getpath([10])",
+    "input": [1, 2, 3]
+  },
+  {
+    "name": "path-mutation: getpath through non-indexable type errors",
+    "expr": "getpath([\"a\",\"b\",\"c\",\"d\"])",
+    "input": {
+      "a": {
+        "b": 1
+      }
+    },
+    "expectError": true
+  },
+  {
+    "name": "path-mutation: getpath non-array path (string) errors",
+    "expr": "getpath(\"a\")",
+    "input": {
+      "a": 1
+    },
+    "expectError": true
+  },
+  {
+    "name": "path-mutation: getpath non-array path (number) errors",
+    "expr": "getpath(1)",
+    "input": {
+      "a": 1
+    },
+    "expectError": true
+  },
+  {
+    "name": "path-mutation: getpath null in path errors",
+    "expr": "getpath([null])",
+    "input": {
+      "a": 1
+    },
+    "expectError": true
+  },
+  {
+    "name": "path-mutation: setpath updates nested value",
+    "expr": "setpath([\"a\",\"b\"]; 99)",
+    "input": {
+      "a": {
+        "b": 1
+      }
+    }
+  },
+  {
+    "name": "path-mutation: setpath adds new key to nested object",
+    "expr": "setpath([\"a\",\"c\"]; \"new\")",
+    "input": {
+      "a": {
+        "b": 1
+      }
+    }
+  },
+  {
+    "name": "path-mutation: setpath creates intermediate objects for missing path",
+    "expr": "setpath([\"b\",\"c\"]; 42)",
+    "input": {
+      "a": 1
+    }
+  },
+  {
+    "name": "path-mutation: setpath on null creates new object",
+    "expr": "setpath([\"a\"]; 1)",
+    "input": null
+  },
+  {
+    "name": "path-mutation: setpath on null creates nested structure",
+    "expr": "setpath([\"a\",\"b\"]; 1)",
+    "input": null
+  },
+  {
+    "name": "path-mutation: setpath empty path replaces entire value",
+    "expr": "setpath([]; {\"replaced\":true})",
+    "input": {
+      "a": 1
+    }
+  },
+  {
+    "name": "path-mutation: setpath on array by index",
+    "expr": "setpath([1]; 99)",
+    "input": [1, 2, 3]
+  },
+  {
+    "name": "path-mutation: setpath negative array index updates last element",
+    "expr": "setpath([-1]; 99)",
+    "input": [1, 2, 3]
+  },
+  {
+    "name": "path-mutation: setpath creates sparse array when index beyond length",
+    "expr": "setpath([2]; \"x\")",
+    "input": []
+  },
+  {
+    "name": "path-mutation: setpath creates array-valued key from object",
+    "expr": "setpath([\"arr\",0]; \"first\")",
+    "input": {}
+  },
+  {
+    "name": "path-mutation: setpath deeply nested creation",
+    "expr": "setpath([\"a\",\"b\",\"c\"]; 42)",
+    "input": {}
+  },
+  {
+    "name": "path-mutation: setpath overwrites nested subtree",
+    "expr": "setpath([\"a\",\"b\"]; \"replaced\")",
+    "input": {
+      "a": {
+        "b": {
+          "c": 1
+        },
+        "d": 2
+      }
+    }
+  },
+  {
+    "name": "path-mutation: setpath sets null value at path",
+    "expr": "setpath([\"x\"]; null)",
+    "input": {}
+  },
+  {
+    "name": "path-mutation: setpath on non-object top-level errors",
+    "expr": "setpath([\"a\"]; 1)",
+    "input": "string",
+    "expectError": true
+  },
+  {
+    "name": "path-mutation: setpath on number top-level errors",
+    "expr": "setpath([\"a\"]; 1)",
+    "input": 42,
+    "expectError": true
+  },
+  {
+    "name": "path-mutation: setpath null in path errors",
+    "expr": "setpath([null]; 1)",
+    "input": {},
+    "expectError": true
+  },
+  {
+    "name": "path-mutation: delpaths removes multiple top-level keys",
+    "expr": "delpaths([[\"a\"],[\"c\"]])",
+    "input": {
+      "a": 1,
+      "b": 2,
+      "c": 3
+    }
+  },
+  {
+    "name": "path-mutation: delpaths removes nested key",
+    "expr": "delpaths([[\"a\",\"b\"]])",
+    "input": {
+      "a": {
+        "b": 1,
+        "c": 2
+      }
+    }
+  },
+  {
+    "name": "path-mutation: delpaths removes array elements and shifts",
+    "expr": "delpaths([[1],[3]])",
+    "input": [10, 20, 30, 40]
+  },
+  {
+    "name": "path-mutation: delpaths on missing key is a no-op",
+    "expr": "delpaths([[\"missing\"]])",
+    "input": {
+      "a": 1
+    }
+  },
+  {
+    "name": "path-mutation: delpaths with empty path list is no-op",
+    "expr": "delpaths([])",
+    "input": {
+      "a": 1
+    }
+  },
+  {
+    "name": "path-mutation: delpaths removes mixed object and nested path",
+    "expr": "delpaths([[\"a\"],[\"b\",\"c\"]])",
+    "input": {
+      "a": 1,
+      "b": {
+        "c": 2,
+        "d": 3
+      }
+    }
+  },
+  {
+    "name": "path-mutation: delpaths removes deeply nested value leaving parents",
+    "expr": "delpaths([[\"a\",\"b\",\"c\"]])",
+    "input": {
+      "a": {
+        "b": {
+          "c": 1
+        }
+      }
+    }
+  },
+  {
+    "name": "path-mutation: delpaths removes all array elements yields empty array",
+    "expr": "delpaths([[0],[1],[2]])",
+    "input": [1, 2, 3]
+  },
+  {
+    "name": "path-mutation: delpaths removes many keys from flat object",
+    "expr": "delpaths([[\"a\"],[\"b\"],[\"c\"]])",
+    "input": {
+      "a": 1,
+      "b": 2,
+      "c": 3,
+      "d": 4
+    }
+  },
+  {
+    "name": "path-mutation: getpath combined with path expression",
+    "expr": "path(.a.b.c) as $p | getpath($p)",
+    "input": {
+      "a": {
+        "b": {
+          "c": 42
+        }
+      }
+    }
+  },
+  {
+    "name": "path-mutation: setpath combined with path expression",
+    "expr": "path(.a.b) as $p | setpath($p; 999)",
+    "input": {
+      "a": {
+        "b": 1
+      }
+    }
+  },
+  {
+    "name": "string-codec: explode basic ascii string",
+    "expr": "explode",
+    "input": "hello"
+  },
+  {
+    "name": "string-codec: explode empty string yields empty array",
+    "expr": "explode",
+    "input": ""
+  },
+  {
+    "name": "string-codec: explode uppercase letters",
+    "expr": "explode",
+    "input": "AZ"
+  },
+  {
+    "name": "string-codec: explode unicode latin-extended codepoint",
+    "expr": "explode",
+    "input": "h\u00e9llo"
+  },
+  {
+    "name": "string-codec: explode high unicode codepoint (musical G-clef U+1D11E)",
+    "expr": "explode",
+    "input": "\ud834\udd1e"
+  },
+  {
+    "name": "string-codec: implode basic codepoints to string",
+    "expr": "implode",
+    "input": [104, 101, 108, 108, 111]
+  },
+  {
+    "name": "string-codec: implode empty array yields empty string",
+    "expr": "implode",
+    "input": []
+  },
+  {
+    "name": "string-codec: implode uppercase ASCII codepoints",
+    "expr": "implode",
+    "input": [65, 66, 67]
+  },
+  {
+    "name": "string-codec: implode high unicode codepoint",
+    "expr": "implode",
+    "input": [119070]
+  },
+  {
+    "name": "string-codec: explode then implode round-trips ascii string",
+    "expr": "explode | implode",
+    "input": "abc"
+  },
+  {
+    "name": "string-codec: explode then implode round-trips unicode string",
+    "expr": "explode | implode",
+    "input": "h\u00e9llo \ud834\udd1e"
+  },
+  {
+    "name": "string-codec: explode on non-string errors",
+    "expr": "explode",
+    "input": 42,
+    "expectError": true
+  },
+  {
+    "name": "string-codec: explode on array errors",
+    "expr": "explode",
+    "input": [1, 2, 3],
+    "expectError": true
+  },
+  {
+    "name": "string-codec: implode on non-array errors",
+    "expr": "implode",
+    "input": "hello",
+    "expectError": true
+  },
+  {
+    "name": "string-codec: index finds substring at start",
+    "expr": "index(\"foo\")",
+    "input": "foobar"
+  },
+  {
+    "name": "string-codec: index finds substring at offset",
+    "expr": "index(\"bar\")",
+    "input": "foobar"
+  },
+  {
+    "name": "string-codec: index returns null for absent substring",
+    "expr": "index(\"baz\")",
+    "input": "foobar"
+  },
+  {
+    "name": "string-codec: index returns first occurrence when duplicate",
+    "expr": "index(\"abc\")",
+    "input": "abcabc"
+  },
+  {
+    "name": "string-codec: index self-match returns 0",
+    "expr": "index(\"hello\")",
+    "input": "hello"
+  },
+  {
+    "name": "string-codec: rindex finds last occurrence of substring",
+    "expr": "rindex(\"o\")",
+    "input": "foobar"
+  },
+  {
+    "name": "string-codec: rindex finds last occurrence of longer substring",
+    "expr": "rindex(\"abc\")",
+    "input": "abcabc"
+  },
+  {
+    "name": "string-codec: rindex returns null for absent substring",
+    "expr": "rindex(\"xyz\")",
+    "input": "hello"
+  },
+  {
+    "name": "string-codec: rindex single char at start",
+    "expr": "rindex(\"l\")",
+    "input": "hello"
+  },
+  {
+    "name": "string-codec: indices returns all positions of substring",
+    "expr": "indices(\"b\")",
+    "input": "abcabc"
+  },
+  {
+    "name": "string-codec: indices non-overlapping for length-3 needle",
+    "expr": "indices(\"foo\")",
+    "input": "foofoofoo"
+  },
+  {
+    "name": "string-codec: indices overlapping for length-2 needle in repeated chars",
+    "expr": "indices(\"aa\")",
+    "input": "aaaa"
+  },
+  {
+    "name": "string-codec: indices returns empty array when needle absent",
+    "expr": "indices(\"z\")",
+    "input": ""
+  },
+  {
+    "name": "string-codec: indices of space character",
+    "expr": "indices(\" \")",
+    "input": "hello world"
+  },
+  {
+    "name": "string-codec: index on array finds element",
+    "expr": "index(2)",
+    "input": [1, 2, 3, 2, 1]
+  },
+  {
+    "name": "string-codec: rindex on array finds last element",
+    "expr": "rindex(2)",
+    "input": [1, 2, 3, 2, 1]
+  },
+  {
+    "name": "string-codec: indices on array finds all positions of element",
+    "expr": "indices(2)",
+    "input": [1, 2, 3, 2, 1]
+  },
+  {
+    "name": "string-codec: index on array for absent element returns null",
+    "expr": "rindex(4)",
+    "input": [1, 2, 3]
+  },
+  {
+    "name": "string-codec: indices on array for subsequence",
+    "expr": "indices([1,2])",
+    "input": [1, 2, 3, 1, 2]
+  },
+  {
+    "name": "string-codec: indices on array for null element",
+    "expr": "indices(null)",
+    "input": [null, null, null]
+  },
+  {
+    "name": "string-codec: index on number errors",
+    "expr": "index(1)",
+    "input": 42,
+    "expectError": true
   }
 ]

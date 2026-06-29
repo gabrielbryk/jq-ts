@@ -23,11 +23,7 @@ describe('math', () => {
   it('round', () => {
     expect(evalExpr('round', 1.5)).toEqual([2])
     expect(evalExpr('round', 1.4)).toEqual([1])
-    expect(evalExpr('round', -1.5)).toEqual([-1]) // JS Math.round(-1.5) is -1. jq might be different?
-    // jq ` -1.5 | round` -> -2.
-    // JS `Math.round(-1.5)` -> -1.
-    // Checks needed if we want strict jq compatibility.
-    // For now using JS standard behavior as per plan "Deterministic wrappers around JS Math".
+    expect(evalExpr('round', -1.5)).toEqual([-2]) // jq: round half away from zero → -2
   })
   it('abs', () => {
     expect(evalExpr('abs', -10)).toEqual([10])

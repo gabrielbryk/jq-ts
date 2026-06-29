@@ -24,7 +24,8 @@ export const roundingBuiltins: BuiltinSpec[] = [
     arity: 0,
     apply: function* (input, _args, _env, tracker, _eval, span) {
       if (typeof input !== 'number') throw new RuntimeError('round expects number', span)
-      yield emit(Math.round(input), span, tracker)
+      // jq uses "round half away from zero"; Math.round uses "round half toward +∞"
+      yield emit(Math.sign(input) * Math.round(Math.abs(input)), span, tracker)
     },
   },
   {
@@ -40,7 +41,9 @@ export const roundingBuiltins: BuiltinSpec[] = [
     arity: 0,
     apply: function* (input, _args, _env, tracker, _eval, span) {
       if (typeof input !== 'number') throw new RuntimeError('sqrt expects number', span)
-      yield emit(Math.sqrt(input), span, tracker)
+      const result = Math.sqrt(input)
+      // jq delegates to libm sqrt(); negative input → C NaN → serialized as null
+      yield emit(Number.isNaN(result) ? null : result, span, tracker)
     },
   },
 ]

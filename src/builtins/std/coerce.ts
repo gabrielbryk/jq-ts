@@ -65,7 +65,19 @@ export const coerceBuiltins: BuiltinSpec[] = [
     name: 'toboolean',
     arity: 0,
     apply: function* (input, _args, _env, tracker, _eval, span) {
-      yield emit(isTruthy(input), span, tracker)
+      if (typeof input === 'boolean') {
+        yield emit(input, span, tracker)
+        return
+      }
+      if (input === 'true') {
+        yield emit(true, span, tracker)
+        return
+      }
+      if (input === 'false') {
+        yield emit(false, span, tracker)
+        return
+      }
+      throw new RuntimeError(`Cannot convert ${describeType(input)} to boolean`, span)
     },
   },
   {

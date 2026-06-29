@@ -264,10 +264,15 @@ describe('eval builtins', () => {
 
     // Std
     it('toboolean', () => {
+      // boolean passthrough
       expect(evalExpr('true | toboolean')).toEqual([true])
       expect(evalExpr('false | toboolean')).toEqual([false])
-      expect(evalExpr('null | toboolean')).toEqual([false])
-      expect(evalExpr('1 | toboolean')).toEqual([true])
+      // string "true"/"false" conversion
+      expect(evalExpr('"true" | toboolean')).toEqual([true])
+      expect(evalExpr('"false" | toboolean')).toEqual([false])
+      // everything else errors
+      expect(() => evalExpr('null | toboolean')).toThrow()
+      expect(() => evalExpr('1 | toboolean')).toThrow()
     })
 
     it('not', () => {

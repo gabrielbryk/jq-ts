@@ -39,9 +39,11 @@ describe('iterators', () => {
     it('limits output', () => {
       expect(evalExpr('limit(2; range(5))')).toEqual([0, 1])
     })
-    it('handles n <= 0', () => {
+    it('handles n = 0 (empty output)', () => {
       expect(evalExpr('limit(0; range(5))')).toEqual([])
-      expect(evalExpr('limit(-1; range(5))')).toEqual([])
+    })
+    it('throws for n < 0', () => {
+      expect(() => evalExpr('limit(-1; range(5))')).toThrow()
     })
     it('evaluates expr lazily-ish', () => {
       // Using error to prove it stops
