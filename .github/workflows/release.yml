@@ -30,6 +30,16 @@ jobs:
           cache: 'pnpm'
           registry-url: 'https://registry.npmjs.org'
 
+      # prepublishOnly runs the full CI gate, including the differential suite
+      # against jq — pin the same version ci.yml uses so publish doesn't run
+      # against the runner's older stock jq.
+      - name: Install jq 1.8.1
+        run: |
+          curl -fsSL -o jq https://github.com/jqlang/jq/releases/download/jq-1.8.1/jq-linux-amd64
+          chmod +x jq
+          sudo mv jq /usr/local/bin/jq
+          jq --version
+
       - name: Install Dependencies
         run: pnpm install --frozen-lockfile
 
