@@ -8,14 +8,36 @@
 /** Single-character shorthand classes (`\d \D \w \W \s \S`). */
 export type Shorthand = 'd' | 'D' | 'w' | 'W' | 's' | 'S'
 
+/** POSIX bracket-class names (`[[:alpha:]]`, `[[:^digit:]]`, ...). */
+export type PosixClass =
+  | 'alpha'
+  | 'digit'
+  | 'alnum'
+  | 'space'
+  | 'upper'
+  | 'lower'
+  | 'punct'
+  | 'xdigit'
+  | 'blank'
+  | 'cntrl'
+  | 'graph'
+  | 'print'
+  | 'word'
+
 /** One member of a bracketed character class `[...]`. */
 export type ClassItem =
   | { kind: 'char'; cp: number }
   | { kind: 'range'; lo: number; hi: number }
   | { kind: 'shorthand'; cls: Shorthand }
+  | { kind: 'posix'; cls: PosixClass; negated: boolean }
 
-/** Zero-width assertions. */
-export type AnchorKind = 'start' | 'end' | 'wordB' | 'notWordB'
+/**
+ * Zero-width assertions.
+ *
+ * `bufStart`/`bufEnd`/`bufEndZ` are the absolute anchors `\A`/`\z`/`\Z`, which
+ * pin to the whole input regardless of the `m` flag (unlike `start`/`end`).
+ */
+export type AnchorKind = 'start' | 'end' | 'wordB' | 'notWordB' | 'bufStart' | 'bufEnd' | 'bufEndZ'
 
 /** A node in the regex AST. */
 export type RegexNode =

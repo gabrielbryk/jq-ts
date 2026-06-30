@@ -187,6 +187,68 @@ describe('regex engine — global iteration and empty matches', () => {
   })
 })
 
+describe('regex engine — POSIX bracket classes', () => {
+  it('matches [[:alpha:]] and rejects non-alpha (values per jq)', () => {
+    expect(exec('[[:alpha:]]+', '', '12abc34')).toEqual({ index: 2, length: 3, captures: [] })
+    expect(exec('[[:alpha:]]', '', '123')).toBeNull()
+  })
+
+  it('matches [[:digit:]] and [[:xdigit:]]', () => {
+    expect(exec('[[:digit:]]+', '', 'a123b')).toEqual({ index: 1, length: 3, captures: [] })
+    expect(exec('[[:xdigit:]]+', '', 'gF9h')).toEqual({ index: 1, length: 2, captures: [] })
+  })
+
+  it('composes a POSIX class with other class members', () => {
+    expect(exec('[[:digit:]a-f]+', '', 'zz12abg')).toEqual({ index: 2, length: 4, captures: [] })
+  })
+
+  it('supports negated POSIX classes [[:^digit:]]', () => {
+    expect(exec('[[:^digit:]]+', '', 'a1b2')).toEqual({ index: 0, length: 1, captures: [] })
+    expect(exec('[[:^alpha:]]', '', 'abc')).toBeNull()
+  })
+
+  it('supports upper, lower, punct, blank, word, graph, print, cntrl, alnum, space', () => {
+    expect(exec('[[:upper:]]', '', 'aB9')).toEqual({ index: 1, length: 1, captures: [] })
+    expect(exec('[[:lower:]]', '', 'AbC')).toEqual({ index: 1, length: 1, captures: [] })
+    expect(exec('[[:punct:]]', '', 'ab!cd')).toEqual({ index: 2, length: 1, captures: [] })
+    expect(exec('[[:blank:]]', '', 'ab cd')).toEqual({ index: 2, length: 1, captures: [] })
+    expect(exec('[[:word:]]+', '', 'a_b-c')).toEqual({ index: 0, length: 3, captures: [] })
+    expect(exec('[[:graph:]]', '', '  ~ ')).toEqual({ index: 2, length: 1, captures: [] })
+    expect(exec('[[:print:]]+', '', 'a b')).toEqual({ index: 0, length: 3, captures: [] })
+    expect(exec('[[:cntrl:]]', '', 'a\tb')).toEqual({ index: 1, length: 1, captures: [] })
+    expect(exec('[[:alnum:]]+', '', ' a1 ')).toEqual({ index: 1, length: 2, captures: [] })
+    expect(exec('[[:space:]]', '', 'a b')).toEqual({ index: 1, length: 1, captures: [] })
+  })
+
+  it('treats a bare [ not forming [:...:] as a literal', () => {
+    expect(exec('[[a]+', '', 'x[aa]')).toEqual({ index: 1, length: 3, captures: [] })
+  })
+})
+
+describe('regex engine — absolute anchors \\A \\z \\Z', () => {
+  it('\\A pins to the start of the whole input, ignoring the m flag', () => {
+    expect(exec('\\Aabc', '', 'abc')).toEqual({ index: 0, length: 3, captures: [] })
+    expect(exec('\\Aabc', '', 'xabc')).toBeNull()
+    expect(exec('\\Aabc', 'm', 'x\nabc')).toBeNull()
+  })
+
+  it('\\z matches only the absolute end of the input', () => {
+    expect(exec('abc\\z', '', 'abc')).toEqual({ index: 0, length: 3, captures: [] })
+    expect(exec('abc\\z', '', 'abc\n')).toBeNull()
+  })
+
+  it('\\Z matches the end or just before a single trailing newline', () => {
+    expect(exec('abc\\Z', '', 'abc')).toEqual({ index: 0, length: 3, captures: [] })
+    expect(exec('abc\\Z', '', 'abc\n')).toEqual({ index: 0, length: 3, captures: [] })
+    expect(exec('abc\\Z', '', 'abc\n\n')).toBeNull()
+    expect(exec('abc\\Z', '', 'abc\nx')).toBeNull()
+  })
+
+  it('combines absolute anchors into a full-input match', () => {
+    expect(exec('\\Aabc\\z', '', 'abc')).toEqual({ index: 0, length: 3, captures: [] })
+  })
+})
+
 describe('regex engine — rejected features', () => {
   it('rejects numeric backreferences', () => {
     expect(() => compileRegex('(\\w)\\1')).toThrow(RegexError)

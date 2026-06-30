@@ -1,4 +1,5 @@
 import type { ClassItem, Shorthand } from './ast'
+import { posixMatches } from './posix'
 
 const NEWLINE = 0x0a
 
@@ -65,6 +66,8 @@ const itemMatches = (item: ClassItem, cp: number): boolean => {
       return cp >= item.lo && cp <= item.hi
     case 'shorthand':
       return shorthandMatches(item.cls, cp)
+    case 'posix':
+      return posixMatches(item.cls, cp) !== item.negated
   }
 }
 

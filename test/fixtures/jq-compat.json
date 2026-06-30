@@ -3972,5 +3972,120 @@
     "name": "sql: IN/2 stream as src",
     "expr": "IN(.[]; 2)",
     "input": [1, 2, 3]
+  },
+  {
+    "name": "regex: posix alpha matches letters",
+    "expr": "test(\"[[:alpha:]]\")",
+    "input": "abc"
+  },
+  {
+    "name": "regex: posix alpha rejects digits",
+    "expr": "test(\"[[:alpha:]]\")",
+    "input": "123"
+  },
+  {
+    "name": "regex: posix digit run",
+    "expr": "match(\"[[:digit:]]+\").string",
+    "input": "a123b"
+  },
+  {
+    "name": "regex: posix xdigit run",
+    "expr": "match(\"[[:xdigit:]]+\").string",
+    "input": "gF9h"
+  },
+  {
+    "name": "regex: posix class composes with range",
+    "expr": "match(\"[[:digit:]a-f]+\").string",
+    "input": "zz12abg"
+  },
+  {
+    "name": "regex: posix negated class",
+    "expr": "match(\"[[:^digit:]]+\").string",
+    "input": "a1b2"
+  },
+  {
+    "name": "regex: posix upper rejects lowercase",
+    "expr": "test(\"[[:upper:]]\")",
+    "input": "abc"
+  },
+  {
+    "name": "regex: posix lower matches lowercase",
+    "expr": "test(\"[[:lower:]]\")",
+    "input": "AbC"
+  },
+  {
+    "name": "regex: posix word run",
+    "expr": "match(\"[[:word:]]+\").string",
+    "input": "a_b-c"
+  },
+  {
+    "name": "regex: posix space matches blank",
+    "expr": "test(\"[[:space:]]\")",
+    "input": "a b"
+  },
+  {
+    "name": "regex: posix space rejects solid",
+    "expr": "test(\"[[:space:]]\")",
+    "input": "abc"
+  },
+  {
+    "name": "regex: posix punct matches symbol",
+    "expr": "test(\"[[:punct:]]\")",
+    "input": "!"
+  },
+  {
+    "name": "regex: posix blank run",
+    "expr": "match(\"[[:blank:]]+\").string",
+    "input": "a \tb"
+  },
+  {
+    "name": "regex: posix print matches space",
+    "expr": "test(\"[[:print:]]\")",
+    "input": " "
+  },
+  {
+    "name": "regex: posix graph rejects space",
+    "expr": "test(\"[[:graph:]]\")",
+    "input": " "
+  },
+  {
+    "name": "regex: anchor bufStart matches at start",
+    "expr": "test(\"\\\\Aabc\")",
+    "input": "abc"
+  },
+  {
+    "name": "regex: anchor bufStart rejects mid",
+    "expr": "test(\"\\\\Aabc\")",
+    "input": "xabc"
+  },
+  {
+    "name": "regex: anchor bufEnd matches at end",
+    "expr": "test(\"abc\\\\z\")",
+    "input": "abc"
+  },
+  {
+    "name": "regex: anchor bufEnd rejects before newline",
+    "expr": "test(\"abc\\\\z\")",
+    "input": "abc\n"
+  },
+  {
+    "name": "regex: anchor bufEndZ matches at end",
+    "expr": "test(\"abc\\\\Z\")",
+    "input": "abc"
+  },
+  {
+    "name": "regex: anchor bufEndZ allows trailing newline",
+    "expr": "test(\"abc\\\\Z\")",
+    "input": "abc\n"
+  },
+  {
+    "name": "regex: anchor bufEndZ rejects double newline",
+    "expr": "test(\"abc\\\\Z\")",
+    "input": "abc\n\n"
+  },
+  {
+    "name": "regex: anchor bufStart and bufEnd full match",
+    "expr": "test(\"\\\\Aabc\\\\z\")",
+    "input": "abc"
   }
 ]

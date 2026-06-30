@@ -2,6 +2,7 @@ import type { ClassItem, Shorthand } from './ast'
 import type { Cursor } from './cursor'
 import { RegexError } from './errors'
 import { parseEscape } from './parse-escape'
+import { tryParsePosix } from './parse-posix'
 
 const RBRACKET = 0x5d
 const DASH = 0x2d
@@ -64,6 +65,11 @@ export const parseClass = (cur: Cursor): { negated: boolean; items: ClassItem[] 
       return { negated, items }
     }
     first = false
+    const posix = tryParsePosix(cur)
+    if (posix !== null) {
+      items.push(posix)
+      continue
+    }
     const lo = readMember(cur)
     if (startsRange(cur, lo)) {
       cur.next()

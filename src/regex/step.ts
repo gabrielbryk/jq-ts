@@ -26,6 +26,12 @@ export const assertHolds = (
       return wordBoundary(cps, pos)
     case 'notWordB':
       return !wordBoundary(cps, pos)
+    case 'bufStart':
+      return pos === 0
+    case 'bufEnd':
+      return pos === cps.length
+    case 'bufEndZ':
+      return pos === cps.length || (pos === cps.length - 1 && cps[pos] === NEWLINE)
   }
 }
 
