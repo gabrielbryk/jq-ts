@@ -11,14 +11,14 @@ describe('compatibility helpers', () => {
   })
 
   it('reports unsupported builtins', () => {
-    const result = checkCompatibility('test("a+")')
+    const result = checkCompatibility('debug')
 
     expect(result.compatible).toBe(false)
     expect(result.findings[0]).toMatchObject({
       severity: 'error',
       stage: 'validate',
       category: 'unsupported-builtin',
-      message: 'Unknown function: test',
+      message: 'Unknown function: debug',
     })
   })
 
