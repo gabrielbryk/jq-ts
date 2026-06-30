@@ -12,6 +12,7 @@ export type TokenKind =
   | 'StringEnd'
   | 'Identifier'
   | 'Variable'
+  | 'Format'
   | 'Dot'
   | 'Comma'
   | 'Pipe'
@@ -71,7 +72,8 @@ export interface Token {
    * The token's literal payload, whose meaning depends on {@link kind}:
    * the numeric value for `Number`, the decoded text for `String`,
    * `StringStart`, `StringMiddle`, and `StringEnd`, the name for
-   * `Identifier` and `Variable`. Undefined for tokens that carry no payload
+   * `Identifier`, `Variable`, and `Format` (the format name without the
+   * leading `@`). Undefined for tokens that carry no payload
    * (punctuation, operators, keywords).
    */
   value?: string | number

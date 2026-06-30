@@ -33,23 +33,32 @@ function parseCallArguments(p: ParserState): FilterNode[] {
   return args
 }
 
-export function parseStringInterpolation(p: ParserState, start: Token): FilterNode {
+/**
+ * Wraps an interpolated `\(...)` expression for concatenation into a string.
+ * The default wrapper coerces the value with `tostring`; the `@`-format path
+ * (see `parser/format.ts`) supplies a wrapper that pipes through the encoder.
+ */
+export type InterpWrap = (expr: FilterNode) => FilterNode
+
+const tostringWrap: InterpWrap = (expr) => ({
+  kind: 'Pipe',
+  left: expr,
+  right: { kind: 'Call', name: 'tostring', args: [], span: expr.span },
+  span: expr.span,
+})
+
+/**
+ * Builds the desugared concatenation for a string literal containing
+ * interpolations, starting from the already-consumed `StringStart` token.
+ * Literal segments become string literals; interpolated expressions are passed
+ * through `wrap`. The pieces are joined with `+` (string concatenation).
+ */
+export function buildInterpolation(p: ParserState, start: Token, wrap: InterpWrap): FilterNode {
   const parts: FilterNode[] = [{ kind: 'Literal', value: String(start.value), span: start.span }]
 
   for (;;) {
-    // Parse expression
     const expr = p.parseDef(p)
-    parts.push({
-      kind: 'Pipe',
-      left: expr,
-      right: {
-        kind: 'Call',
-        name: 'tostring',
-        args: [],
-        span: expr.span,
-      },
-      span: expr.span,
-    })
+    parts.push(wrap(expr))
 
     if (p.match('StringMiddle')) {
       const token = p.previous()
@@ -71,4 +80,8 @@ export function parseStringInterpolation(p: ParserState, start: Token): FilterNo
     right: curr,
     span: spanBetween(acc.span, curr.span),
   }))
+}
+
+export function parseStringInterpolation(p: ParserState, start: Token): FilterNode {
+  return buildInterpolation(p, start, tostringWrap)
 }

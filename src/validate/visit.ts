@@ -2,6 +2,7 @@ import type { FilterNode } from '../ast'
 import { bindingHandlers } from './binding'
 import { callHandlers } from './call'
 import { controlHandlers } from './control'
+import { formatHandlers } from './format'
 import { structuralHandlers } from './structural'
 import type { Handler, HandlerMap, Scope } from './types'
 
@@ -15,6 +16,7 @@ const handlers: HandlerMap = {
   ...controlHandlers,
   ...bindingHandlers,
   ...callHandlers,
+  ...formatHandlers,
 }
 
 /** Recursively validates a node and its children via the dispatch table. */

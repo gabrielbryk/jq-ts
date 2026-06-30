@@ -3,6 +3,7 @@ import { parseBreak, parseIf, parseTry } from './branches'
 import { finishIdentifier, parseStringInterpolation } from './calls'
 import { parseArray, parseObject } from './collections'
 import { parseLeadingDot } from './fieldaccess'
+import { parseFormat } from './format'
 import { parseForeach, parseReduce } from './loops'
 import type { ParserState } from './state'
 import { literalNode, spanBetween } from './state'
@@ -22,6 +23,9 @@ export function parsePrimary(p: ParserState): FilterNode {
   }
   if (p.match('StringStart')) {
     return parseStringInterpolation(p, p.previous())
+  }
+  if (p.match('Format')) {
+    return parseFormat(p, p.previous())
   }
   if (p.match('Variable')) {
     const token = p.previous()

@@ -1031,7 +1031,7 @@
   {
     "name": "utf8bytelength unicode",
     "expr": "utf8bytelength",
-    "input": "\u00b5"
+    "input": "µ"
   },
   {
     "name": "ascii_downcase",
@@ -1046,12 +1046,12 @@
   {
     "name": "ascii_downcase non-ascii",
     "expr": "ascii_downcase",
-    "input": "\u00c4BC"
+    "input": "ÄBC"
   },
   {
     "name": "ascii_upcase non-ascii",
     "expr": "ascii_upcase",
-    "input": "\u00e4bc"
+    "input": "äbc"
   },
   {
     "name": "tojson simple",
@@ -2900,12 +2900,12 @@
   {
     "name": "string-codec: explode unicode latin-extended codepoint",
     "expr": "explode",
-    "input": "h\u00e9llo"
+    "input": "héllo"
   },
   {
     "name": "string-codec: explode high unicode codepoint (musical G-clef U+1D11E)",
     "expr": "explode",
-    "input": "\ud834\udd1e"
+    "input": "𝄞"
   },
   {
     "name": "string-codec: implode basic codepoints to string",
@@ -2935,7 +2935,7 @@
   {
     "name": "string-codec: explode then implode round-trips unicode string",
     "expr": "explode | implode",
-    "input": "h\u00e9llo \ud834\udd1e"
+    "input": "héllo 𝄞"
   },
   {
     "name": "string-codec: explode on non-string errors",
@@ -3231,5 +3231,421 @@
     "name": "regex: split-2 preserves inner empty strings",
     "expr": "split(\"l\"; null)",
     "input": "hello"
+  },
+  {
+    "name": "math: sin(0)=0",
+    "expr": "sin",
+    "input": 0
+  },
+  {
+    "name": "math: cos(0)=1",
+    "expr": "cos",
+    "input": 0
+  },
+  {
+    "name": "math: tan(0)=0",
+    "expr": "tan",
+    "input": 0
+  },
+  {
+    "name": "math: asin(0)=0",
+    "expr": "asin",
+    "input": 0
+  },
+  {
+    "name": "math: acos(1)=0",
+    "expr": "acos",
+    "input": 1
+  },
+  {
+    "name": "math: atan(0)=0",
+    "expr": "atan",
+    "input": 0
+  },
+  {
+    "name": "math: asin(2)->null",
+    "expr": "asin",
+    "input": 2
+  },
+  {
+    "name": "math: acos(-2)->null",
+    "expr": "acos",
+    "input": -2
+  },
+  {
+    "name": "math: atan2(0;1)=0",
+    "expr": "atan2(0;1)",
+    "input": null
+  },
+  {
+    "name": "math: sinh(0)=0",
+    "expr": "sinh",
+    "input": 0
+  },
+  {
+    "name": "math: cosh(0)=1",
+    "expr": "cosh",
+    "input": 0
+  },
+  {
+    "name": "math: tanh(0)=0",
+    "expr": "tanh",
+    "input": 0
+  },
+  {
+    "name": "math: asinh(0)=0",
+    "expr": "asinh",
+    "input": 0
+  },
+  {
+    "name": "math: acosh(1)=0",
+    "expr": "acosh",
+    "input": 1
+  },
+  {
+    "name": "math: atanh(0)=0",
+    "expr": "atanh",
+    "input": 0
+  },
+  {
+    "name": "math: acosh(0.5)->null",
+    "expr": "acosh",
+    "input": 0.5
+  },
+  {
+    "name": "math: exp(0)=1",
+    "expr": "exp",
+    "input": 0
+  },
+  {
+    "name": "math: expm1(0)=0",
+    "expr": "expm1",
+    "input": 0
+  },
+  {
+    "name": "math: exp2(0)=1",
+    "expr": "exp2",
+    "input": 0
+  },
+  {
+    "name": "math: exp2(10)=1024",
+    "expr": "exp2",
+    "input": 10
+  },
+  {
+    "name": "math: exp10(0)=1",
+    "expr": "exp10",
+    "input": 0
+  },
+  {
+    "name": "math: exp10(3)=1000",
+    "expr": "exp10",
+    "input": 3
+  },
+  {
+    "name": "math: log(1)=0",
+    "expr": "log",
+    "input": 1
+  },
+  {
+    "name": "math: log2(1)=0",
+    "expr": "log2",
+    "input": 1
+  },
+  {
+    "name": "math: log2(8)=3",
+    "expr": "log2",
+    "input": 8
+  },
+  {
+    "name": "math: log10(1)=0",
+    "expr": "log10",
+    "input": 1
+  },
+  {
+    "name": "math: log10(1000)=3",
+    "expr": "log10",
+    "input": 1000
+  },
+  {
+    "name": "math: log1p(0)=0",
+    "expr": "log1p",
+    "input": 0
+  },
+  {
+    "name": "math: cbrt(0)=0",
+    "expr": "cbrt",
+    "input": 0
+  },
+  {
+    "name": "math: cbrt(1)=1",
+    "expr": "cbrt",
+    "input": 1
+  },
+  {
+    "name": "math: cbrt(8)=2",
+    "expr": "cbrt",
+    "input": 8
+  },
+  {
+    "name": "math: pow(2;10)=1024",
+    "expr": "pow(2;10)",
+    "input": null
+  },
+  {
+    "name": "math: pow(10;3)=1000",
+    "expr": "pow(10;3)",
+    "input": null
+  },
+  {
+    "name": "math: pow(2;0)=1",
+    "expr": "pow(2;0)",
+    "input": null
+  },
+  {
+    "name": "math: hypot(3;4)=5",
+    "expr": "hypot(3;4)",
+    "input": null
+  },
+  {
+    "name": "math: hypot(0;5)=5",
+    "expr": "hypot(0;5)",
+    "input": null
+  },
+  {
+    "name": "math: fabs(-5)=5",
+    "expr": "fabs",
+    "input": -5
+  },
+  {
+    "name": "math: fabs(3)=3",
+    "expr": "fabs",
+    "input": 3
+  },
+  {
+    "name": "math: trunc(3.7)=3",
+    "expr": "trunc",
+    "input": 3.7
+  },
+  {
+    "name": "math: trunc(-3.7)=-3",
+    "expr": "trunc",
+    "input": -3.7
+  },
+  {
+    "name": "math: fmin(2;5)=2",
+    "expr": "fmin(2;5)",
+    "input": null
+  },
+  {
+    "name": "math: fmax(2;5)=5",
+    "expr": "fmax(2;5)",
+    "input": null
+  },
+  {
+    "name": "math: fmod(10;3)=1",
+    "expr": "fmod(10;3)",
+    "input": null
+  },
+  {
+    "name": "math: fmod(-7;3)=-1",
+    "expr": "fmod(-7;3)",
+    "input": null
+  },
+  {
+    "name": "math: copysign(5;-1)=-5",
+    "expr": "copysign(5;-1)",
+    "input": null
+  },
+  {
+    "name": "math: copysign(5;1)=5",
+    "expr": "copysign(5;1)",
+    "input": null
+  },
+  {
+    "name": "math: fdim(5;3)=2",
+    "expr": "fdim(5;3)",
+    "input": null
+  },
+  {
+    "name": "math: fdim(3;5)=0",
+    "expr": "fdim(3;5)",
+    "input": null
+  },
+  {
+    "name": "format: @text on number",
+    "expr": "@text",
+    "input": 5
+  },
+  {
+    "name": "format: @text on string",
+    "expr": "@text",
+    "input": "hi"
+  },
+  {
+    "name": "format: @text on object",
+    "expr": "@text",
+    "input": {
+      "a": 1
+    }
+  },
+  {
+    "name": "format: @json on scalar",
+    "expr": "@json",
+    "input": "x"
+  },
+  {
+    "name": "format: @json on array",
+    "expr": "@json",
+    "input": [1, "x", true, null]
+  },
+  {
+    "name": "format: @json on single-key object",
+    "expr": "@json",
+    "input": {
+      "a": 1
+    }
+  },
+  {
+    "name": "format: @base64 ascii",
+    "expr": "@base64",
+    "input": "hello"
+  },
+  {
+    "name": "format: @base64 utf8",
+    "expr": "@base64",
+    "input": "héllo→"
+  },
+  {
+    "name": "format: @base64 empty",
+    "expr": "@base64",
+    "input": ""
+  },
+  {
+    "name": "format: @base64 of number",
+    "expr": "@base64",
+    "input": 5
+  },
+  {
+    "name": "format: @base64d padded",
+    "expr": "@base64d",
+    "input": "aGVsbG8="
+  },
+  {
+    "name": "format: @base64d unpadded",
+    "expr": "@base64d",
+    "input": "aGVsbG8"
+  },
+  {
+    "name": "format: @base64 then @base64d roundtrip",
+    "expr": "@base64 | @base64d",
+    "input": "héllo→"
+  },
+  {
+    "name": "format: @uri spaces and reserved",
+    "expr": "@uri",
+    "input": "a b/c?d=e&f"
+  },
+  {
+    "name": "format: @uri unreserved kept",
+    "expr": "@uri",
+    "input": "-_.~abcXYZ09"
+  },
+  {
+    "name": "format: @uri punctuation encoded",
+    "expr": "@uri",
+    "input": "!*'()"
+  },
+  {
+    "name": "format: @uri utf8",
+    "expr": "@uri",
+    "input": "héllo"
+  },
+  {
+    "name": "format: @csv mixed row",
+    "expr": "@csv",
+    "input": [1, "x,y", true, null, 3.5]
+  },
+  {
+    "name": "format: @csv quote doubling",
+    "expr": "@csv",
+    "input": ["a\"b"]
+  },
+  {
+    "name": "format: @csv empty array",
+    "expr": "@csv",
+    "input": []
+  },
+  {
+    "name": "format: @tsv mixed row",
+    "expr": "@tsv",
+    "input": [1, "x\ty", true, null]
+  },
+  {
+    "name": "format: @tsv escapes",
+    "expr": "@tsv",
+    "input": ["a\nb\\c"]
+  },
+  {
+    "name": "format: @sh array",
+    "expr": "@sh",
+    "input": [1, "a'b", "x y"]
+  },
+  {
+    "name": "format: @sh scalar string",
+    "expr": "@sh",
+    "input": "don't"
+  },
+  {
+    "name": "format: @sh null",
+    "expr": "@sh",
+    "input": null
+  },
+  {
+    "name": "format: @sh booleans",
+    "expr": "@sh",
+    "input": [true, false]
+  },
+  {
+    "name": "format: @html escapes",
+    "expr": "@html",
+    "input": "<a href='x' title=\"y\">&z</a>"
+  },
+  {
+    "name": "format: @html on number",
+    "expr": "@html",
+    "input": 5
+  },
+  {
+    "name": "format: @base64 interpolation",
+    "expr": "@base64 \"v=\\(.x)\"",
+    "input": {
+      "x": "a b"
+    }
+  },
+  {
+    "name": "format: @uri interpolation literal passthrough",
+    "expr": "@uri \"p \\(.a)/\\(.b)\"",
+    "input": {
+      "a": "x y",
+      "b": "p&q"
+    }
+  },
+  {
+    "name": "format: @csv interpolation",
+    "expr": "@csv \"row: \\([1,2])\"",
+    "input": null
+  },
+  {
+    "name": "format: @base64 plain string not encoded",
+    "expr": "@base64 \"x\"",
+    "input": null
+  },
+  {
+    "name": "format: @text interpolation default",
+    "expr": "\"v=\\(.x)\"",
+    "input": {
+      "x": [1, 2]
+    }
   }
 ]

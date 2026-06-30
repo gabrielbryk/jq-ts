@@ -23,7 +23,7 @@ describe('compatibility helpers', () => {
   })
 
   it('reports parse errors as unsupported syntax', () => {
-    const result = checkCompatibility('@json')
+    const result = checkCompatibility('&')
 
     expect(result.compatible).toBe(false)
     expect(result.findings[0]).toMatchObject({

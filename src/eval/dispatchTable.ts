@@ -12,6 +12,7 @@ import type {
   FieldAccessNode,
   FilterNode,
   ForeachNode,
+  FormatNode,
   IdentityNode,
   IfNode,
   IndexAccessNode,
@@ -38,6 +39,7 @@ import { evalIf, evalLabel, evalTry } from './controlFlow'
 import { evalAlt, evalAs, evalComma, evalPipe, evalVar } from './dispatchHandlers'
 import { evalBinary, evalBool, evalUnary } from './dispatchOperators'
 import { evalIdentity, evalLiteral } from './dispatchScalars'
+import { evalFormat } from './format'
 import { evalCall, evalDef } from './functions'
 import { evalForeach, evalIterate, evalRecurse, evalReduce } from './iterators'
 import type { EnvStack } from './types'
@@ -112,4 +114,6 @@ export const handlers: Record<FilterNode['kind'], NodeHandler> = {
     evalCall(node as CallNode, input, env, tracker, evaluate),
   Def: (node, input, env, tracker, evaluate) =>
     evalDef(node as DefNode, input, env, tracker, evaluate),
+  Format: (node, input, env, tracker, evaluate) =>
+    evalFormat(node as FormatNode, input, env, tracker, evaluate),
 }
