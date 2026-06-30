@@ -17,8 +17,22 @@ jobs:
       pull-requests: write
       id-token: write
     steps:
+      # Mint a GitHub App installation token. Using an App identity (not the
+      # default GITHUB_TOKEN) lets the "chore: release package" PR trigger the
+      # CI / Changeset workflows — GitHub suppresses workflow runs for events
+      # created by GITHUB_TOKEN, which otherwise leaves the release PR with no
+      # (required) checks and unmergeable.
+      - name: Generate GitHub App token
+        id: app-token
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ secrets.RELEASE_APP_ID }}
+          private-key: ${{ secrets.RELEASE_APP_PRIVATE_KEY }}
+
       - name: Checkout Repo
         uses: actions/checkout@v7
+        with:
+          token: ${{ steps.app-token.outputs.token }}
 
       - name: Install pnpm
         uses: pnpm/action-setup@v6
@@ -54,4 +68,4 @@ jobs:
           commit: 'chore: release package'
           title: 'chore: release package'
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
