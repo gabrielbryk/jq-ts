@@ -6,7 +6,7 @@ Audit status: every top-level section and feature heading from the jq 1.8 manual
 
 <!-- AUDIT:SUMMARY:START -->
 
-The jq 1.8.1 manual defines 250 example programs. Run each through `analyzeCompatibility` (a static parse + validate + semantic-warning pass), 215 parse and validate in jq-ts, 35 are statically unsupported, and 19 accepted examples carry known semantic warnings. These counts are a static audit aid, not a conformance guarantee, because some jq behavior is input-dependent. Regenerate them with `pnpm run compat-audit --write`.
+The jq 1.8.1 manual defines 250 example programs. Run each through `analyzeCompatibility` (a static parse + validate + semantic-warning pass), 233 parse and validate in jq-ts, 17 are statically unsupported, and 23 accepted examples carry known semantic warnings. These counts are a static audit aid, not a conformance guarantee, because some jq behavior is input-dependent. Regenerate them with `pnpm run compat-audit --write`.
 
 <!-- AUDIT:SUMMARY:END -->
 
@@ -26,7 +26,7 @@ jq-ts is a deterministic, isolate-safe jq subset. This matrix is organized by th
 | Types and values                | Partial               | JSON value model is supported. jq decimal-number preservation and literal-number metadata are not modeled.                                                                                                     |
 | Builtin operators and functions | Partial               | Common deterministic builtins are implemented; many jq builtins and arities are missing.                                                                                                                       |
 | Conditionals and comparisons    | Partial to compatible | Core conditionals, comparisons, booleans, `//`, `try/catch`, labels, and break are implemented. Some optional/error behavior differs.                                                                          |
-| Regular expressions             | Unsupported           | `test`, `match`, `capture`, `scan`, `sub`, `gsub`, regex `split`, and `splits` are not implemented.                                                                                                            |
+| Regular expressions             | Partial               | `test`, `match`, `capture`, `scan`, `sub`, `gsub`, regex `split`/`splits` run on a pure-TS linear engine. Backreferences and lookaround are rejected (incompatible with linear matching).                      |
 | Advanced features               | Partial               | `as`, destructuring bindings, `def`, scoping, `isempty`, `limit`, `first(expr)`, `last(expr)`, `nth(n; expr)`, `reduce`, `foreach`, recursion, and generators are implemented. Some jq arities remain missing. |
 | Math                            | Partial               | Several math builtins exist, but jq numeric edge behavior, `nan`, `infinite`, and IEEE classification are not fully compatible.                                                                                |
 | I/O                             | Different by design   | External input, environment, debug/stderr, filenames, and line numbers are disallowed or unavailable.                                                                                                          |
@@ -157,11 +157,13 @@ jq-ts is a deterministic, isolate-safe jq subset. This matrix is organized by th
 
 ## Regular expressions
 
-| jq feature                         | jq-ts status | Notes            |
-| ---------------------------------- | ------------ | ---------------- |
-| `test`, `match`, `capture`, `scan` | Unsupported  | Not implemented. |
-| Regex `split`, `splits`            | Unsupported  | Not implemented. |
-| `sub`, `gsub`                      | Unsupported  | Not implemented. |
+| jq feature                                    | jq-ts status        | Notes                                                                                                                                       |
+| --------------------------------------------- | ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| `test`, `match`, `capture`, `scan`            | Partial             | Implemented on a pure-TS linear (Pike-VM) engine — no host regex, ReDoS-immune. Offsets are in Unicode codepoints, matching jq.             |
+| Regex `split`, `splits`                       | Partial             | Implemented (2-arg regex `split` and `splits`).                                                                                             |
+| `sub`, `gsub`                                 | Partial             | Implemented; the replacement is a filter run with the named-capture object as input, as in jq.                                              |
+| Flags `g i m s x`                             | Compatible          | Supported.                                                                                                                                  |
+| Backreferences, lookaround, atomic/possessive | Different by design | Rejected with an error. These are incompatible with linear-time matching (and `\b`-style backrefs are NP-hard); jq's Oniguruma allows them. |
 
 ## Advanced features
 
@@ -214,23 +216,23 @@ Every example program in the jq 1.8 manual (`manual.yml`) is run through `analyz
 | Result                          | Count | Meaning                                                   |
 | ------------------------------- | ----: | --------------------------------------------------------- |
 | Manual example programs         |   250 | Example programs in the jq 1.8.1 manual (`manual.yml`).   |
-| Statically accepted by jq-ts    |   215 | Expression parsed and validated by jq-ts.                 |
-| Statically unsupported by jq-ts |    35 | Failed lexing, parsing, validation, or builtin arity.     |
-| Accepted with semantic warnings |    19 | Accepted but uses a feature with known jq-vs-jq-ts diffs. |
+| Statically accepted by jq-ts    |   233 | Expression parsed and validated by jq-ts.                 |
+| Statically unsupported by jq-ts |    17 | Failed lexing, parsing, validation, or builtin arity.     |
+| Accepted with semantic warnings |    23 | Accepted but uses a feature with known jq-vs-jq-ts diffs. |
 
 <!-- AUDIT:TABLE:END -->
 
 Unsupported manual examples group by these causes:
 
-| Cause                                  | Examples from the manual                                                               |
-| -------------------------------------- | -------------------------------------------------------------------------------------- |
-| Unsupported conversion/formatting      | `@json`, `@csv`, `@base64`, and related `@...` formatters.                             |
-| Regex family                           | `test`, `match`, `capture`, `scan`, regex `split`, `splits`, `sub`, `gsub`.            |
-| Missing builtin helpers                | `fromstream`, `truncate_stream`, regex helpers, SQL-style helpers, and module helpers. |
-| Missing arities                        | Regex `split(regex; flags)` and other unsupported regex/streaming arities.             |
-| Destructuring alternative syntax       | The destructuring alternative operator `?//` is not implemented.                       |
-| Build metadata                         | `have_decnum` and jq build-configuration helpers.                                      |
-| Intentional environment/I/O exclusions | `env`, `$ENV`, external input, debug/stderr, filename, and line number features.       |
+| Cause                                  | Examples from the manual                                                                                         |
+| -------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| Unsupported conversion/formatting      | `@json`, `@csv`, `@base64`, and related `@...` formatters.                                                       |
+| Regex (Oniguruma-only features)        | Backreferences, lookahead/lookbehind, atomic groups, and possessive quantifiers (rejected by the linear engine). |
+| Missing builtin helpers                | `fromstream`, `truncate_stream`, SQL-style helpers, and module helpers.                                          |
+| Missing arities                        | Regex `split(regex; flags)` and other unsupported regex/streaming arities.                                       |
+| Destructuring alternative syntax       | The destructuring alternative operator `?//` is not implemented.                                                 |
+| Build metadata                         | `have_decnum` and jq build-configuration helpers.                                                                |
+| Intentional environment/I/O exclusions | `env`, `$ENV`, external input, debug/stderr, filename, and line number features.                                 |
 
 Accepted manual examples with warnings group by these causes:
 

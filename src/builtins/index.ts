@@ -4,6 +4,7 @@ import { errorBuiltins } from './errors'
 import { iteratorBuiltins } from './iterators'
 import { mathBuiltins } from './math'
 import { pathBuiltins } from './paths'
+import { regexBuiltins } from './regex'
 import { registerBuiltins } from './registry'
 import { stdBuiltins } from './std'
 import { stringBuiltins } from './strings'
@@ -17,4 +18,5 @@ export const registerAllBuiltins = () => {
   registerBuiltins(iteratorBuiltins)
   registerBuiltins(mathBuiltins)
   registerBuiltins(dateBuiltins)
+  registerBuiltins(regexBuiltins)
 }
