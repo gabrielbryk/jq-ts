@@ -6,7 +6,9 @@ import { mathBuiltins } from './math'
 import { pathBuiltins } from './paths'
 import { regexBuiltins } from './regex'
 import { registerBuiltins } from './registry'
+import { sqlBuiltins } from './sql'
 import { stdBuiltins } from './std'
+import { streamingBuiltins } from './streaming'
 import { stringBuiltins } from './strings'
 
 export const registerAllBuiltins = () => {
@@ -19,4 +21,6 @@ export const registerAllBuiltins = () => {
   registerBuiltins(mathBuiltins)
   registerBuiltins(dateBuiltins)
   registerBuiltins(regexBuiltins)
+  registerBuiltins(streamingBuiltins)
+  registerBuiltins(sqlBuiltins)
 }

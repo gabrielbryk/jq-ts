@@ -6,7 +6,7 @@ Audit status: every top-level section and feature heading from the jq 1.8 manual
 
 <!-- AUDIT:SUMMARY:START -->
 
-The jq 1.8.1 manual defines 250 example programs. Run each through `analyzeCompatibility` (a static parse + validate + semantic-warning pass), 233 parse and validate in jq-ts, 17 are statically unsupported, and 23 accepted examples carry known semantic warnings. These counts are a static audit aid, not a conformance guarantee, because some jq behavior is input-dependent. Regenerate them with `pnpm run compat-audit --write`.
+The jq 1.8.1 manual defines 250 example programs. Run each through `analyzeCompatibility` (a static parse + validate + semantic-warning pass), 237 parse and validate in jq-ts, 13 are statically unsupported, and 23 accepted examples carry known semantic warnings. These counts are a static audit aid, not a conformance guarantee, because some jq behavior is input-dependent. Regenerate them with `pnpm run compat-audit --write`.
 
 <!-- AUDIT:SUMMARY:END -->
 
@@ -30,7 +30,7 @@ jq-ts is a deterministic, isolate-safe jq subset. This matrix is organized by th
 | Advanced features               | Partial               | `as`, destructuring bindings, `def`, scoping, `isempty`, `limit`, `first(expr)`, `last(expr)`, `nth(n; expr)`, `reduce`, `foreach`, recursion, and generators are implemented. Some jq arities remain missing.                                                                                                                                                                                                                                                                                                                                                        |
 | Math                            | Partial               | Trig (`sin`, `cos`, `tan`, `asin`, `acos`, `atan`, `atan2`), hyperbolic (`sinh`, `cosh`, `tanh`, `asinh`, `acosh`, `atanh`), exponential (`exp`, `exp2`, `exp10`, `expm1`), logarithm (`log`, `log2`, `log10`, `log1p`), and utility (`cbrt`, `pow`, `hypot`, `fabs`, `trunc`, `fmin`, `fmax`, `fmod`, `copysign`, `fdim`) builtins are implemented. Gamma, Bessel, `erf`/`erfc`, and rounding-class functions (`ceil`, `round`, `nearbyint`, `rint`) are unsupported. jq numeric edge behavior, `nan`, `infinite`, and IEEE classification are not fully compatible. |
 | I/O                             | Different by design   | External input, environment, debug/stderr, filenames, and line numbers are disallowed or unavailable.                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
-| Streaming                       | Unsupported           | `--stream`, `tostream`, `fromstream`, and `truncate_stream` are not implemented.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| Streaming                       | Partial               | `tostream`, `fromstream`, and `truncate_stream` are implemented. The `--stream` CLI flag is out of scope (jq-ts is a library).                                                                                                                                                                                                                                                                                                                                                                                                                                        |
 | Assignment                      | Partial to compatible | Common assignment/update forms work, including multi-path updates. Complex edge cases need more conformance coverage.                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
 | Comments                        | Compatible            | `#` line comments are ignored outside string literals.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
 | Modules                         | Different by design   | `import`, `include`, module metadata, and disk module loading are intentionally unsupported.                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
@@ -144,7 +144,7 @@ jq-ts is a deterministic, isolate-safe jq subset. This matrix is organized by th
 | `tojson`, `fromjson`                                                                                                                 | Partial             | Implemented with deterministic sorted-key object stringification, unlike jq's input-order `tojson`.                                                                                                                                                                                              |
 | Format strings: `@json`, `@csv`, `@tsv`, `@sh`, `@base64`, `@base64d`, `@uri`, `@html`, `@text`                                      | Partial             | All common format strings are implemented. `@json` serializes object keys in deterministic sorted order, unlike jq's input-order stringification.                                                                                                                                                |
 | Dates                                                                                                                                | Partial             | Deterministic date suite implemented (`gmtime`, `localtime`, `mktime`, `strftime`, `strflocaltime`, `strptime`, `todate`/`todateiso8601`, `fromdate`/`fromdateiso8601`). `now` resolves to a caller-injected instant (`EvalOptions.now`) and throws otherwise; jq-ts never reads the host clock. |
-| SQL-style operators                                                                                                                  | Unsupported         | `INDEX`, `JOIN`, and related SQL-style helpers are not implemented.                                                                                                                                                                                                                              |
+| SQL-style operators                                                                                                                  | Partial             | `INDEX/1` (stream→object), `INDEX/2` (stream; key→object), `IN/1` (membership test against generator), and `IN/2` (membership test with explicit set) are implemented. `JOIN` and `GROUP_BY` are not implemented.                                                                                |
 | `builtins`                                                                                                                           | Unsupported         | Not implemented.                                                                                                                                                                                                                                                                                 |
 
 ## Conditionals and comparisons
@@ -190,15 +190,15 @@ jq-ts is a deterministic, isolate-safe jq subset. This matrix is organized by th
 
 ## I/O, streaming, modules, comments, and colors
 
-| jq feature                                              | jq-ts status        | Notes                                                  |
-| ------------------------------------------------------- | ------------------- | ------------------------------------------------------ |
-| `input`, `inputs`                                       | Different by design | External input streams are intentionally unavailable.  |
-| `debug`, `stderr`                                       | Different by design | Side-effecting output is unavailable.                  |
-| `input_filename`, `input_line_number`                   | Different by design | No file/input-stream context exists.                   |
-| `--stream`, `tostream`, `fromstream`, `truncate_stream` | Unsupported         | Streaming parser representation is not implemented.    |
-| Comments                                                | Compatible          | `#` line comments are ignored outside string literals. |
-| `import`, `include`, `module`, `modulemeta`             | Different by design | Disk-backed modules are intentionally unavailable.     |
-| Colors and `JQ_COLORS`                                  | Unsupported         | CLI presentation feature, out of scope.                |
+| jq feature                                  | jq-ts status        | Notes                                                  |
+| ------------------------------------------- | ------------------- | ------------------------------------------------------ |
+| `input`, `inputs`                           | Different by design | External input streams are intentionally unavailable.  |
+| `debug`, `stderr`                           | Different by design | Side-effecting output is unavailable.                  |
+| `input_filename`, `input_line_number`       | Different by design | No file/input-stream context exists.                   |
+| `tostream`, `fromstream`, `truncate_stream` | Partial             | Implemented. The `--stream` CLI flag is out of scope.  |
+| Comments                                    | Compatible          | `#` line comments are ignored outside string literals. |
+| `import`, `include`, `module`, `modulemeta` | Different by design | Disk-backed modules are intentionally unavailable.     |
+| Colors and `JQ_COLORS`                      | Unsupported         | CLI presentation feature, out of scope.                |
 
 ## Compatibility helper APIs
 
@@ -221,8 +221,8 @@ Every example program in the jq 1.8 manual (`manual.yml`) is run through `analyz
 | Result                          | Count | Meaning                                                   |
 | ------------------------------- | ----: | --------------------------------------------------------- |
 | Manual example programs         |   250 | Example programs in the jq 1.8.1 manual (`manual.yml`).   |
-| Statically accepted by jq-ts    |   233 | Expression parsed and validated by jq-ts.                 |
-| Statically unsupported by jq-ts |    17 | Failed lexing, parsing, validation, or builtin arity.     |
+| Statically accepted by jq-ts    |   237 | Expression parsed and validated by jq-ts.                 |
+| Statically unsupported by jq-ts |    13 | Failed lexing, parsing, validation, or builtin arity.     |
 | Accepted with semantic warnings |    23 | Accepted but uses a feature with known jq-vs-jq-ts diffs. |
 
 <!-- AUDIT:TABLE:END -->
@@ -232,8 +232,8 @@ Unsupported manual examples group by these causes:
 | Cause                                  | Examples from the manual                                                                                         |
 | -------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
 | Regex (Oniguruma-only features)        | Backreferences, lookahead/lookbehind, atomic groups, and possessive quantifiers (rejected by the linear engine). |
-| Missing builtin helpers                | `fromstream`, `truncate_stream`, SQL-style helpers, and module helpers.                                          |
-| Missing arities                        | Regex `split(regex; flags)` and other unsupported regex/streaming arities.                                       |
+| Missing builtin helpers                | Module helpers (`modulemeta` and related).                                                                       |
+| Missing arities                        | Regex `split(regex; flags)` and other unsupported regex arities.                                                 |
 | Destructuring alternative syntax       | The destructuring alternative operator `?//` is not implemented.                                                 |
 | Build metadata                         | `have_decnum` and jq build-configuration helpers.                                                                |
 | Intentional environment/I/O exclusions | `env`, `$ENV`, external input, debug/stderr, filename, and line number features.                                 |

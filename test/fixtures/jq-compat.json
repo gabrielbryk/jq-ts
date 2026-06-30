@@ -1031,7 +1031,7 @@
   {
     "name": "utf8bytelength unicode",
     "expr": "utf8bytelength",
-    "input": "µ"
+    "input": "\u00b5"
   },
   {
     "name": "ascii_downcase",
@@ -1046,12 +1046,12 @@
   {
     "name": "ascii_downcase non-ascii",
     "expr": "ascii_downcase",
-    "input": "ÄBC"
+    "input": "\u00c4BC"
   },
   {
     "name": "ascii_upcase non-ascii",
     "expr": "ascii_upcase",
-    "input": "äbc"
+    "input": "\u00e4bc"
   },
   {
     "name": "tojson simple",
@@ -2900,12 +2900,12 @@
   {
     "name": "string-codec: explode unicode latin-extended codepoint",
     "expr": "explode",
-    "input": "héllo"
+    "input": "h\u00e9llo"
   },
   {
     "name": "string-codec: explode high unicode codepoint (musical G-clef U+1D11E)",
     "expr": "explode",
-    "input": "𝄞"
+    "input": "\ud834\udd1e"
   },
   {
     "name": "string-codec: implode basic codepoints to string",
@@ -2935,7 +2935,7 @@
   {
     "name": "string-codec: explode then implode round-trips unicode string",
     "expr": "explode | implode",
-    "input": "héllo 𝄞"
+    "input": "h\u00e9llo \ud834\udd1e"
   },
   {
     "name": "string-codec: explode on non-string errors",
@@ -3514,7 +3514,7 @@
   {
     "name": "format: @base64 utf8",
     "expr": "@base64",
-    "input": "héllo→"
+    "input": "h\u00e9llo\u2192"
   },
   {
     "name": "format: @base64 empty",
@@ -3539,7 +3539,7 @@
   {
     "name": "format: @base64 then @base64d roundtrip",
     "expr": "@base64 | @base64d",
-    "input": "héllo→"
+    "input": "h\u00e9llo\u2192"
   },
   {
     "name": "format: @uri spaces and reserved",
@@ -3559,7 +3559,7 @@
   {
     "name": "format: @uri utf8",
     "expr": "@uri",
-    "input": "héllo"
+    "input": "h\u00e9llo"
   },
   {
     "name": "format: @csv mixed row",
@@ -3647,5 +3647,330 @@
     "input": {
       "x": [1, 2]
     }
+  },
+  {
+    "name": "streaming: tostream nested array",
+    "expr": "[tostream]",
+    "input": [1, [2, 3]]
+  },
+  {
+    "name": "streaming: tostream flat array",
+    "expr": "[tostream]",
+    "input": [1, 2, 3]
+  },
+  {
+    "name": "streaming: tostream object",
+    "expr": "[tostream]",
+    "input": {
+      "a": 1,
+      "b": 2
+    }
+  },
+  {
+    "name": "streaming: tostream nested object",
+    "expr": "[tostream]",
+    "input": {
+      "a": {
+        "b": 1,
+        "c": 2
+      },
+      "d": 3
+    }
+  },
+  {
+    "name": "streaming: tostream mixed",
+    "expr": "[tostream]",
+    "input": {
+      "a": [
+        1,
+        {
+          "b": 2
+        }
+      ]
+    }
+  },
+  {
+    "name": "streaming: tostream top scalar number",
+    "expr": "[tostream]",
+    "input": 42
+  },
+  {
+    "name": "streaming: tostream top scalar null",
+    "expr": "[tostream]",
+    "input": null
+  },
+  {
+    "name": "streaming: tostream top scalar string",
+    "expr": "[tostream]",
+    "input": "hi"
+  },
+  {
+    "name": "streaming: tostream empty array",
+    "expr": "[tostream]",
+    "input": []
+  },
+  {
+    "name": "streaming: tostream empty object",
+    "expr": "[tostream]",
+    "input": {}
+  },
+  {
+    "name": "streaming: tostream deep",
+    "expr": "[tostream]",
+    "input": {
+      "a": [
+        1,
+        {
+          "x": 2,
+          "y": [3, 4]
+        }
+      ],
+      "b": 5
+    }
+  },
+  {
+    "name": "streaming: fromstream roundtrip array",
+    "expr": "fromstream(tostream)",
+    "input": [1, [2, 3]]
+  },
+  {
+    "name": "streaming: fromstream roundtrip object",
+    "expr": "fromstream(tostream)",
+    "input": {
+      "a": {
+        "b": 1,
+        "c": 2
+      },
+      "d": 3
+    }
+  },
+  {
+    "name": "streaming: fromstream roundtrip scalar",
+    "expr": "fromstream(tostream)",
+    "input": 42
+  },
+  {
+    "name": "streaming: fromstream roundtrip empty array",
+    "expr": "fromstream(tostream)",
+    "input": []
+  },
+  {
+    "name": "streaming: fromstream roundtrip empty object",
+    "expr": "fromstream(tostream)",
+    "input": {}
+  },
+  {
+    "name": "streaming: fromstream roundtrip deep",
+    "expr": "fromstream(tostream)",
+    "input": {
+      "a": [
+        1,
+        {
+          "x": 2,
+          "y": [3, 4]
+        }
+      ],
+      "b": 5
+    }
+  },
+  {
+    "name": "streaming: fromstream literal two values",
+    "expr": "[fromstream([[0],1],[[0]],[[0],\"x\"],[[0]])]",
+    "input": null
+  },
+  {
+    "name": "streaming: fromstream literal single array",
+    "expr": "[fromstream([[0],1],[[1],2],[[1]])]",
+    "input": null
+  },
+  {
+    "name": "streaming: fromstream top scalar event",
+    "expr": "[fromstream([[],5])]",
+    "input": null
+  },
+  {
+    "name": "streaming: fromstream partial no close",
+    "expr": "[fromstream([[0],1])]",
+    "input": null
+  },
+  {
+    "name": "streaming: truncate_stream depth1",
+    "expr": "[1|truncate_stream([[1,2],[3,4]]|tostream)]",
+    "input": null
+  },
+  {
+    "name": "streaming: truncate_stream depth2 empties",
+    "expr": "[2|truncate_stream([[1,2],[3,4]]|tostream)]",
+    "input": null
+  },
+  {
+    "name": "streaming: truncate_stream literal depth1",
+    "expr": "[1|truncate_stream([[0,0],1],[[0,0]])]",
+    "input": null
+  },
+  {
+    "name": "streaming: truncate_stream drops equal-length",
+    "expr": "[1|truncate_stream([[0],1],[[0]])]",
+    "input": null
+  },
+  {
+    "name": "streaming: truncate_stream mixed lengths",
+    "expr": "[1|truncate_stream([[0,1],1],[[0,1]],[[0]])]",
+    "input": null
+  },
+  {
+    "name": "streaming: truncate_stream object depth1",
+    "expr": "[1|truncate_stream({a:{b:1},c:2}|tostream)]",
+    "input": {
+      "a": {
+        "b": 1
+      },
+      "c": 2
+    }
+  },
+  {
+    "name": "sql: INDEX/1 numeric keys",
+    "expr": "INDEX(.id)",
+    "input": [
+      {
+        "id": 1,
+        "v": "a"
+      },
+      {
+        "id": 2,
+        "v": "b"
+      }
+    ]
+  },
+  {
+    "name": "sql: INDEX/1 string keys",
+    "expr": "INDEX(.k)",
+    "input": [
+      {
+        "k": "a",
+        "v": 1
+      },
+      {
+        "k": "b",
+        "v": 2
+      }
+    ]
+  },
+  {
+    "name": "sql: INDEX/1 duplicate key keeps last",
+    "expr": "INDEX(.id)",
+    "input": [
+      {
+        "id": 1,
+        "v": "a"
+      },
+      {
+        "id": 1,
+        "v": "b"
+      }
+    ]
+  },
+  {
+    "name": "sql: INDEX/1 boolean key",
+    "expr": "INDEX(.flag)",
+    "input": [
+      {
+        "flag": true,
+        "v": 1
+      },
+      {
+        "flag": false,
+        "v": 2
+      }
+    ]
+  },
+  {
+    "name": "sql: INDEX/1 null key",
+    "expr": "INDEX(.k)",
+    "input": [
+      {
+        "k": null,
+        "v": 1
+      }
+    ]
+  },
+  {
+    "name": "sql: INDEX/2 stream and key",
+    "expr": "INDEX(.[]; .id)",
+    "input": [
+      {
+        "id": 1,
+        "v": "a"
+      },
+      {
+        "id": 2,
+        "v": "b"
+      }
+    ]
+  },
+  {
+    "name": "sql: INDEX/2 range stream",
+    "expr": "INDEX(range(3); . * 10)",
+    "input": null
+  },
+  {
+    "name": "sql: INDEX/2 identity key",
+    "expr": "[1,2,3] | INDEX(.[]; .)",
+    "input": null
+  },
+  {
+    "name": "sql: IN/1 found",
+    "expr": "IN(1,2,3)",
+    "input": 2
+  },
+  {
+    "name": "sql: IN/1 not found",
+    "expr": "IN(1,2,3)",
+    "input": 5
+  },
+  {
+    "name": "sql: IN/1 found string",
+    "expr": "IN(\"a\",\"b\",\"c\")",
+    "input": "b"
+  },
+  {
+    "name": "sql: IN/1 not found string",
+    "expr": "IN(\"a\",\"b\",\"c\")",
+    "input": "z"
+  },
+  {
+    "name": "sql: IN/1 range found",
+    "expr": "IN(range(5))",
+    "input": 3
+  },
+  {
+    "name": "sql: IN/1 range not found",
+    "expr": "IN(range(5))",
+    "input": 7
+  },
+  {
+    "name": "sql: IN/2 found",
+    "expr": "IN(1,2,3; 2)",
+    "input": null
+  },
+  {
+    "name": "sql: IN/2 not found",
+    "expr": "IN(1,2,3; 5)",
+    "input": null
+  },
+  {
+    "name": "sql: IN/2 multi-s any match",
+    "expr": "[IN(1,2,3; 2,5)]",
+    "input": null
+  },
+  {
+    "name": "sql: IN/2 multi-s no match",
+    "expr": "[IN(1,2,3; 4,5)]",
+    "input": null
+  },
+  {
+    "name": "sql: IN/2 stream as src",
+    "expr": "IN(.[]; 2)",
+    "input": [1, 2, 3]
   }
 ]
