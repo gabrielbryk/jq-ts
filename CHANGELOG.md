@@ -1,5 +1,30 @@
 # jq-ts
 
+## 1.7.0
+
+### Minor Changes
+
+- 5c1bda8: Add the `@`-format string filters and the standard math builtins.
+  - **`@`-formats:** `@text`, `@json`, `@base64`/`@base64d`, `@base32`/`@base32d`, `@uri`, `@csv`, `@tsv`, `@sh`, `@html`, including the interpolation form `@base64 "v=\(.x)"` (the format is applied to each interpolated value). Encoders are pure TypeScript (no host APIs). `@json` uses jq-ts's deterministic sorted-key stringification, so it can differ from jq on object key order.
+  - **Math:** trigonometric (`sin`/`cos`/`tan`/`asin`/`acos`/`atan`/`atan2`), hyperbolic (`sinh`/`cosh`/`tanh`/`asinh`/`acosh`/`atanh`), exponential/log (`exp`/`expm1`/`exp2`/`exp10`/`log`/`log2`/`log10`/`log1p`/`pow`/`cbrt`/`hypot`), and simple float ops (`fabs`/`trunc`/`fmin`/`fmax`/`fmod`/`copysign`). These map to JavaScript's `Math`; transcendental results may differ from jq's C `libm` in the last ULP. Gamma/Bessel/erf and rounding-mode functions remain unsupported.
+
+- 8bbc74c: Harden the regex engine and add POSIX classes + absolute anchors.
+  - **Strict rejection (correctness/safety fix):** unsupported regex constructs now throw a clear `unsupported regex feature` error instead of silently degrading to a literal match. This closes a hole where `\g1`/`\g<1>`, Unicode property escapes (`\p{…}`, `\pL`), Oniguruma special escapes (`\h \H \R \K \G`, `\b{…}`), and unknown alphanumeric escapes were silently accepted and matched incorrectly. A rejection test battery guards against regressions.
+  - **POSIX bracket classes:** `[[:alpha:]]`, `[[:digit:]]`, `[[:alnum:]]`, `[[:space:]]`, `[[:upper:]]`, `[[:lower:]]`, `[[:punct:]]`, `[[:xdigit:]]`, `[[:blank:]]`, `[[:cntrl:]]`, `[[:graph:]]`, `[[:print:]]`, `[[:word:]]`, and their negations, composable inside character classes (ASCII semantics, like the engine's `\d`/`\w`/`\s`).
+  - **Absolute anchors:** `\A` (start of input), `\z` (end of input), `\Z` (end, or before a single trailing newline).
+
+- 91da082: Add regex support: `test`, `match`, `capture`, `scan`, `sub`, `gsub`, the 2-argument regex `split`, and `splits`, with the `g i m s x` flags.
+
+  Matching runs on a new pure-TypeScript, dependency-free **linear-time engine** (Thompson NFA + Pike VM), so it is ReDoS-immune — unbounded backtracking can't be used as a compute bomb against untrusted expressions. Match offsets/lengths are reported in Unicode codepoints, matching jq, and `sub`/`gsub` evaluate their replacement as a filter over the named-capture object, as in jq.
+
+  Backreferences, lookahead/lookbehind, atomic groups, and possessive quantifiers are intentionally rejected (incompatible with linear-time matching); jq's Oniguruma engine allows them.
+
+- 069dd41: Add the streaming builtins and SQL-style helpers.
+  - **Streaming:** `tostream`, `fromstream(f)`, and `truncate_stream(f)` (depth taken from the input, as in jq) — the streamed `[path, leaf]` / close-event representation and its inverse.
+  - **SQL-style:** `INDEX(idx_expr)`, `INDEX(stream; idx_expr)`, `IN(s)`, and `IN(source; s)`. (`INDEX` builds an object, so jq-ts's deterministic sorted-key behavior applies.)
+
+  These are the last of the broadly-useful builtin gaps; the remaining unimplemented jq builtins are the niche C-libm math functions (gamma/Bessel/erf) and intentionally-excluded I/O/module features.
+
 ## 1.6.0
 
 ### Minor Changes
