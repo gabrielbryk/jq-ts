@@ -331,6 +331,22 @@ export interface SliceNode {
 }
 
 /**
+ * Represents a jq `@`-format application (e.g. `@base64`, `@csv`).
+ *
+ * Without `str`, the format encoder is applied directly to the filter's input
+ * value. With `str`, the node wraps a string/interpolation: literal segments
+ * pass through unformatted while each interpolated value is piped through the
+ * encoder (the parser desugars `str` to that shape), so evaluating the node is
+ * just evaluating `str`.
+ */
+export interface FormatNode {
+  kind: 'Format'
+  name: string
+  str?: FilterNode
+  span: Span
+}
+
+/**
  * Union of all possible AST nodes in the jq syntax tree.
  */
 export type FilterNode =
@@ -360,6 +376,7 @@ export type FilterNode =
   | LabelNode
   | BreakNode
   | SliceNode
+  | FormatNode
 
 /**
  * The set of binary operators supported by {@link BinaryNode}.

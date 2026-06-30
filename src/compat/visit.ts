@@ -84,6 +84,9 @@ export const visit = (node: FilterNode, callback: Visitor): void => {
     case 'Label':
       visit(node.body, callback)
       return
+    case 'Format':
+      if (node.str) visit(node.str, callback)
+      return
     default: {
       const exhaustive: never = node
       return exhaustive

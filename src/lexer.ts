@@ -1,4 +1,5 @@
 import { LexError } from './errors'
+import { scanFormat } from './lexer/format'
 import { scanIdentifier } from './lexer/identifiers'
 import { scanNumber } from './lexer/number'
 import { scanOperator } from './lexer/operators'
@@ -29,6 +30,7 @@ export const lex = (text: string): Token[] => {
     if (scanOperator(s, start)) continue
     if (scanNumber(s, start)) continue
     if (scanIdentifier(s, start)) continue
+    if (scanFormat(s, start)) continue
 
     const ch = peek(s)
     throw new LexError(`Unexpected character "${ch}"`, makeSpan(start, start + 1))

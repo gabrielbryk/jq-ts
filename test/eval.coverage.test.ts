@@ -646,7 +646,7 @@ describe('compat execution helpers', () => {
   })
 
   it('analyzeCompatibility is false-compatible when incompatible', () => {
-    const result = analyzeCompatibility('@base64')
+    const result = analyzeCompatibility('&')
     expect(result.compatible).toBe(false)
   })
 })
