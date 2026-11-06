@@ -137,4 +137,23 @@ describe('predefined variables and scoping', () => {
       expect(result).toEqual([['a', 'b']])
     })
   })
+
+  describe('`as` binds the last stage of a pipe', () => {
+    const input = { a: { n: 'A', u: [{ c: 1 }] }, n: 'root', t: [{ q: 'T', cs: [1, 2] }] }
+
+    it('runs the body on the stage it binds, not on the pipe input', () => {
+      expect(run('.a | . as $t | .n', input)).toEqual(['A'])
+      expect(run('.a | . as $t | .u | map(.c)', input)).toEqual([[1]])
+    })
+
+    it('keeps the variable in scope for the rest of the pipe', () => {
+      expect(run('.t[] | .q as $x | .cs[] | $x', input)).toEqual(['T', 'T'])
+      expect(run('.a | . as $t | $t.n', input)).toEqual(['A'])
+    })
+
+    it('still binds a leading term over the whole input', () => {
+      expect(run('.a as $t | .n', input)).toEqual(['root'])
+      expect(run('. as [$x, $y] | $y', [1, 2])).toEqual([2])
+    })
+  })
 })

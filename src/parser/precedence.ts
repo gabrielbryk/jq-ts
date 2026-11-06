@@ -38,6 +38,17 @@ export function parsePipe(p: ParserState, allowComma = true): FilterNode {
   let expr = parseComma(p, allowComma)
   while (p.match('Pipe')) {
     const right = parseComma(p, allowComma)
+    // `Term as $x | body` binds the last stage of the pipe, as jq's grammar
+    // has it: `.a | . as $t | .n` is `.a | (. as $t | .n)`.
+    if (p.check('As')) {
+      const bound = parseAsRest(p, right, allowComma)
+      return {
+        kind: 'Pipe',
+        left: expr,
+        right: bound,
+        span: spanBetween(expr.span, bound.span),
+      }
+    }
     expr = {
       kind: 'Pipe',
       left: expr,
@@ -46,6 +57,20 @@ export function parsePipe(p: ParserState, allowComma = true): FilterNode {
     }
   }
   return expr
+}
+
+function parseAsRest(p: ParserState, source: FilterNode, allowComma: boolean): FilterNode {
+  p.consume('As', 'Expected "as"')
+  const pattern = parseBindingPattern(p)
+  p.consume('Pipe', 'Expected "|" after binding pattern')
+  const body = parseBinding(p, allowComma)
+  return {
+    kind: 'As',
+    bind: source,
+    pattern,
+    body,
+    span: spanBetween(source.span, body.span),
+  }
 }
 
 export function parseComma(p: ParserState, allowComma = true): FilterNode {
